@@ -1,0 +1,117 @@
+{
+  "name": "tnt-launcher",
+  "productName": "TnT Launcher",
+  "version": "1.6.0",
+  "description": "TnT Launcher — лаунчер Minecraft",
+  "author": {
+    "name": "TnT",
+    "email": "support@tntlauncher.app"
+  },
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win --publish never",
+    "dist:mac": "electron-builder --mac --publish never",
+    "dist:linux": "electron-builder --linux --publish never"
+  },
+  "dependencies": {
+    "extract-zip": "^2.0.1",
+    "minecraft-launcher-core": "^3.18.2"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "dev.tnt.launcher",
+    "productName": "TnT Launcher",
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "build/icon.png"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "TnT Launcher",
+      "language": "1049",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "artifactName": "TnT-Launcher-Setup-${version}.exe"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "category": "public.app-category.games",
+      "icon": "build/icon.icns",
+      "identity": null
+    },
+    "dmg": {
+      "artifactName": "TnT-Launcher-${version}-${arch}.dmg"
+    },
+    "protocols": [
+      {
+        "name": "TnT Launcher",
+        "schemes": [
+          "tntlauncher"
+        ]
+      }
+    ],
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "category": "Game",
+      "icon": "build/icon.png",
+      "maintainer": "TnT <support@tntlauncher.app>",
+      "synopsis": "Лаунчер Minecraft"
+    },
+    "appImage": {
+      "artifactName": "TnT-Launcher-${version}.AppImage"
+    },
+    "deb": {
+      "artifactName": "TnT-Launcher-${version}.deb"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tretyakivan102016-web/tnt-launcher.git"
+  }
+}

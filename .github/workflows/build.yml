@@ -1,0 +1,41 @@
+name: Build and release
+on:
+  workflow_dispatch: {}
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm run dist:win
+        if: matrix.os == 'windows-latest'
+      - run: npm run dist:mac
+        if: matrix.os == 'macos-latest'
+      - run: npm run dist:linux
+        if: matrix.os == 'ubuntu-latest'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tnt-launcher-${{ matrix.os }}
+          path: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.AppImage
+            dist/*.deb
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.AppImage
+            dist/*.deb

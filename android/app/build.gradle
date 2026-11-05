@@ -1,0 +1,30 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'app.tnt.launcher'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "app.tnt.launcher"
+        minSdk 24          // Android 7.0
+        targetSdk 34
+        versionCode 16     // 1.6.0
+        versionName "1.6.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // Пока подписываем отладочным ключом, чтобы .apk можно было сразу ставить на телефон.
+            // Для Google Play соберите .aab со своим ключом (см. README-android.txt).
+            signingConfig signingConfigs.debug
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+// Без внешних зависимостей: только стандартный Android SDK — сборка быстрая и надёжная
+dependencies {}

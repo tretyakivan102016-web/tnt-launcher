@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TnT Launcher</string>
+    <string name="version_loading">Проверяю версию…</string>
+    <string name="version_prefix">Версия</string>
+    <string name="version_soon">Релиз ещё не опубликован</string>
+    <string name="version_offline">Сайт временно недоступен</string>
+</resources>

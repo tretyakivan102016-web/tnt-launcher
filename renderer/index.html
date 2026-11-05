@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https://cdn.modrinth.com https://media.forgecdn.net; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TnT Launcher</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="bg"><i></i><i></i><i></i></div>
+<div id="app">
+  <aside id="side">
+    <div class="brand">
+      <img class="logo" src="logo.png" alt="TnT">
+      <div><h1>TnT Launcher</h1><span>для Minecraft</span></div>
+    </div>
+    <div class="seg edition" id="edSeg"><button data-e="java" class="on">Java</button><button data-e="bedrock">Bedrock</button></div>
+    <div class="side-head"><span id="sideTitle" data-i18n="side.title">МОИ СБОРКИ</span><button class="mini" id="bNew"><i data-i="plus"></i>Новая</button></div>
+    <div id="instList"></div>
+    <nav>
+      <button data-v="catalog"><i data-i="store"></i><span data-i18n="nav.catalog">Каталог сборок</span></button>
+      <button data-v="skin"><i data-i="brush"></i><span data-i18n="nav.skin">Редактор скина</span></button>
+      <button data-v="account"><i data-i="sliders"></i><span data-i18n="nav.account">Аккаунт и настройки</span></button>
+    </nav>
+    <button class="acct" id="acct"><div class="av sm" id="acctAv"></div><div><b id="acctName">Гость</b><span id="acctSub">аккаунт не выбран</span></div></button>
+  </aside>
+
+  <main>
+    <div id="drag"></div>
+    <div id="pages">
+      <div class="banner" id="siteBanner" hidden>
+        <div class="bt"><b>На сайте найден аккаунт <span id="siteName"></span></b><span>Войти в лаунчер под этим аккаунтом?</span></div>
+        <button class="btn ghost" id="siteNo">Нет</button><button class="btn primary" id="siteYes">Войти</button>
+      </div>
+      <div class="banner" id="updBanner" hidden>
+        <div class="bt"><b>Доступна новая версия <span id="updVer"></span></b><span id="updMsg">Установите обновление, чтобы получить последние улучшения</span></div>
+        <button class="btn ghost" id="updLater">Позже</button><button class="btn primary" id="updNow">Обновить</button>
+      </div>
+
+      <section class="page on" id="v-inst">
+        <div class="hero" id="hero">
+          <div class="hero-main">
+            <div class="av xl" id="hAv"></div>
+            <div class="hero-text"><h2 id="hName">Сборок пока нет</h2><div class="chips" id="hChips"></div></div>
+            <button class="play" id="bPlay"><i data-i="play"></i><span id="playTxt">ИГРАТЬ</span></button>
+          </div>
+          <div class="quick" id="quick">
+            <button data-open="" title="Открыть папку игры"><i data-i="folder"></i>Папка игры</button>
+            <button data-open="mods"><i data-i="cube"></i>Моды</button>
+            <button data-open="resourcepacks"><i data-i="image"></i>Ресурспаки</button>
+            <button data-open="shaderpacks"><i data-i="sun"></i>Шейдеры</button>
+            <button data-open="saves"><i data-i="globe"></i>Миры</button>
+          </div>
+          <div class="prog"><span id="pText">Готов к запуску</span><div class="bar" id="bar"><i></i></div></div>
+        </div>
+
+        <div class="tabs" id="tabs">
+          <button data-t="files" class="on"><i data-i="folder"></i>Файлы</button>
+          <button data-t="mods"><i data-i="cube"></i>Установка модов</button>
+          <button data-t="set"><i data-i="sliders"></i>Настройки сборки</button>
+          <button data-t="log"><i data-i="terminal"></i>Журнал</button>
+        </div>
+
+        <div class="pane on" id="p-files">
+          <div class="toolbar">
+            <div class="seg" id="folderSeg">
+              <button data-f="mods" class="on">Моды</button><button data-f="resourcepacks">Ресурспаки</button>
+              <button data-f="shaderpacks">Шейдеры</button><button data-f="saves">Миры</button>
+            </div>
+            <div class="grow"></div>
+            <button class="btn" id="fAdd"><i data-i="plus"></i>Добавить файлы</button>
+            <button class="btn" id="fOpen"><i data-i="folder"></i>Открыть папку</button>
+            <button class="btn ghost" id="fRoot">Папка сборки</button>
+          </div>
+          <div class="list" id="fList"></div>
+        </div>
+
+        <div class="pane" id="p-mods">
+          <p class="hint" data-i18n="mods.hint">Моды Modrinth под версию и загрузчик этой сборки. Нужные зависимости ставятся сами.</p>
+          <div class="searchbar"><i data-i="search"></i><input id="mQ" placeholder="Например: Sodium, JEI, Iris…" autocomplete="off"><button class="btn primary" id="mGo">Найти</button></div>
+          <div class="grid" id="mList"></div>
+        </div>
+
+        <div class="pane" id="p-set">
+          <div class="form">
+            <label>Название<input id="sName" maxlength="40"></label>
+            <label>Версия Minecraft<select id="sVer"></select></label>
+            <div class="field"><span>Цвет сборки</span><div class="swatches colors" id="sColors"></div></div>
+            <div class="field"><span>Загрузчик</span><div class="seg" id="sLoader"><button data-l="vanilla">Vanilla</button><button data-l="fabric">Fabric</button><button data-l="forge">Forge</button></div></div>
+            <div class="field"><span>Память (RAM)</span>
+              <div class="ramrow"><label class="check"><input type="checkbox" id="sDef"><i></i>общая</label><input type="range" id="sRam" min="1024" step="512"><b id="sRamV"></b></div></div>
+            <label>Аргументы JVM<input id="sJvm" placeholder="-XX:+UseG1GC"></label>
+            <div class="row"><button class="btn primary" id="sSave">Сохранить</button><button class="btn danger" id="sDel"><i data-i="trash"></i>Удалить сборку</button></div>
+          </div>
+        </div>
+
+        <div class="pane" id="p-log"><pre id="log"></pre></div>
+      </section>
+
+      <section class="page" id="v-bedrock">
+        <div class="hero" id="beHero">
+          <div class="hero-main">
+            <div class="av xl" id="beAv"></div>
+            <div class="hero-text"><h2>Minecraft Bedrock</h2><div class="chips" id="beChips"></div></div>
+            <button class="play" id="bePlay"><i data-i="play"></i><span>ИГРАТЬ</span></button>
+          </div>
+          <div class="quick" id="beQuick">
+            <button data-be=""><i data-i="folder"></i>Папка данных</button>
+            <button data-be="resource_packs"><i data-i="image"></i>Ресурспаки</button>
+            <button data-be="behavior_packs"><i data-i="cube"></i>Аддоны</button>
+            <button data-be="minecraftWorlds"><i data-i="globe"></i>Миры</button>
+          </div>
+          <div class="prog"><span id="beText" style="width:auto"></span></div>
+        </div>
+        <div class="banner" id="beNote" hidden><div class="bt"><b id="beNoteT"></b><span id="beNoteS"></span></div></div>
+        <div id="beMain">
+          <div class="tabs" id="beTabs">
+            <button data-bt="files" class="on"><i data-i="folder"></i>Содержимое</button>
+            <button data-bt="cat"><i data-i="cube"></i>Каталог аддонов</button>
+            <button data-bt="set"><i data-i="sliders"></i>Настройки</button>
+          </div>
+          <div class="bpane on" id="bp-files">
+            <div class="toolbar">
+              <div class="seg" id="beKindSeg">
+                <button data-k="resource_packs" class="on">Ресурспаки</button><button data-k="behavior_packs">Аддоны</button>
+                <button data-k="skin_packs">Скин-паки</button><button data-k="minecraftWorlds">Миры</button>
+              </div>
+              <div class="grow"></div>
+              <button class="btn primary" id="beInstall"><i data-i="plus"></i>Установить файл</button>
+            </div>
+            <p class="hint">Поддерживаются файлы .mcaddon, .mcpack, .mcworld и .mctemplate. После установки включите пак в настройках мира. Если игра открыта, перезапустите её.</p>
+            <div class="list" id="beList"></div>
+          </div>
+          <div class="bpane" id="bp-cat">
+            <p class="hint">Аддоны и паки для Bedrock с CurseForge. Нужен бесплатный ключ (вкладка «Настройки»). Если автор запретил скачивание из программ, откроется его страница: скачайте файл и нажмите «Установить файл».</p>
+            <div class="searchbar"><i data-i="search"></i><input id="beQ" placeholder="Например: furniture, dragons, shaders…" autocomplete="off"><button class="btn primary" id="beGo">Найти</button></div>
+            <div class="grid" id="beGrid"></div>
+          </div>
+          <div class="bpane" id="bp-set">
+            <div class="panel">
+              <h3>Ключ CurseForge</h3>
+              <p class="hint">Бесплатный ключ нужен только для поиска и скачивания аддонов из каталога. Получите его на console.curseforge.com (вход через аккаунт), вставьте сюда и сохраните.</p>
+              <div class="row wrap"><input id="beKey" placeholder="Ключ CurseForge" style="flex:1;min-width:260px"><button class="btn primary" id="beKeySave">Сохранить</button><button class="btn ghost" id="beKeyGet">Получить ключ</button></div>
+            </div>
+            <div class="panel">
+              <h3>О Bedrock в лаунчере</h3>
+              <p class="hint" style="margin:0">Саму игру Bedrock нужно купить и установить из Microsoft Store: лаунчер её не скачивает. Он запускает игру, управляет её паками и мирами и ставит аддоны. Редактор скинов для Bedrock не работает. Bedrock есть только на Windows.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="v-catalog">
+        <h2 class="title">Каталог сборок</h2>
+        <p class="hint">Готовые сборки Modrinth ставятся отдельной сборкой со своими модами. Можно импортировать и свой файл .mrpack.</p>
+        <div class="searchbar"><i data-i="search"></i><input id="pQ" placeholder="Например: Fabulously Optimized, Better MC…" autocomplete="off"><button class="btn primary" id="pGo">Найти</button><button class="btn" id="pImp">Импорт .mrpack</button></div>
+        <div class="grid" id="pList"></div>
+      </section>
+
+      <section class="page" id="v-skin">
+        <h2 class="title">Редактор скина</h2>
+        <p class="hint">Рисуйте прямо на 3D-модели: крутите её мышью, колесо — масштаб. Ctrl+Z отменяет, Ctrl+Y возвращает.</p>
+        <div class="skin-top">
+          <div class="seg" id="viewSeg"><button data-t="3d" class="on">3D-модель</button><button data-t="2d">Развёртка</button></div>
+          <div class="seg" id="layerSeg"><button data-t="0" class="on">Основа</button><button data-t="1">Накладка</button></div>
+          <label class="check"><input type="checkbox" id="skOver" checked><i></i>показывать накладку</label>
+          <div class="grow"></div>
+          <button class="btn" id="skUndo" title="Ctrl+Z">↶ Отменить</button><button class="btn" id="skRedo" title="Ctrl+Y">↷ Вернуть</button>
+        </div>
+        <div class="skin-wrap">
+          <div class="panel skin-canvas">
+            <div class="stage edit-base" id="stage">
+              <div class="scene" id="scene"><div class="model" id="model"></div></div>
+              <div class="stage-ui">
+                <button data-v="front">Спереди</button><button data-v="back">Сзади</button><button data-v="left">Слева</button><button data-v="right">Справа</button>
+                <button data-v="auto" id="skAuto">Вращать</button>
+              </div>
+            </div>
+            <div id="flat" hidden><canvas id="skCv" width="448" height="448"></canvas></div>
+          </div>
+          <div class="panel skin-side">
+            <div class="tools" id="tools">
+              <button data-tool="pen" class="on">Кисть <kbd>B</kbd></button><button data-tool="erase">Ластик <kbd>E</kbd></button>
+              <button data-tool="fill">Заливка <kbd>F</kbd></button><button data-tool="pick">Пипетка <kbd>I</kbd></button>
+            </div>
+            <div class="swatches" id="swatches"></div>
+            <label class="colorpick">Свой цвет<input type="color" id="skColor" value="#ff4d36"></label>
+            <label class="check"><input type="checkbox" id="skSlim"><i></i>тонкие руки (Alex)</label>
+            <label class="check" id="guideRow" hidden><input type="checkbox" id="skGuide" checked><i></i>разметка частей тела</label>
+            <div class="sep"></div>
+            <div class="nickrow"><input id="skNick" maxlength="16" placeholder="Ник лицензии"><button class="btn" id="skFetch">Взять скин</button></div>
+            <div class="row wrap"><button class="btn" id="skOpen">Открыть PNG</button><button class="btn" id="skSave">Сохранить</button><button class="btn ghost" id="skClear">Очистить</button></div>
+            <div class="sep"></div>
+            <button class="btn primary wide" id="skUp"><i data-i="upload"></i>Загрузить в аккаунт Microsoft</button>
+            <button class="btn ghost wide" id="skRestore" title="Вернёт скин, который был на аккаунте до вашей последней загрузки">Вернуть прежний скин аккаунта</button>
+            <button class="btn wide" id="skApply" title="Ставит CustomSkinLoader и кладёт скин в сборку">Играть с этим скином (офлайн)</button>
+            <button class="btn ghost wide" id="skCsl" title="Ваш ник совпадает с ником лицензии — скин подтянется сам">Включить скины с лицензии</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="v-account">
+        <h2 class="title">Аккаунт и настройки</h2>
+        <div class="panel">
+          <h3>Офлайн-режим</h3>
+          <p class="hint">Для одиночной игры и серверов без проверки лицензии.</p>
+          <div class="row"><input id="nick" maxlength="16" placeholder="Ник (3–16 символов)"><button class="btn" id="bOff">Играть офлайн</button></div>
+        </div>
+        <div class="panel">
+          <h3>Аккаунт Microsoft</h3>
+          <p class="hint">Для лицензионной игры. Адреса копировать не нужно.</p>
+          <div class="row wrap">
+            <button class="btn primary" id="bDev"><i data-i="key"></i>Войти по коду</button>
+            <button class="btn" id="bWin"><i data-i="window"></i>Войти через окно</button>
+            <button class="btn ghost" id="bOut" hidden>Выйти из аккаунта</button>
+          </div>
+          <div class="devbox" id="devBox" hidden>
+            <div class="devsteps">Откройте <a href="#" id="devLink">microsoft.com/link</a> (мы уже открыли его в браузере) и введите код:</div>
+            <div class="code" id="devCode"></div>
+            <div class="row"><button class="btn" id="devCopy"><i data-i="copy"></i>Скопировать код</button><button class="btn ghost" id="devCancel">Отмена</button><span class="wait"><i></i><i></i><i></i> ждём подтверждения</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Вход с сайта</h3>
+          <p class="hint">Войдите через Microsoft на сайте TnT Launcher — и аккаунт появится здесь: лаунчер находит его по IP-адресу, по кнопке на сайте или по коду.</p>
+          <div class="row wrap"><button class="btn primary" id="siteOpen">Открыть сайт</button><button class="btn" id="siteFind">Найти аккаунт с сайта</button>
+            <input id="siteCode" placeholder="Код с сайта (XXXX-XXXX)" maxlength="9"><button class="btn" id="siteGo">Войти по коду</button></div>
+          <div class="row"><input id="siteUrl" placeholder="Адрес сайта (по умолчанию https://tntlauncher.app)" style="flex:1;min-width:260px"><button class="btn ghost" id="siteSave">Сохранить адрес</button></div>
+        </div>
+        <div class="panel">
+          <h3>Обновления</h3>
+          <p class="hint">Версия лаунчера: <b id="verNow">—</b>. Новые версии берутся с GitHub.</p>
+          <div class="row"><button class="btn" id="updCheck">Проверить обновления</button><span class="hint" id="updState" style="margin:0"></span></div>
+        </div>
+        <div class="panel">
+          <h3>Скин без модов</h3>
+          <p class="hint">В офлайн-режиме игра покажет скин лицензионного игрока с этим ником: без модов, в одиночной игре и в мире «для сети». Это ваш скин, если вы введёте ник своего лицензионного аккаунта (или любого другого). На серверах скин увидят другие игроки только при входе через Microsoft: загрузите скин в аккаунт во вкладке «Скин».</p>
+          <div class="row wrap"><input id="skinNick" maxlength="16" placeholder="Ник лицензии, например Notch"><button class="btn primary" id="skinNickSave">Применить</button><button class="btn ghost" id="skinNickClear">Сбросить</button></div>
+          <p class="hint" id="skinNickState" style="margin:0"></p>
+        </div>
+        <div class="panel">
+          <h3>Память по умолчанию</h3>
+          <p class="hint">В настройках каждой сборки можно задать свою.</p>
+          <div class="ramrow"><input type="range" id="gRam" min="1024" step="512"><b id="gRamV"></b></div>
+        </div>
+      <div class="panel">
+          <h3>Сообщить о проблеме</h3>
+          <p class="hint">Расскажите, что не так: сообщение уйдёт разработчикам. Мы сохраним ваш IP-адрес (и ник, если вы вошли через Microsoft), чтобы сообщить о решении. Ответ придёт сюда или на сайт.</p>
+          <div class="form" style="max-width:none">
+            <label>Где проблема?<select id="repWhere"><option value="launcher">В лаунчере</option><option value="site">На сайте</option></select></label>
+            <label>Что случилось?<textarea id="repText" rows="4" maxlength="1000" placeholder="Что вы делали и что пошло не так?"></textarea></label>
+            <div class="row"><button class="btn primary" id="repSend">Отправить</button><button class="btn ghost" id="forumOpen">Форум</button></div>
+          </div>
+        </div>
+        <div class="panel danger-zone">
+          <h3>Удаление лаунчера</h3>
+          <p class="hint">Удалит TnT Launcher и все его данные: сборки, моды, настройки, скин и загруженную Java. Другие лаунчеры, обычный Minecraft и ваш Bedrock не затрагиваются. О мирах лаунчер спросит отдельно.</p>
+          <button class="btn danger" id="unStart"><i data-i="trash"></i>Удалить лаунчер…</button>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<dialog id="dNew">
+  <h3>Новая сборка</h3>
+  <label>Название<input id="dName" maxlength="40" placeholder="Необязательно"></label>
+  <label>Версия<select id="dVer"></select></label>
+  <label class="check"><input type="checkbox" id="dSnap"><i></i>показать снапшоты и старые версии</label>
+  <div class="field"><span>Загрузчик</span><div class="seg" id="dLoader"><button data-l="vanilla" class="on">Vanilla</button><button data-l="fabric">Fabric</button><button data-l="forge">Forge</button></div></div>
+  <div class="row end"><button class="btn ghost" id="dCancel">Отмена</button><button class="btn primary" id="dOk">Создать</button></div>
+</dialog>
+<dialog id="dDeps">
+  <h3 data-i18n="deps.title">Установить зависимости?</h3>
+  <p id="depsList" class="hint"></p>
+  <label class="check"><input type="checkbox" id="depsNever"><i></i><span data-i18n="deps.never">Больше не спрашивать</span></label>
+  <div class="row end"><button class="btn ghost" id="depsNo">Нет</button><button class="btn primary" id="depsYes">Да</button></div>
+</dialog>
+<dialog id="dRepair">
+  <h3 data-i18n="repair.title">Починить сборку</h3>
+  <p data-i18n="repair.select">Выберите один приоритетный мод. Остальные будут проверены на совместимость.</p>
+  <div id="repairList" class="list"></div>
+  <div class="row end"><button class="btn ghost" id="repairCancel">Отмена</button><button class="btn primary" id="repairOk">Починить</button></div>
+</dialog>
+<dialog id="dNotif">
+  <h3 id="notTitle"></h3>
+  <p id="notBody" class="hint"></p>
+  <blockquote id="notQuote"></blockquote>
+  <div class="row end"><button class="btn ghost" id="notClose">Закрыть</button><button class="btn primary" id="notForum">Оставить отзыв на форуме</button></div>
+</dialog>
+<dialog id="dUn"><div id="unBody"></div></dialog>
+<div id="toasts"></div>
+<script src="app.js"></script>
+</body>
+</html>
