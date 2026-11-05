@@ -48,8 +48,8 @@ android {
         applicationId "app.tnt.launcher"
         minSdk 24          // Android 7.0
         targetSdk 34
-        versionCode 21     // 1.8.1
-        versionName "1.8.1"
+        versionCode 22     // 1.8.2
+        versionName "1.8.2"
     }
 
     signingConfigs {

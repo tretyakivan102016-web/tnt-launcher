@@ -339,25 +339,21 @@ function applyI18n(root = document) {
   if ($('#sideTitle')) $('#sideTitle').textContent = t('side.title');
   if ($('#playTxt')) $('#playTxt').textContent = S.busy ? t('launching') : S.playing ? t('stop') : t('play');
 }
-// плавная анимация при смене языка
-function langAnimation() {
-  document.body.classList.remove('lang-anim');
-  void document.body.offsetWidth;                       // перезапуск CSS-анимации
-  document.body.classList.add('lang-anim');
-  clearTimeout(langAnimation.timer);
-  langAnimation.timer = setTimeout(() => document.body.classList.remove('lang-anim'), 1000);
-}
 function setLang(lang) {
-  currentLang = lang;
-  localStorage.setItem('lang', lang);
-  applyI18n();
-  // re-render current view if needed
-  if (S.view === 'inst') renderInst();
-  if (S.view === 'bedrock') renderBedrock();
-  if (S.view === 'account') renderAccount();
-  renderSide();
-  langAnimation();
-  toast(t('lang.changed'));
+  // магия: плашка-волна проезжает по экрану, текст «замазывается», в середине меняется язык, всё проявляется
+  if (lang === currentLang || document.body.classList.contains('lang-sweeping')) return;
+  document.body.classList.add('lang-sweeping');
+  setTimeout(() => {                                        // середина анимации: экран замазан — меняем язык
+    currentLang = lang;
+    localStorage.setItem('lang', lang);
+    applyI18n();
+    if (S.view === 'inst') renderInst();
+    if (S.view === 'bedrock') renderBedrock();
+    if (S.view === 'account') renderAccount();
+    renderSide();
+    toast(t('lang.changed'));
+  }, 620);
+  setTimeout(() => document.body.classList.remove('lang-sweeping'), 1450);
 }
 // подсветка активного языка в панели настроек
 function syncLangSeg() {
@@ -1154,7 +1150,6 @@ async function renderBedrock() {
   $('#beChips').innerHTML = `<span class="chip">${beInfo.installed ? esc(t('be.installed')) + (beInfo.version ? ' · ' + esc(beInfo.version) : '') : esc(t('be.notInstalled'))}</span><span class="chip">${beInfo.dir ? esc(t('be.dirFound')) : esc(t('be.noDir'))}</span>`;
   if (!beInfo.installed) note(t('be.noteNotInstalledT'), t('be.noteNotInstalledS'));
   else if (!beInfo.dir) note(t('be.noteNoDirT'), t('be.noteNoDirS'));
-  else if (!S.insts.some(x => x.kind === 'bedrock')) note(t('be.profileTip'), '');
   else note();
   $('#beText').textContent = beInfo.dir || '';
   renderBeList();
