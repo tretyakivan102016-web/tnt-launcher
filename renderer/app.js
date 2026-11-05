@@ -716,6 +716,8 @@ function renderAccount() {
   $('#bOut').hidden = !a;
   $('#nick').value = S.st.nick || '';
   const g = $('#gRam'); g.max = Math.max(2048, Math.floor(S.st.totalMemMB / 512) * 512); g.value = S.st.ram; $('#gRamV').textContent = (S.st.ram / 1024).toFixed(1) + t('units.gb');
+  // при открытии настроек проверяем обновления (не чаще раза в 10 минут), чтобы предложение не зависело от старта
+  if (Date.now() - (renderAccount.lastCheck || 0) > 600000) { renderAccount.lastCheck = Date.now(); checkUpdate(false).catch(() => {}); }
 }
 async function onLogin(acc) { S.st.account = acc; renderSide(); renderAccount(); toast(t('acc.loggedInAs', { name: acc.name })); }
 $('#bOff').onclick = async () => { try { await onLogin(await api.invoke('login-offline', $('#nick').value)); S.st.nick = $('#nick').value.trim(); } catch (e) { toast(errMsg(e), 'err'); } };

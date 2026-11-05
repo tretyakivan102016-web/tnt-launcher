@@ -599,9 +599,25 @@ const vnum = v => String(v).replace(/^v/i, '').split('-')[0].split('.').map(n =>
 const isNewer = (a, b) => { const x = vnum(a), y = vnum(b); for (let k = 0; k < Math.max(x.length, y.length); k++) { const d = (x[k] || 0) - (y[k] || 0); if (d) return d > 0; } return false; };
 let pendingUpdate = null;
 ipcMain.handle('update-check', async () => {
+  const local = app.getVersion();
+  // 1) Сайт (/api/release): без лимитов GitHub API, работает даже когда api.github.com недоступен
+  try {
+    const r = await siteFetch('/api/release');
+    if (r.ok && r.j && r.j.available) {
+      const d = r.j.downloads || {};
+      const has = process.platform === 'win32' ? !!d.windows : process.platform === 'darwin' ? !!d.macAny : process.platform === 'linux' ? !!d.linux : false;
+      if (isNewer(r.j.version, local)) {
+        const ext = { win32: '.exe', darwin: '.dmg', linux: '.AppImage' }[process.platform] || '';
+        pendingUpdate = { url: null, name: `TnT-Launcher-${r.j.version}${ext}` };   // скачается через зеркало
+        return { state: 'new', version: r.j.version, notes: r.j.notes || '', page: r.j.page, hasAsset: has };
+      }
+      return { state: 'latest', version: local };
+    }
+  } catch {}
+  // 2) GitHub API как запасной вариант
   try {
     const r = await getJson(`https://api.github.com/repos/${REPO}/releases/latest`);
-    if (!isNewer(r.tag_name, app.getVersion())) return { state: 'latest', version: app.getVersion() };
+    if (!isNewer(r.tag_name, local)) return { state: 'latest', version: local };
     const assets = r.assets || [];
     const pick = process.platform === 'win32' ? assets.find(a => /\.exe$/i.test(a.name))
       : process.platform === 'darwin' ? (assets.find(a => a.name.includes(process.arch) && /\.dmg$/i.test(a.name)) || assets.find(a => /\.dmg$/i.test(a.name)))
@@ -613,12 +629,14 @@ ipcMain.handle('update-check', async () => {
 ipcMain.handle('update-install', async () => {
   if (!pendingUpdate) throw new Error('В релизе нет установщика для вашей системы');
   const dest = path.join(app.getPath('temp'), pendingUpdate.name);
-  // Сначала пробуем зеркало сайта (часто быстрее прямых ссылок GitHub), при сбое — GitHub напрямую.
+  // Скачиваем через зеркало сайта (часто быстрее прямых ссылок GitHub); GitHub — запасной вариант.
   const mirrorKey = { win32: 'windows', darwin: 'mac', linux: 'linux' }[process.platform];
   let res = null;
   try { res = await fetch(siteBase() + '/mirror/' + mirrorKey, { headers: UA, redirect: 'follow' }); } catch {}
-  if (!res || !res.ok || !res.body) res = await fetch(pendingUpdate.url, { headers: UA, redirect: 'follow' });
-  if (!res.ok) throw new Error(`Не удалось скачать обновление (${res.status})`);
+  if ((!res || !res.ok || !res.body) && pendingUpdate.url) {
+    try { res = await fetch(pendingUpdate.url, { headers: UA, redirect: 'follow' }); } catch {}
+  }
+  if (!res || !res.ok || !res.body) throw new Error('Не удалось скачать обновление — откройте страницу релиза и скачайте вручную');
   const total = Number(res.headers.get('content-length')) || 0;
   const out = fs.createWriteStream(dest);
   const reader = res.body.getReader();
