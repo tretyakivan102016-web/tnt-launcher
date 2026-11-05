@@ -264,3 +264,19 @@ textarea:focus{border-color:var(--amber);background:rgba(255,255,255,.09)}
 blockquote{margin:6px 0 0;padding:12px 16px;border-left:4px solid var(--amber);background:rgba(255,255,255,.05);border-radius:0 12px 12px 0;color:#d6dee6;user-select:text}
 blockquote:empty{display:none}
 #dNotif{width:min(480px,94vw)}
+
+/* ---------- смена языка: плавная анимация ---------- */
+@keyframes langIn {
+  from { opacity: .2; transform: translateY(12px); filter: blur(2px); }
+  to   { opacity: 1;  transform: none;             filter: none; }
+}
+@keyframes langSlide {
+  from { opacity: .25; transform: translateX(-14px); }
+  to   { opacity: 1;   transform: none; }
+}
+body.lang-anim main { animation: langIn .45s cubic-bezier(.22,.9,.3,1) both; }
+body.lang-anim #side { animation: langSlide .45s cubic-bezier(.22,.9,.3,1) both; }
+@media (prefers-reduced-motion: reduce) {
+  body.lang-anim main, body.lang-anim #side { animation: none; }
+}
+.lang-field { margin-top: auto; padding-top: 10px; }

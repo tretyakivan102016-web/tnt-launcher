@@ -8,8 +8,8 @@ android {
         applicationId "app.tnt.launcher"
         minSdk 24          // Android 7.0
         targetSdk 34
-        versionCode 16     // 1.6.0
-        versionName "1.6.0"
+        versionCode 17     // 1.6.1
+        versionName "1.6.1"
     }
 
     buildTypes {

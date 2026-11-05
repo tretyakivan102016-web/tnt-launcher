@@ -51,7 +51,7 @@ public class MainActivity extends Activity {
                 HttpURLConnection c = (HttpURLConnection) new URL(SITE + "/api/release").openConnection();
                 c.setConnectTimeout(8000);
                 c.setReadTimeout(8000);
-                c.setRequestProperty("User-Agent", "TnTLauncherAndroid/1.6.0");
+                c.setRequestProperty("User-Agent", "TnTLauncherAndroid/1.6.1");
                 BufferedReader r = new BufferedReader(new InputStreamReader(c.getInputStream(), StandardCharsets.UTF_8));
                 StringBuilder sb = new StringBuilder();
                 String line;
