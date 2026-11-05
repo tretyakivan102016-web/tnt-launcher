@@ -57,14 +57,16 @@ function ensureGameDirs(i) { GAME_DIRS.forEach(n => fs.mkdirSync(path.join(instD
 const byId = id => { const i = insts.find(x => x.id === id); if (!i) throw new Error('Сборка не найдена'); return i; };
 const COLORS = ['#ff4d36', '#ffb82e', '#34d399', '#4da3ff', '#a78bfa', '#fb923c'];
 function createInst(d) {
+  const bedrock = d.kind === 'bedrock';
   const i = {
     id: crypto.randomBytes(4).toString('hex'),
-    name: (d.name || `Minecraft ${d.version}`).trim().slice(0, 40),
+    name: (d.name || (bedrock ? 'Новая сборка Bedrock' : `Minecraft ${d.version}`)).trim().slice(0, 40),
     version: d.version, loader: d.loader || 'vanilla', loaderVersion: d.loaderVersion || null,
     ram: d.ram || null, jvm: d.jvm || '', color: COLORS[insts.length % COLORS.length], lastPlayed: 0,
   };
+  if (bedrock) { i.kind = 'bedrock'; delete i.version; delete i.loader; delete i.loaderVersion; delete i.ram; delete i.jvm; }
   i.dir = dirNameFor(i.name, i.id);
-  ensureGameDirs(i);
+  bedrock ? beProfileDir(i) : ensureGameDirs(i);
   insts.push(i); saveInsts();
   return i;
 }
@@ -130,8 +132,12 @@ ipcMain.handle('inst-update', (_, { id, patch }) => {
   const i = byId(id);
   const oldName = i.name;
   if ('color' in patch && !/^#[0-9a-f]{6}$/i.test(String(patch.color))) throw new Error('Неверный цвет');
-  for (const k of ['name', 'version', 'loader', 'ram', 'jvm', 'color']) if (k in patch) i[k] = patch[k];
-  if ('version' in patch || 'loader' in patch) i.loaderVersion = null;
+  if (i.kind === 'bedrock') {                       // у Bedrock-сборок нет версии/загрузчика/памяти JVM
+    for (const k of ['name', 'color']) if (k in patch) i[k] = patch[k];
+  } else {
+    for (const k of ['name', 'version', 'loader', 'ram', 'jvm', 'color']) if (k in patch) i[k] = patch[k];
+    if ('version' in patch || 'loader' in patch) i.loaderVersion = null;
+  }
   i.name = (i.name || 'Сборка').trim().slice(0, 40);
   if (i.name !== oldName) {
     if (child && runningId === i.id) { i.name = oldName; throw new Error('Остановите игру, чтобы переименовать сборку'); }
@@ -607,7 +613,11 @@ ipcMain.handle('update-check', async () => {
 ipcMain.handle('update-install', async () => {
   if (!pendingUpdate) throw new Error('В релизе нет установщика для вашей системы');
   const dest = path.join(app.getPath('temp'), pendingUpdate.name);
-  const res = await fetch(pendingUpdate.url, { headers: UA, redirect: 'follow' });
+  // Сначала пробуем зеркало сайта (часто быстрее прямых ссылок GitHub), при сбое — GitHub напрямую.
+  const mirrorKey = { win32: 'windows', darwin: 'mac', linux: 'linux' }[process.platform];
+  let res = null;
+  try { res = await fetch(siteBase() + '/mirror/' + mirrorKey, { headers: UA, redirect: 'follow' }); } catch {}
+  if (!res || !res.ok || !res.body) res = await fetch(pendingUpdate.url, { headers: UA, redirect: 'follow' });
   if (!res.ok) throw new Error(`Не удалось скачать обновление (${res.status})`);
   const total = Number(res.headers.get('content-length')) || 0;
   const out = fs.createWriteStream(dest);
@@ -757,6 +767,7 @@ ipcMain.handle('set-skin-nick', async (_, nick) => {
 });
 
 // ---------- удаление лаунчера ----------
+function dirSize(p) { let s = 0; try { for (const e of fs.readdirSync(p, { withFileTypes: true })) { const fp = path.join(p, e.name); s += e.isDirectory() ? dirSize(fp) : (e.isFile() ? (fs.statSync(fp).size || 0) : 0); } } catch {} return s; }
 const worldList = () => {
   const out = [];
   for (const i of insts) {
@@ -766,12 +777,17 @@ const worldList = () => {
   }
   return out;
 };
-ipcMain.handle('uninstall-scan', () => worldList());
+const runtimeList = () => {                       // загруженные версии Java: их по умолчанию НЕ удаляем
+  if (!fs.existsSync(runtimeDir)) return [];
+  return fs.readdirSync(runtimeDir, { withFileTypes: true }).filter(e => e.isDirectory() && /^java-/.test(e.name))
+    .map(e => ({ major: e.name.slice(5), sizeMB: Math.round(dirSize(path.join(runtimeDir, e.name)) / 1048576) }));
+};
+ipcMain.handle('uninstall-scan', () => ({ worlds: worldList(), runtimes: runtimeList() }));
 ipcMain.handle('pick-dir', async () => {
   const r = await dialog.showOpenDialog(win, { title: 'Куда сохранить миры', properties: ['openDirectory', 'createDirectory'] });
   return r.canceled ? null : r.filePaths[0];
 });
-ipcMain.handle('uninstall-run', async (_, { keep = [], dest } = {}) => {
+ipcMain.handle('uninstall-run', async (_, { keep = [], dest, removeRuntimes = [] } = {}) => {
   if (child) throw new Error('Сначала закройте игру');
   if (path.basename(root) !== '.tntlauncher') throw new Error('Неожиданный путь данных — удаление отменено');
   let savedTo = null;
@@ -792,8 +808,19 @@ ipcMain.handle('uninstall-run', async (_, { keep = [], dest } = {}) => {
       if (!fs.existsSync(t)) throw new Error(`Не удалось сохранить мир «${k.world}». Ничего не удалено.`);
     }
   }
-  // всё сохранено — теперь удаляем ТОЛЬКО данные TnT Launcher (другие лаунчеры, .minecraft и Bedrock не трогаем)
-  await fs.promises.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+  // всё сохранено — удаляем данные TnT Launcher (другие лаунчеры, .minecraft и Bedrock не трогаем).
+  // Папку runtime с Java НЕ удаляем целиком: убираем только выбранные пользователем версии.
+  for (const e of fs.readdirSync(root)) {
+    if (e === 'runtime') continue;
+    await fs.promises.rm(path.join(root, e), { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+  }
+  if (fs.existsSync(runtimeDir)) {
+    for (const maj of removeRuntimes) {
+      const safe = String(maj).replace(/[^0-9a-z-]/gi, '');
+      if (safe) await fs.promises.rm(path.join(runtimeDir, 'java-' + safe), { recursive: true, force: true, maxRetries: 3, retryDelay: 200 }).catch(() => {});
+    }
+    try { if (!fs.readdirSync(runtimeDir).length) await fs.promises.rm(runtimeDir, { recursive: true, force: true }); } catch {}
+  }
   try { await fs.promises.rm(app.getPath('userData'), { recursive: true, force: true }); } catch {}
   try { app.removeAsDefaultProtocolClient('tntlauncher'); } catch {}
   if (app.isPackaged) {
@@ -822,6 +849,29 @@ const BE_KINDS = ['resource_packs', 'behavior_packs', 'skin_packs', 'minecraftWo
 const beKind = k => { if (!BE_KINDS.includes(k)) throw new Error('Неверный раздел'); return k; };
 const readJsonLoose = f => { try { return JSON.parse(fs.readFileSync(f, 'utf8').replace(/^\uFEFF/, '')); } catch { return null; } };
 
+// Сборки Bedrock: у каждой свой набор паков и миров в ~/.tntlauncher/instances/<имя>.
+// Папка данных у самой игры одна — при запуске сборка «применяется»: её содержимое копируется в игру.
+const beProfileDir = i => { const d = instDir(i); fs.mkdirSync(d, { recursive: true }); BE_KINDS.forEach(k => fs.mkdirSync(path.join(d, k), { recursive: true })); return d; };
+const beTarget = id => { if (!id) return bedrockDir(); const i = byId(id); if (i.kind !== 'bedrock') throw new Error('Это не сборка Bedrock'); return beProfileDir(i); };
+async function applyBedrockProfile(i) {
+  const game = bedrockDir();
+  if (!game) throw new Error('Папка данных Minecraft Bedrock не найдена. Запустите игру хотя бы раз.');
+  const from = beProfileDir(i);
+  let n = 0;
+  for (const kind of BE_KINDS) {
+    const src = path.join(from, kind);
+    if (!fs.existsSync(src)) continue;
+    const dst = path.join(game, kind);
+    fs.mkdirSync(dst, { recursive: true });
+    for (const e of fs.readdirSync(src, { withFileTypes: true })) {
+      await fs.promises.cp(path.join(src, e.name), path.join(dst, e.name), { recursive: true, force: true });
+      n++;
+    }
+  }
+  log(`Сборка «${i.name}» применена: скопировано элементов ${n}`);
+  return n;
+}
+
 ipcMain.handle('be-info', async () => {
   if (process.platform !== 'win32') return { supported: false };
   let version = null;
@@ -832,21 +882,25 @@ ipcMain.handle('be-info', async () => {
   const dir = bedrockDir();
   return { supported: true, installed: !!version || !!dir, version, dir, hasKey: !!cfg.curseKey };
 });
-ipcMain.handle('be-play', async (_, ) => {
+ipcMain.handle('be-play', async (_, { profile } = {}) => {
   if (process.platform !== 'win32') throw new Error('Bedrock Edition доступен только на Windows');
+  if (profile) await applyBedrockProfile(byId(profile));
   const info = bedrockDir() || (await execFileP('powershell', ['-NoProfile', '-Command', '(Get-AppxPackage -Name Microsoft.MinecraftUWP | Select-Object -First 1).Name'], { timeout: 9000, windowsHide: true }).then(r => String(r.stdout).trim()).catch(() => ''));
   if (info) { await shell.openExternal('minecraft://'); return { opened: 'game' }; }
   await shell.openExternal('ms-windows-store://pdp/?productid=9NBLGGH2JHXJ');
   return { opened: 'store' };
 });
-ipcMain.handle('be-open', (_, sub) => {
-  const d = bedrockDir(); if (!d) throw new Error('Папка данных Bedrock не найдена. Запустите игру хотя бы раз.');
+ipcMain.handle('be-apply', async (_, id) => ({ applied: await applyBedrockProfile(byId(id)) }));
+ipcMain.handle('be-open', (_, { sub, id }) => {
+  const d = beTarget(id); if (!d) throw new Error('Папка данных Bedrock не найдена. Запустите игру хотя бы раз.');
   const t = sub ? path.join(d, beKind(sub)) : d;
   fs.mkdirSync(t, { recursive: true });
   return shell.openPath(t);
 });
-ipcMain.handle('be-list', (_, kind) => {
-  const d = bedrockDir(); if (!d) return [];
+ipcMain.handle('be-list', (_, { kind, id }) => {
+  let d;
+  if (id) d = beTarget(id);
+  else { d = bedrockDir(); if (!d) return []; }
   const dir = path.join(d, beKind(kind));
   if (!fs.existsSync(dir)) return [];
   return fs.readdirSync(dir, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => {
@@ -857,8 +911,8 @@ ipcMain.handle('be-list', (_, kind) => {
     return { folder: e.name, name };
   });
 });
-ipcMain.handle('be-delete', async (_, { kind, folder }) => {
-  const d = bedrockDir(); if (!d) throw new Error('Папка данных Bedrock не найдена');
+ipcMain.handle('be-delete', async (_, { kind, folder, id }) => {
+  const d = beTarget(id); if (!d) throw new Error('Папка данных Bedrock не найдена');
   await fs.promises.rm(safeIn(path.join(d, beKind(kind)), folder), { recursive: true, force: true });
 });
 
@@ -898,8 +952,8 @@ async function installPacksFrom(dir, base, results, depth) {
     }
   }
 }
-async function installBedrockFile(file) {
-  const base = bedrockDir();
+async function installBedrockFile(file, base) {
+  base = base || bedrockDir();
   if (!base) throw new Error('Не найдена папка данных Minecraft Bedrock. Запустите игру хотя бы один раз.');
   const ext = path.extname(file).toLowerCase(), tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tnt-be-')), results = [];
   try {
@@ -916,11 +970,12 @@ async function installBedrockFile(file) {
   if (!results.length) throw new Error('В файле не найдено паков Bedrock (нет manifest.json)');
   return results;
 }
-ipcMain.handle('be-install-file', async () => {
+ipcMain.handle('be-install-file', async (_, { id } = {}) => {
   const r = await dialog.showOpenDialog(win, { title: 'Файлы Bedrock', filters: [{ name: 'Bedrock', extensions: ['mcpack', 'mcaddon', 'mcworld', 'mctemplate', 'zip'] }], properties: ['openFile', 'multiSelections'] });
   if (r.canceled) return [];
+  const base = beTarget(id);
   const out = [];
-  for (const f of r.filePaths) out.push(...await installBedrockFile(f));
+  for (const f of r.filePaths) out.push(...await installBedrockFile(f, base));
   return out;
 });
 
@@ -950,7 +1005,7 @@ ipcMain.handle('be-search', async (_, q) => {
   const j = await cf(`/v1/mods/search?gameId=${gid}&searchFilter=${enc(q || '')}&sortField=2&sortOrder=desc&pageSize=24`);
   return (j.data || []).map(x => ({ id: x.id, title: x.name, desc: x.summary, downloads: x.downloadCount, icon: x.logo && x.logo.thumbnailUrl, author: x.authors && x.authors[0] && x.authors[0].name, url: x.links && x.links.websiteUrl }));
 });
-ipcMain.handle('be-install-mod', async (_, { id, url }) => {
+ipcMain.handle('be-install-mod', async (_, { id, url, profile }) => {
   const files = (await cf(`/v1/mods/${Number(id)}/files?pageSize=10`)).data || [];
   const f = files.filter(x => x.isAvailable !== false).sort((a, b) => new Date(b.fileDate) - new Date(a.fileDate))[0];
   if (!f) throw new Error('У этого аддона нет доступных файлов');
@@ -958,7 +1013,7 @@ ipcMain.handle('be-install-mod', async (_, { id, url }) => {
   if (!dl) { try { dl = (await cf(`/v1/mods/${Number(id)}/files/${f.id}/download-url`)).data; } catch {} }
   if (!dl) { if (url && /^https:\/\//.test(url)) shell.openExternal(url); return { manual: true }; }   // автор запретил скачивание сторонними программами
   const tmp = path.join(os.tmpdir(), `tnt-be-${Date.now()}-${String(f.fileName).replace(/[^\w.\-]/g, '_')}`);
-  try { await download(dl, tmp); return { manual: false, results: await installBedrockFile(tmp) }; }
+  try { await download(dl, tmp); return { manual: false, results: await installBedrockFile(tmp, profile ? beTarget(profile) : undefined) }; }
   finally { fs.rmSync(tmp, { force: true }); }
 });
 

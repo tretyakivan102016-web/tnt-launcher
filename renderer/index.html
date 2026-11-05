@@ -84,13 +84,13 @@
 
         <div class="pane" id="p-set">
           <div class="form">
-            <label data-i18n="set.name">Название<input id="sName" maxlength="40"></label>
-            <label data-i18n="set.version">Версия Minecraft<select id="sVer"></select></label>
+            <label><span data-i18n="set.name">Название</span><input id="sName" maxlength="40"></label>
+            <label><span data-i18n="set.version">Версия Minecraft</span><select id="sVer"></select></label>
             <div class="field"><span data-i18n="set.color">Цвет сборки</span><div class="swatches colors" id="sColors"></div></div>
             <div class="field"><span data-i18n="set.loader">Загрузчик</span><div class="seg" id="sLoader"><button data-l="vanilla">Vanilla</button><button data-l="fabric">Fabric</button><button data-l="forge">Forge</button></div></div>
             <div class="field"><span data-i18n="set.ram">Память (RAM)</span>
               <div class="ramrow"><label class="check"><input type="checkbox" id="sDef"><i></i><span data-i18n="set.shared">общая</span></label><input type="range" id="sRam" min="1024" step="512"><b id="sRamV"></b></div></div>
-            <label data-i18n="set.jvm">Аргументы JVM<input id="sJvm" placeholder="-XX:+UseG1GC"></label>
+            <label><span data-i18n="set.jvm">Аргументы JVM</span><input id="sJvm" placeholder="-XX:+UseG1GC"></label>
             <div class="row"><button class="btn primary" id="sSave" data-i18n="common.save">Сохранить</button><button class="btn danger" id="sDel"><i data-i="trash"></i><span data-i18n="set.delete">Удалить сборку</span></button></div>
           </div>
         </div>
@@ -102,7 +102,7 @@
         <div class="hero" id="beHero">
           <div class="hero-main">
             <div class="av xl" id="beAv"></div>
-            <div class="hero-text"><h2>Minecraft Bedrock</h2><div class="chips" id="beChips"></div></div>
+            <div class="hero-text"><h2>Minecraft: Bedrock Edition</h2><div class="chips" id="beChips"></div></div>
             <button class="play" id="bePlay"><i data-i="play"></i><span data-i18n="play">ИГРАТЬ</span></button>
           </div>
           <div class="quick" id="beQuick">
@@ -138,6 +138,17 @@
             <div class="grid" id="beGrid"></div>
           </div>
           <div class="bpane" id="bp-set">
+            <div class="panel" id="beProfilePanel" hidden>
+              <h3 id="beProfileTitle"></h3>
+              <div class="row wrap">
+                <input id="bePName" maxlength="40" style="flex:1;min-width:200px">
+                <button class="btn" id="bePSave" data-i18n="common.save">Сохранить</button>
+                <button class="btn" id="bePApply" data-i18n="be.applyNow">Применить к игре</button>
+                <button class="btn danger" id="bePDel" data-i18n="be.deleteProfile">Удалить сборку</button>
+              </div>
+              <div class="field"><span data-i18n="set.color">Цвет сборки</span><div class="swatches colors" id="bePColors"></div></div>
+              <p class="hint" data-i18n="be.profileHint">Кнопка «ИГРАТЬ» применяет сборку: паки и миры из неё копируются в папку игры (уже установленные не удаляются), затем игра запускается. Папка данных у Bedrock общая — сборки это наборы, которые вы включаете перед игрой.</p>
+            </div>
             <div class="panel">
               <h3 data-i18n="be.keyTitle">Ключ CurseForge</h3>
               <p class="hint" data-i18n="be.keyHint">Бесплатный ключ нужен только для поиска и скачивания аддонов из каталога. Получите его на console.curseforge.com (вход через аккаунт), вставьте сюда и сохраните.</p>
@@ -253,8 +264,8 @@
           <h3 data-i18n="acc.reportTitle">Сообщить о проблеме</h3>
           <p class="hint" data-i18n="acc.reportHint">Расскажите, что не так: сообщение уйдёт разработчикам. Мы сохраним ваш IP-адрес (и ник, если вы вошли через Microsoft), чтобы сообщить о решении. Ответ придёт сюда или на сайт.</p>
           <div class="form" style="max-width:none">
-            <label data-i18n="acc.whereLabel">Где проблема?<select id="repWhere"><option value="launcher" data-i18n="acc.whereLauncher">В лаунчере</option><option value="site" data-i18n="acc.whereSite">На сайте</option></select></label>
-            <label data-i18n="acc.whatLabel">Что случилось?<textarea id="repText" rows="4" maxlength="1000" placeholder="Что вы делали и что пошло не так?" data-i18n="acc.whatPh"></textarea></label>
+            <label><span data-i18n="acc.whereLabel">Где проблема?</span><select id="repWhere"><option value="launcher" data-i18n="acc.whereLauncher">В лаунчере</option><option value="site" data-i18n="acc.whereSite">На сайте</option></select></label>
+            <label><span data-i18n="acc.whatLabel">Что случилось?</span><textarea id="repText" rows="4" maxlength="1000" placeholder="Что вы делали и что пошло не так?" data-i18n="acc.whatPh"></textarea></label>
             <div class="row"><button class="btn primary" id="repSend" data-i18n="common.send">Отправить</button><button class="btn ghost" id="forumOpen" data-i18n="common.forum">Форум</button></div>
           </div>
         </div>
@@ -270,10 +281,12 @@
 
 <dialog id="dNew">
   <h3 data-i18n="new.title">Новая сборка</h3>
-  <label data-i18n="set.name">Название<input id="dName" maxlength="40" placeholder="Необязательно" data-i18n="new.namePh"></label>
-  <label data-i18n="new.version">Версия<select id="dVer"></select></label>
-  <label class="check"><input type="checkbox" id="dSnap"><i></i><span data-i18n="new.snapshots">показать снапшоты и старые версии</span></label>
-  <div class="field"><span data-i18n="set.loader">Загрузчик</span><div class="seg" id="dLoader"><button data-l="vanilla" class="on">Vanilla</button><button data-l="fabric">Fabric</button><button data-l="forge">Forge</button></div></div>
+  <label><span data-i18n="set.name">Название</span><input id="dName" maxlength="40" placeholder="Необязательно" data-i18n="new.namePh"></label>
+  <div id="dNewJava">
+    <label><span data-i18n="new.version">Версия</span><select id="dVer"></select></label>
+    <label class="check"><input type="checkbox" id="dSnap"><i></i><span data-i18n="new.snapshots">показать снапшоты и старые версии</span></label>
+    <div class="field"><span data-i18n="set.loader">Загрузчик</span><div class="seg" id="dLoader"><button data-l="vanilla" class="on">Vanilla</button><button data-l="fabric">Fabric</button><button data-l="forge">Forge</button></div></div>
+  </div>
   <div class="row end"><button class="btn ghost" id="dCancel" data-i18n="common.cancel">Отмена</button><button class="btn primary" id="dOk" data-i18n="new.create">Создать</button></div>
 </dialog>
 <dialog id="dDeps">

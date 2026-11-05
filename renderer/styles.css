@@ -265,17 +265,17 @@ blockquote{margin:6px 0 0;padding:12px 16px;border-left:4px solid var(--amber);b
 blockquote:empty{display:none}
 #dNotif{width:min(480px,94vw)}
 
-/* ---------- смена языка: плавная анимация ---------- */
+/* ---------- смена языка: мягкая плавная анимация ---------- */
 @keyframes langIn {
-  from { opacity: .2; transform: translateY(12px); filter: blur(2px); }
-  to   { opacity: 1;  transform: none;             filter: none; }
+  from { opacity: .3; transform: translateY(7px); }
+  to   { opacity: 1;  transform: none; }
 }
-@keyframes langSlide {
-  from { opacity: .25; transform: translateX(-14px); }
+@keyframes langSideIn {
+  from { opacity: .45; transform: translateX(-9px); }
   to   { opacity: 1;   transform: none; }
 }
-body.lang-anim main { animation: langIn .45s cubic-bezier(.22,.9,.3,1) both; }
-body.lang-anim #side { animation: langSlide .45s cubic-bezier(.22,.9,.3,1) both; }
+body.lang-anim main { animation: langIn .55s cubic-bezier(.16,1,.3,1) both; }
+body.lang-anim #side { animation: langSideIn .55s cubic-bezier(.16,1,.3,1) .06s both; }
 @media (prefers-reduced-motion: reduce) {
   body.lang-anim main, body.lang-anim #side { animation: none; }
 }

@@ -59,6 +59,11 @@ const I18N = {
     'be.noteNotInstalledT': 'Игра Bedrock не найдена', 'be.noteNotInstalledS': 'Купите и установите Minecraft for Windows из Microsoft Store. Кнопка «Играть» откроет страницу магазина.',
     'be.noteNoDirT': 'Папка данных ещё не создана', 'be.noteNoDirS': 'Запустите игру один раз через кнопку «Играть», затем вернитесь сюда: управление паками и мирами заработает.',
     'be.noDirEmpty': 'Папка данных Bedrock пока не найдена', 'be.emptyPrefix': 'Нет', 'be.emptyRp': 'ресурспаков', 'be.emptyBp': 'аддонов', 'be.emptySp': 'скин-паков', 'be.emptyWorlds': 'миров',
+    'be.profileTitle': 'Сборка Bedrock', 'be.applyNow': 'Применить к игре', 'be.deleteProfile': 'Удалить сборку',
+    'be.profileHint': 'Кнопка «ИГРАТЬ» применяет сборку: паки и миры из неё копируются в папку игры (уже установленные не удаляются), затем игра запускается. Папка данных у Bedrock общая — сборки это наборы, которые вы включаете перед игрой.',
+    'be.applied': 'Сборка «{name}» применена — запускаю игру…', 'be.profileTip': 'Создайте сборку Bedrock кнопкой «Новая» слева: у каждой свои паки и миры, как у сборок Java.',
+    'be.profileChip': 'сборка Bedrock',
+    'new.bedrock': 'Новая сборка Bedrock',
     'be.launching': 'Запускаю Minecraft Bedrock…', 'be.store': 'Открыл страницу Minecraft в Microsoft Store',
     'be.manual': 'Автор запретил автоскачивание: открыл его страницу. Скачайте файл и нажмите «Установить файл».', 'be.manualBtn': 'Скачайте вручную',
     'be.delConfirm': 'Удалить «{name}»? Это нельзя отменить.',
@@ -141,7 +146,9 @@ const I18N = {
     'un.keepSome': 'Нет, но только некоторые', 'un.keepSomeS': 'Выберу, какие миры оставить',
     'un.delAll': 'Да, удалить', 'un.delAllS': 'Миры будут удалены вместе с лаунчером',
     'un.qSome': 'Какие миры оставить?', 'un.qSomeHint': 'Отметьте миры, которые нужно сохранить. Остальные будут удалены.',
-    'un.next': 'Выбрать папку', 'un.qFinal': 'Последнее подтверждение',
+    'un.next': 'Выбрать папку', 'un.next2': 'Далее', 'un.qFinal': 'Последнее подтверждение',
+    'un.runtimesTitle': 'Удалить загруженные Java?', 'un.runtimesHint': 'По умолчанию Java останется на компьютере: она пригодится, если вы снова установите лаунчер. Отметьте версии, которые оставить, — остальные удалятся вместе с лаунчером.',
+    'un.finalRuntimeKeep': 'Загруженные Java останутся на компьютере.', 'un.finalRuntimeDel': 'Загруженных Java к удалению: {n}.',
     'un.finalKeep': 'Сохраню миров: <b>{n}</b> → папка <b>{dest}</b> (внутри будет «TnT Launcher — сохранённые миры»). Остальные миры удалятся.',
     'un.finalDelAll': '<b>Все миры будут удалены без возможности восстановления.</b>', 'un.finalNoWorlds': 'Миров в сборках нет.',
     'un.thenQuits': 'Затем лаунчер закроется и удалится.', 'un.run': 'Удалить лаунчер', 'un.deleting': 'Удаляю…',
@@ -206,6 +213,11 @@ const I18N = {
     'be.noteNotInstalledT': 'Bedrock game not found', 'be.noteNotInstalledS': 'Buy and install Minecraft for Windows from Microsoft Store. The "Play" button opens the store page.',
     'be.noteNoDirT': 'Data folder not created yet', 'be.noteNoDirS': 'Launch the game once via the "Play" button, then come back here: pack and world management will start working.',
     'be.noDirEmpty': 'Bedrock data folder not found yet', 'be.emptyPrefix': 'No', 'be.emptyRp': 'resource packs', 'be.emptyBp': 'add-ons', 'be.emptySp': 'skin packs', 'be.emptyWorlds': 'worlds',
+    'be.profileTitle': 'Bedrock instance', 'be.applyNow': 'Apply to game', 'be.deleteProfile': 'Delete instance',
+    'be.profileHint': 'The PLAY button applies the instance: its packs and worlds are copied into the game folder (existing ones are not deleted) and the game launches. Bedrock has one shared data folder — instances are sets you enable before playing.',
+    'be.applied': 'Instance "{name}" applied — launching the game…', 'be.profileTip': 'Create a Bedrock instance with the "New" button on the left: each has its own packs and worlds, just like Java instances.',
+    'be.profileChip': 'Bedrock instance',
+    'new.bedrock': 'New Bedrock instance',
     'be.launching': 'Launching Minecraft Bedrock…', 'be.store': 'Opened the Minecraft page in Microsoft Store',
     'be.manual': 'The author disallowed automatic downloads: opened their page. Download the file and press "Install file".', 'be.manualBtn': 'Download manually',
     'be.delConfirm': 'Delete "{name}"? This cannot be undone.',
@@ -288,7 +300,9 @@ const I18N = {
     'un.keepSome': 'No, but only some', 'un.keepSomeS': 'I\'ll pick which worlds to keep',
     'un.delAll': 'Yes, delete', 'un.delAllS': 'Worlds will be deleted along with the launcher',
     'un.qSome': 'Which worlds to keep?', 'un.qSomeHint': 'Check the worlds to keep. The rest will be deleted.',
-    'un.next': 'Choose folder', 'un.qFinal': 'Final confirmation',
+    'un.next': 'Choose folder', 'un.next2': 'Next', 'un.qFinal': 'Final confirmation',
+    'un.runtimesTitle': 'Delete the downloaded Java runtimes?', 'un.runtimesHint': 'By default Java stays on your computer: it will be reused if you install the launcher again. Check the versions to KEEP — the rest will be deleted with the launcher.',
+    'un.finalRuntimeKeep': 'Downloaded Java runtimes will stay on the computer.', 'un.finalRuntimeDel': 'Java runtimes to be deleted: {n}.',
     'un.finalKeep': 'Will save <b>{n}</b> worlds → folder <b>{dest}</b> (inside: «TnT Launcher — saved worlds»). Other worlds will be deleted.',
     'un.finalDelAll': '<b>All worlds will be deleted permanently.</b>', 'un.finalNoWorlds': 'No worlds in instances.',
     'un.thenQuits': 'Then the launcher will close and uninstall.', 'un.run': 'Uninstall', 'un.deleting': 'Uninstalling…',
@@ -312,7 +326,11 @@ function applyI18n(root = document) {
     const key = el.dataset.i18n;
     const val = t(key);
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = val;
-    else el.textContent = val;
+    else {
+      // защита: если внутри есть поля ввода — текст лежит в отдельном span, сам элемент не трогаем
+      if (el.querySelector('input,select,textarea')) return;
+      el.textContent = val;
+    }
   });
   root.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
   document.documentElement.lang = currentLang;
@@ -327,7 +345,7 @@ function langAnimation() {
   void document.body.offsetWidth;                       // перезапуск CSS-анимации
   document.body.classList.add('lang-anim');
   clearTimeout(langAnimation.timer);
-  langAnimation.timer = setTimeout(() => document.body.classList.remove('lang-anim'), 700);
+  langAnimation.timer = setTimeout(() => document.body.classList.remove('lang-anim'), 1000);
 }
 function setLang(lang) {
   currentLang = lang;
@@ -383,12 +401,14 @@ const segVal = el => ($('button.on', el) || {}).dataset?.l;
 
 // ---------- состояние ----------
 const LOADER = { vanilla: 'Vanilla', fabric: 'Fabric', forge: 'Forge' };
-const S = { edition: localStorage.getItem('edition') || 'java', st: null, insts: [], cur: null, view: 'inst', tab: 'files', folder: 'mods', versions: [], playing: false, busy: false };
+const S = { edition: localStorage.getItem('edition') || 'java', st: null, insts: [], cur: null, bedrockId: null, view: 'inst', tab: 'files', folder: 'mods', versions: [], playing: false, busy: false };
 const cur = () => S.insts.find(i => i.id === S.cur);
+const bedrockProfile = () => S.insts.find(i => i.id === S.bedrockId && i.kind === 'bedrock');
 
 async function refresh() {
   S.insts = await api.invoke('inst-list');
-  if (!cur()) S.cur = S.insts[0]?.id || null;
+  if (!cur()) S.cur = S.insts.find(i => i.kind !== 'bedrock')?.id || null;
+  if (S.bedrockId && !bedrockProfile()) S.bedrockId = null;
 }
 
 // ---------- навигация ----------
@@ -403,16 +423,23 @@ function go(view) {
 }
 function select(id) {
   S.edition = id === 'bedrock' ? 'bedrock' : 'java'; localStorage.setItem('edition', S.edition);
-  if (id === 'bedrock') { go('bedrock'); return; }
-  S.cur = id; go('inst');
+  if (id === 'bedrock') { S.bedrockId = null; go('bedrock'); return; }
+  const inst = S.insts.find(i => i.id === id);
+  if (inst && inst.kind === 'bedrock') { S.edition = 'bedrock'; localStorage.setItem('edition', 'bedrock'); S.bedrockId = id; go('bedrock'); return; }
+  S.bedrockId = null; S.cur = id; go('inst');
 }
 
 function renderSide() {
   const bedrock = S.edition === 'bedrock';
-  $('#bNew').hidden = bedrock; $('#sideTitle').textContent = bedrock ? t('side.bedrock') : t('side.title'); seg($('#edSeg'), S.edition);
+  $('#bNew').hidden = false; $('#sideTitle').textContent = bedrock ? t('side.bedrock') : t('side.title'); seg($('#edSeg'), S.edition);
   if (bedrock) {
-    $('#instList').innerHTML = `<button class="inst ${S.view === 'bedrock' ? 'on' : ''}" data-id="bedrock" style="--c:#4da3ff">${av('B', '#4da3ff')}<div><b>Minecraft Bedrock</b><small>Windows</small></div></button>`;
-  } else $('#instList').innerHTML = S.insts.map(i => `
+    const profiles = S.insts.filter(i => i.kind === 'bedrock');
+    $('#instList').innerHTML =
+      `<button class="inst ${S.view === 'bedrock' && !S.bedrockId ? 'on' : ''}" data-id="bedrock" style="--c:#4da3ff">${av('B', '#4da3ff')}<div><b>Minecraft: Bedrock Edition</b><small>Windows</small></div></button>` +
+      profiles.map(i => `
+        <button class="inst ${S.view === 'bedrock' && S.bedrockId === i.id ? 'on' : ''}" data-id="${i.id}" style="--c:${esc(i.color)}">
+          ${av(i.name, i.color)}<div><b>${esc(i.name)}</b><small>${esc(t('be.profileChip'))}</small></div></button>`).join('');
+  } else $('#instList').innerHTML = S.insts.filter(i => i.kind !== 'bedrock').map(i => `
     <button class="inst ${S.view === 'inst' && i.id === S.cur ? 'on' : ''}" data-id="${i.id}" style="--c:${esc(i.color)}">
       ${av(i.name, i.color)}<div><b>${esc(i.name)}</b><small>${esc(i.version)} · ${LOADER[i.loader]}</small></div></button>`).join('');
   $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.v === S.view));
@@ -424,7 +451,7 @@ function renderSide() {
 $('#edSeg').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
   S.edition = b.dataset.e; localStorage.setItem('edition', S.edition);
-  S.edition === 'bedrock' ? go('bedrock') : go('inst');
+  if (S.edition === 'bedrock') { S.bedrockId = null; go('bedrock'); } else { S.bedrockId = null; go('inst'); }
 };
 $('#instList').onclick = e => { const b = e.target.closest('.inst'); if (b) select(b.dataset.id); };
 $$('nav button').forEach(b => b.onclick = () => go(b.dataset.v));
@@ -635,11 +662,25 @@ $('#sDel').onclick = async () => {
 };
 
 // ---------- новая сборка ----------
-$('#bNew').onclick = () => { $('#dName').value = ''; $('#dSnap').checked = false; fillVersions($('#dVer'), S.versions.find(v => v.type === 'release')?.id, false); seg($('#dLoader'), 'vanilla'); $('#dNew').showModal(); };
+$('#bNew').onclick = () => {
+  const bedrock = S.edition === 'bedrock';
+  $('#dNewJava').hidden = bedrock;                                   // у Bedrock-сборок нет версии и загрузчика
+  $('#dNew').querySelector('h3').textContent = bedrock ? t('new.bedrock') : t('new.title');
+  $('#dName').value = '';
+  if (!bedrock) { $('#dSnap').checked = false; fillVersions($('#dVer'), S.versions.find(v => v.type === 'release')?.id, false); seg($('#dLoader'), 'vanilla'); }
+  $('#dNew').showModal();
+};
 $('#dSnap').onchange = () => fillVersions($('#dVer'), $('#dVer').value, $('#dSnap').checked);
 $('#dLoader').onclick = e => { const b = e.target.closest('button'); if (b) seg($('#dLoader'), b.dataset.l); };
 $('#dCancel').onclick = () => $('#dNew').close();
 $('#dOk').onclick = async () => {
+  if (S.edition === 'bedrock') {
+    try {
+      const i = await api.invoke('inst-create', { name: $('#dName').value, kind: 'bedrock' });
+      $('#dNew').close(); await refresh(); select(i.id);
+    } catch (e) { toast(errMsg(e), 'err'); }
+    return;
+  }
   const v = $('#dVer').value; if (!v) { toast(t('err.versionsLoading'), 'warn'); return; }
   const i = await api.invoke('inst-create', { name: $('#dName').value, version: v, loader: segVal($('#dLoader')) });
   $('#dNew').close(); await refresh(); S.tab = 'files'; setTab('files'); select(i.id);
@@ -1052,6 +1093,7 @@ $('#quick').onclick = async e => {
 const PALETTE = ['#ff4d36', '#ffb82e', '#34d399', '#4da3ff', '#a78bfa', '#fb923c', '#f472b6', '#94a3b8'];
 $('#sColors').innerHTML = PALETTE.map(c => `<button data-c="${c}" style="background:${c}" aria-label="${c}"></button>`).join('') +
   '<label class="cpick" title="Свой цвет"><input type="color" id="sColorCustom" value="#ff4d36"></label>';
+$('#bePColors').innerHTML = PALETTE.map(c => `<button data-c="${c}" style="background:${c}" aria-label="${c}"></button>`).join('');
 async function setInstColor(c) {
   const i = cur(); if (!i) return;
   try { await api.invoke('inst-update', { id: i.id, patch: { color: c } }); await refresh(); renderSide(); renderInst(); }
@@ -1081,6 +1123,21 @@ function beTab(t) {
 }
 $('#beTabs').onclick = e => { const b = e.target.closest('button'); if (b) beTab(b.dataset.bt); };
 async function renderBedrock() {
+  const p = bedrockProfile();
+  if (p) {                                          // выбранная сборка Bedrock
+    $('#beAv').outerHTML = av(p.name, p.color, 'xl').replace('class="av xl"', 'class="av xl" id="beAv"');
+    $('#beHero').style.setProperty('--c', p.color);
+    $('#beChips').innerHTML = `<span class="chip">${esc(t('be.profileChip'))}</span>`;
+    $('#beNote').hidden = true; $('#beText').textContent = '';
+    $('#beMain').hidden = false; $('#bePlay').disabled = false; $('#beQuick').hidden = false;
+    $('#beProfilePanel').hidden = false;
+    $('#beProfileTitle').textContent = `${t('be.profileTitle')} · ${p.name}`;
+    $('#bePName').value = p.name;
+    markBeColor(p);
+    renderBeList();
+    return;
+  }
+  $('#beProfilePanel').hidden = true;
   $('#beAv').outerHTML = av('B', '#4da3ff', 'xl').replace('class="av xl"', 'class="av xl" id="beAv"');
   $('#beHero').style.setProperty('--c', '#4da3ff');
   $('#beChips').innerHTML = `<span class="chip">${esc(t('be.checking'))}</span>`;
@@ -1095,14 +1152,16 @@ async function renderBedrock() {
   $('#beChips').innerHTML = `<span class="chip">${beInfo.installed ? esc(t('be.installed')) + (beInfo.version ? ' · ' + esc(beInfo.version) : '') : esc(t('be.notInstalled'))}</span><span class="chip">${beInfo.dir ? esc(t('be.dirFound')) : esc(t('be.noDir'))}</span>`;
   if (!beInfo.installed) note(t('be.noteNotInstalledT'), t('be.noteNotInstalledS'));
   else if (!beInfo.dir) note(t('be.noteNoDirT'), t('be.noteNoDirS'));
+  else if (!S.insts.some(x => x.kind === 'bedrock')) note(t('be.profileTip'), '');
   else note();
   $('#beText').textContent = beInfo.dir || '';
   renderBeList();
 }
+function markBeColor(i) { $$('#bePColors button').forEach(b => b.classList.toggle('on', b.dataset.c.toLowerCase() === String(i.color).toLowerCase())); }
 async function renderBeList() {
   const box = $('#beList');
-  if (!beInfo || !beInfo.dir) { box.innerHTML = `<div class="empty">${esc(t('be.noDirEmpty'))}</div>`; return; }
-  let items = []; try { items = await api.invoke('be-list', beKind); } catch (e) { toast(errMsg(e), 'err'); }
+  if (!S.bedrockId && (!beInfo || !beInfo.dir)) { box.innerHTML = `<div class="empty">${esc(t('be.noDirEmpty'))}</div>`; return; }
+  let items = []; try { items = await api.invoke('be-list', { kind: beKind, id: S.bedrockId || undefined }); } catch (e) { toast(errMsg(e), 'err'); }
   box.innerHTML = items.length ? items.map(x => `<div class="item" data-f="${esc(x.folder)}"><span class="nm">${esc(x.name)}</span><small>${esc(x.folder)}</small><button class="btn sm danger" data-a="d">${esc(t('common.delete'))}</button></div>`).join('')
     : `<div class="empty">${esc(t('be.emptyPrefix'))} ${esc(t(BE_NAMES[beKind]))}</div>`;
 }
@@ -1111,18 +1170,21 @@ $('#beList').onclick = async e => {
   const b = e.target.closest('[data-a=d]'); if (!b) return;
   const f = b.closest('.item').dataset.f;
   if (!confirm(t('be.delConfirm', { name: f }))) return;
-  try { await api.invoke('be-delete', { kind: beKind, folder: f }); renderBeList(); } catch (er) { toast(errMsg(er), 'err'); }
+  try { await api.invoke('be-delete', { kind: beKind, folder: f, id: S.bedrockId || undefined }); renderBeList(); } catch (er) { toast(errMsg(er), 'err'); }
 };
 $('#beQuick').onclick = async e => {
   const b = e.target.closest('button'); if (!b) return;
-  try { const err = await api.invoke('be-open', b.dataset.be || undefined); if (err) toast(t('upd.checkFailed', { error: err }), 'err'); } catch (er) { toast(errMsg(er), 'err'); }
+  try { const err = await api.invoke('be-open', { sub: b.dataset.be || undefined, id: S.bedrockId || undefined }); if (err) toast(t('upd.checkFailed', { error: err }), 'err'); } catch (er) { toast(errMsg(er), 'err'); }
 };
 $('#bePlay').onclick = async () => {
-  try { const r = await api.invoke('be-play'); toast(r.opened === 'game' ? t('be.launching') : t('be.store'), r.opened === 'game' ? '' : 'warn'); }
-  catch (e) { toast(errMsg(e), 'err'); }
+  try {
+    const r = await api.invoke('be-play', S.bedrockId ? { profile: S.bedrockId } : {});
+    const nm = bedrockProfile()?.name;
+    toast(r.opened === 'game' ? (S.bedrockId && nm ? t('be.applied', { name: nm }) : t('be.launching')) : t('be.store'), r.opened === 'game' ? '' : 'warn');
+  } catch (e) { toast(errMsg(e), 'err'); }
 };
 $('#beInstall').onclick = async () => {
-  try { const r = await api.invoke('be-install-file'); if (r.length) { toast(t('common.installed') + ': ' + r.join(', ')); renderBeList(); } }
+  try { const r = await api.invoke('be-install-file', { id: S.bedrockId || undefined }); if (r.length) { toast(t('common.installed') + ': ' + r.join(', ')); renderBeList(); } }
   catch (e) { toast(errMsg(e), 'err'); }
 };
 async function searchBe() {
@@ -1140,7 +1202,7 @@ $('#beGrid').onclick = async e => {
   const c = b.closest('.card-item');
   b.textContent = '…'; b.disabled = true;
   try {
-    const r = await api.invoke('be-install-mod', { id: c.dataset.id, url: c.dataset.url });
+    const r = await api.invoke('be-install-mod', { id: c.dataset.id, url: c.dataset.url, profile: S.bedrockId || undefined });
     if (r.manual) { b.textContent = t('be.manualBtn'); toast(t('be.manual'), 'warn'); }
     else { b.textContent = t('common.installed'); toast(t('common.installed') + ': ' + r.results.join(', ')); renderBeList(); }
   } catch (er) { b.textContent = t('common.install'); b.disabled = false; toast(errMsg(er), 'err'); }
@@ -1148,9 +1210,29 @@ $('#beGrid').onclick = async e => {
 $('#beKeySave').onclick = async () => { const ok = await api.invoke('set-curse-key', $('#beKey').value); toast(ok ? t('be.keySaved') : t('be.keyRemoved')); };
 $('#beKeyGet').onclick = () => api.invoke('open-external', 'https://console.curseforge.com/');
 
+// ---------- панель сборки Bedrock ----------
+$('#bePSave').onclick = async () => {
+  try { await api.invoke('inst-update', { id: S.bedrockId, patch: { name: $('#bePName').value } }); await refresh(); renderSide(); renderBedrock(); toast(t('common.saved')); }
+  catch (e) { toast(errMsg(e), 'err'); }
+};
+$('#bePApply').onclick = async () => {
+  try { await api.invoke('be-apply', S.bedrockId); toast(t('be.applied', { name: bedrockProfile()?.name || '' })); }
+  catch (e) { toast(errMsg(e), 'err'); }
+};
+$('#bePDel').onclick = async () => {
+  const i = bedrockProfile(); if (!i || !confirm(t('confirm.deleteInst', { name: i.name }))) return;
+  await api.invoke('inst-delete', i.id); S.bedrockId = null; await refresh(); renderSide(); go('bedrock');
+};
+$('#bePColors').onclick = async e => {
+  const b = e.target.closest('button[data-c]'); if (!b || !S.bedrockId) return;
+  try { await api.invoke('inst-update', { id: S.bedrockId, patch: { color: b.dataset.c } }); await refresh(); renderSide(); renderBedrock(); }
+  catch (er) { toast(errMsg(er), 'err'); }
+};
+$('#beKeyGet').onclick = () => api.invoke('open-external', 'https://console.curseforge.com/');
+
 // ---------- удаление лаунчера ----------
 const un = $('#dUn'), unBody = $('#unBody');
-let unWorlds = [], unKeep = [], unDest = null;
+let unWorlds = [], unRuntimes = [], unKeep = [], unDest = null, unDelRuntimes = [];
 const unErr = t => { const el = $('#unErr'); if (el) el.textContent = t || ''; };
 function unStep1() {
   unBody.innerHTML = `<h3>${esc(t('un.q1'))}</h3>
@@ -1159,8 +1241,9 @@ function unStep1() {
     <div class="row end"><button class="btn ghost" id="unNo">${esc(t('common.cancel'))}</button><button class="btn danger" id="unGo">${esc(t('un.continue'))}</button></div>`;
   $('#unNo').onclick = () => un.close();
   $('#unGo').onclick = async () => {
-    try { unWorlds = await api.invoke('uninstall-scan'); } catch (e) { unWorlds = []; }
-    unWorlds.length ? unStepWorlds() : unStepFinal([]);
+    try { const scan = await api.invoke('uninstall-scan'); unWorlds = scan.worlds || []; unRuntimes = scan.runtimes || []; }
+    catch (e) { unWorlds = []; unRuntimes = []; }
+    unWorlds.length ? unStepWorlds() : unStepRuntimes();
   };
 }
 function unStepWorlds() {
@@ -1174,7 +1257,7 @@ function unStepWorlds() {
   $('#unNo').onclick = () => un.close();
   $('#unKeepAll').onclick = () => unPickDest(unWorlds);
   $('#unKeepSome').onclick = unStepSome;
-  $('#unDelAll').onclick = () => unStepFinal([]);
+  $('#unDelAll').onclick = () => unStepRuntimes();
 }
 function unStepSome() {
   unBody.innerHTML = `<h3>${esc(t('un.qSome'))}</h3><p>${esc(t('un.qSomeHint'))}</p>
@@ -1183,25 +1266,39 @@ function unStepSome() {
   $('#unBack').onclick = unStepWorlds;
   $('#unNext').onclick = () => {
     const keep = $$('.un-list input:checked', unBody).map(i => unWorlds[+i.dataset.k]);
-    keep.length ? unPickDest(keep) : unStepFinal([]);
+    keep.length ? unPickDest(keep) : unStepRuntimes();
   };
 }
 async function unPickDest(keep) {
   const d = await api.invoke('pick-dir');
   if (!d) return;
-  unStepFinal(keep, d);
+  unDest = d; unKeep = keep;
+  unStepRuntimes();
 }
-function unStepFinal(keep, dest) {
-  unKeep = keep; unDest = dest || null;
-  const text = keep.length ? t('un.finalKeep', { n: keep.length, dest: esc(dest) })
+// Шаг Java: по умолчанию все версии ОСТАЮТСЯ (пригодятся при следующей установке)
+function unStepRuntimes() {
+  if (!unRuntimes.length) return unStepFinal();
+  unBody.innerHTML = `<h3>${esc(t('un.runtimesTitle'))}</h3><p>${esc(t('un.runtimesHint'))}</p>
+    <div class="un-list">${unRuntimes.map((r, k) => `<label><input type="checkbox" data-k="${k}" checked><span>Java ${esc(r.major)}</span><small>${r.sizeMB ? r.sizeMB + esc(t('units.mb')) : ''}</small></label>`).join('')}</div>
+    <div class="row end"><button class="btn ghost" id="unBack">${esc(t('un.back'))}</button><button class="btn primary" id="unNext">${esc(t('un.next2'))}</button></div><div class="un-err" id="unErr"></div>`;
+  $('#unBack').onclick = () => unWorlds.length ? unStepWorlds() : unStep1();
+  $('#unNext').onclick = () => {
+    const keepMajors = $$('.un-list input:checked', unBody).map(i => unRuntimes[+i.dataset.k].major);
+    unDelRuntimes = unRuntimes.filter(r => !keepMajors.includes(r.major)).map(r => r.major);
+    unStepFinal();
+  };
+}
+function unStepFinal() {
+  const text = unKeep.length ? t('un.finalKeep', { n: unKeep.length, dest: esc(unDest) })
     : unWorlds.length ? t('un.finalDelAll') : t('un.finalNoWorlds');
-  unBody.innerHTML = `<h3>${esc(t('un.qFinal'))}</h3><p>${text}</p><p>${esc(t('un.thenQuits'))}</p>
+  const rt = unRuntimes.length ? (unDelRuntimes.length ? t('un.finalRuntimeDel', { n: unDelRuntimes.length }) : t('un.finalRuntimeKeep')) : '';
+  unBody.innerHTML = `<h3>${esc(t('un.qFinal'))}</h3><p>${text}</p>${rt ? `<p>${esc(rt)}</p>` : ''}<p>${esc(t('un.thenQuits'))}</p>
     <div class="row end"><button class="btn ghost" id="unBack">${esc(t('un.toCancel'))}</button><button class="btn danger" id="unRun">${esc(t('un.run'))}</button></div><div class="un-err" id="unErr"></div>`;
   $('#unBack').onclick = () => un.close();
   $('#unRun').onclick = async () => {
     $('#unRun').disabled = true; $('#unRun').textContent = t('un.deleting');
     try {
-      const r = await api.invoke('uninstall-run', { keep: unKeep, dest: unDest });
+      const r = await api.invoke('uninstall-run', { keep: unKeep, dest: unDest, removeRuntimes: unDelRuntimes });
       unBody.innerHTML = `<h3>${esc(t('un.done'))}</h3><p>${esc(t('un.doneText'))}${r.savedTo ? '<br>' + esc(t('un.savedTo')) + ' <b>' + esc(r.savedTo) + '</b>' : ''}</p>`;
     } catch (e) { $('#unRun').disabled = false; $('#unRun').textContent = t('un.run'); unErr(errMsg(e)); }
   };
