@@ -147,6 +147,7 @@ const I18N = {
     'un.thenQuits': 'Затем лаунчер закроется и удалится.', 'un.run': 'Удалить лаунчер', 'un.deleting': 'Удаляю…',
     'un.done': 'Готово', 'un.doneText': 'Лаунчер удаляется и сейчас закроется.', 'un.savedTo': 'Миры сохранены:', 'un.back': 'Назад', 'un.toCancel': 'Отмена',
     // язык
+    'lang.title': 'Язык интерфейса', 'lang.hint': 'Выберите язык лаунчера — настройка применяется сразу и запоминается.',
     'lang.changed': 'Язык изменён: Русский', 'lang.label': 'Language / Язык',
     // единицы и подписи
     'units.mb': ' МБ', 'units.gb': ' ГБ', 'units.m': ' млн', 'units.k': ' тыс',
@@ -293,6 +294,7 @@ const I18N = {
     'un.thenQuits': 'Then the launcher will close and uninstall.', 'un.run': 'Uninstall', 'un.deleting': 'Uninstalling…',
     'un.done': 'Done', 'un.doneText': 'The launcher is being uninstalled and will close now.', 'un.savedTo': 'Worlds saved:', 'un.back': 'Back', 'un.toCancel': 'Cancel',
     // language
+    'lang.title': 'Interface language', 'lang.hint': 'Pick the launcher language — it applies instantly and is remembered.',
     'lang.changed': 'Language changed: English', 'lang.label': 'Language / Язык',
     // units and labels
     'units.mb': ' MB', 'units.gb': ' GB', 'units.m': 'M', 'units.k': 'K',
@@ -314,6 +316,7 @@ function applyI18n(root = document) {
   });
   root.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
   document.documentElement.lang = currentLang;
+  syncLangSeg();
   // Update dynamic texts
   if ($('#sideTitle')) $('#sideTitle').textContent = t('side.title');
   if ($('#playTxt')) $('#playTxt').textContent = S.busy ? t('launching') : S.playing ? t('stop') : t('play');
@@ -338,13 +341,16 @@ function setLang(lang) {
   langAnimation();
   toast(t('lang.changed'));
 }
-// переключатель языка в боковой панели
+// подсветка активного языка в панели настроек
+function syncLangSeg() {
+  const segEl = $('#langSeg');
+  if (segEl) $$('button', segEl).forEach(b => b.classList.toggle('on', b.dataset.lang === currentLang));
+}
 function initLangSwitcher() {
-  const switcher = document.createElement('div');
-  switcher.innerHTML = `<div class="field lang-field"><span>${t('lang.label')}</span><div class="seg"><button data-lang="ru" class="${currentLang==='ru'?'on':''}">Русский</button><button data-lang="en" class="${currentLang==='en'?'on':''}">English</button></div></div>`;
-  switcher.onclick = e => { const b = e.target.closest('button'); if (b && b.dataset.lang !== currentLang) setLang(b.dataset.lang); };
-  const side = $('#side');
-  if (side) side.appendChild(switcher);
+  const segEl = $('#langSeg');
+  if (!segEl) return;
+  segEl.onclick = e => { const b = e.target.closest('button'); if (b && b.dataset.lang !== currentLang) setLang(b.dataset.lang); };
+  syncLangSeg();
 }
 
 document.body.dataset.platform = api.platform;

@@ -5,4 +5,7 @@
     <string name="version_prefix">Версия</string>
     <string name="version_soon">Релиз ещё не опубликован</string>
     <string name="version_offline">Сайт временно недоступен</string>
+    <string name="upd_available">Доступна новая версия %1$s — обновитесь в Google Play</string>
+    <string name="upd_button">Обновить</string>
+    <string name="upd_open_failed">Не удалось открыть Google Play</string>
 </resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TnT Launcher</string>
+    <string name="version_loading">Checking version…</string>
+    <string name="version_prefix">Version</string>
+    <string name="version_soon">Release not published yet</string>
+    <string name="version_offline">Website is temporarily unavailable</string>
+    <string name="upd_available">New version %1$s is available — update in Google Play</string>
+    <string name="upd_button">Update</string>
+    <string name="upd_open_failed">Couldn\'t open Google Play</string>
+</resources>

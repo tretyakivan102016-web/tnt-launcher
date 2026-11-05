@@ -279,4 +279,3 @@ body.lang-anim #side { animation: langSlide .45s cubic-bezier(.22,.9,.3,1) both;
 @media (prefers-reduced-motion: reduce) {
   body.lang-anim main, body.lang-anim #side { animation: none; }
 }
-.lang-field { margin-top: auto; padding-top: 10px; }

@@ -17,6 +17,35 @@
         android:textStyle="bold"
         android:text="@string/version_loading"/>
 
+    <LinearLayout
+        android:id="@+id/updBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="#141B24"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/updText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="#E9EEF2"
+            android:textSize="14sp"
+            android:paddingEnd="10dp"/>
+
+        <Button
+            android:id="@+id/updBtn"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FFB82E"
+            android:textStyle="bold"
+            android:text="@string/upd_button"/>
+    </LinearLayout>
+
     <WebView
         android:id="@+id/web"
         android:layout_width="match_parent"
