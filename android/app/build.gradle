@@ -67,7 +67,7 @@ android {
         release {
             minifyEnabled false
             // Свой release-ключ, если он есть; иначе отладочный (ставится на телефон, но не годится для Google Play)
-            signingConfig (ksFile != null && ksFile.exists() && ksPass) ? signingConfigs.release : signingConfigs.debug
+            signingConfig((ksFile != null && ksFile.exists() && ksPass) ? signingConfigs.release : signingConfigs.debug)
         }
     }
     compileOptions {

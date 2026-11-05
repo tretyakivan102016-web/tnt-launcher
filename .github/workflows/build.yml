@@ -12,16 +12,30 @@ jobs:
         os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     env:
-      # Кодовая подпись: electron-builder сам подхватывает эти переменные.
-      # Пока секреты не заданы — сборки проходят как раньше (без подписи).
-      CSC_LINK: ${{ secrets.CSC_LINK }}                          # сертификат (.p12, base64) для Windows и/или macOS
-      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
       CSC_IDENTITY_AUTO_DISCOVERY: false                          # без сертификата не искать ключи в ключнице CI
-      APPLE_ID: ${{ secrets.APPLE_ID }}                           # нотаризация macOS (когда появится Apple Developer)
-      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
     steps:
       - uses: actions/checkout@v4
+      - name: Configure code signing (только если секреты заданы)
+        shell: bash
+        env:
+          CSC_LINK_SECRET: ${{ secrets.CSC_LINK }}                # сертификат (.p12, base64) для Windows и/или macOS
+          CSC_KEY_PASSWORD_SECRET: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_ID_SECRET: ${{ secrets.APPLE_ID }}                # нотаризация macOS (когда появится Apple Developer)
+          APPLE_APP_SPECIFIC_PASSWORD_SECRET: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID_SECRET: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -n "$CSC_LINK_SECRET" ]; then
+            echo "CSC_LINK=$CSC_LINK_SECRET" >> "$GITHUB_ENV"
+            echo "CSC_KEY_PASSWORD=$CSC_KEY_PASSWORD_SECRET" >> "$GITHUB_ENV"
+            echo "Подпись включена: CSC_LINK задан"
+          else
+            echo "Секреты CSC_LINK нет — сборка без подписи, как обычно"
+          fi
+          if [ -n "$APPLE_ID_SECRET" ]; then
+            echo "APPLE_ID=$APPLE_ID_SECRET" >> "$GITHUB_ENV"
+            echo "APPLE_APP_SPECIFIC_PASSWORD=$APPLE_APP_SPECIFIC_PASSWORD_SECRET" >> "$GITHUB_ENV"
+            echo "APPLE_TEAM_ID=$APPLE_TEAM_ID_SECRET" >> "$GITHUB_ENV"
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 20
