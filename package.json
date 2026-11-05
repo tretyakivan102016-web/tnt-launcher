@@ -70,7 +70,7 @@
       ],
       "category": "public.app-category.games",
       "icon": "build/icon.icns",
-      "identity": null
+      "notarize": false
     },
     "dmg": {
       "artifactName": "TnT-Launcher-${version}-${arch}.dmg"

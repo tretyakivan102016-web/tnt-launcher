@@ -11,6 +11,15 @@ jobs:
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      # Кодовая подпись: electron-builder сам подхватывает эти переменные.
+      # Пока секреты не заданы — сборки проходят как раньше (без подписи).
+      CSC_LINK: ${{ secrets.CSC_LINK }}                          # сертификат (.p12, base64) для Windows и/или macOS
+      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+      CSC_IDENTITY_AUTO_DISCOVERY: false                          # без сертификата не искать ключи в ключнице CI
+      APPLE_ID: ${{ secrets.APPLE_ID }}                           # нотаризация macOS (когда появится Apple Developer)
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

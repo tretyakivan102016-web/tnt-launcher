@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Тег релиза для прикрепления APK (например v1.6.0); пусто — только артефакт'
+        description: 'Тег релиза для прикрепления APK (например v1.6.2); пусто — только артефакт'
         required: false
         default: ''
   push:
@@ -25,6 +25,13 @@ jobs:
           gradle-version: '8.7'
       - name: Build release APK
         working-directory: android
+        env:
+          # Подпись release-ключом: пока секреты не заданы, APK подписывается отладочным ключом.
+          # gradle сам распознаёт base64 в TNT_KEYSTORE и сохраняет ключ во временный файл.
+          TNT_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          TNT_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          TNT_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          TNT_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: gradle assembleRelease --no-daemon
       - name: Rename APK
         run: |

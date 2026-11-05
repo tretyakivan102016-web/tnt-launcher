@@ -1,5 +1,45 @@
 plugins { id 'com.android.application' }
 
+// ---------- подпись релиза ----------
+// Приоритет источников ключа:
+//   1) переменные окружения: TNT_KEYSTORE (путь или base64), TNT_KEYSTORE_PASSWORD, TNT_KEY_ALIAS, TNT_KEY_PASSWORD
+//      (так ключ передаётся в GitHub Actions из секретов ANDROID_KEYSTORE_BASE64 / ...)
+//   2) файл android/keystore/tnt-release.p12 + пароль из android/keystore/tnt-release.password.txt (локальная сборка)
+// Если ничего не найдено — release подписывается отладочным ключом (только для тестов).
+def ksFile = null
+def ksPass = null
+def ksAlias = 'tnt'
+def keyPass = null
+
+def envKs = System.getenv('TNT_KEYSTORE')
+def envKsPass = System.getenv('TNT_KEYSTORE_PASSWORD')
+def envAlias = System.getenv('TNT_KEY_ALIAS')
+def envKeyPass = System.getenv('TNT_KEY_PASSWORD')
+
+if (envKs && envKsPass) {
+    def decoded = new File(projectDir, 'ci-keystore.p12')
+    if (envKs.length() > 200 && !new File(envKs).exists()) {          // выглядит как base64 — раскодируем во временный файл
+        decoded.bytes = java.util.Base64.getDecoder().decode(envKs.replaceAll('\\s', ''))
+        ksFile = decoded
+    } else {
+        ksFile = new File(envKs)
+    }
+    ksPass = envKsPass
+    keyPass = envKeyPass ?: envKsPass
+    if (envAlias) ksAlias = envAlias
+} else {
+    def localKs = new File(rootProject.projectDir, 'keystore/tnt-release.p12')
+    def pwFile = new File(rootProject.projectDir, 'keystore/tnt-release.password.txt')
+    if (localKs.exists() && pwFile.exists()) {
+        def m = pwFile.text =~ /password=(\S+)/
+        if (m.find()) {
+            ksFile = localKs
+            ksPass = m.group(1)
+            keyPass = ksPass
+        }
+    }
+}
+
 android {
     namespace 'app.tnt.launcher'
     compileSdk 34
@@ -12,12 +52,22 @@ android {
         versionName "1.6.2"
     }
 
+    signingConfigs {
+        release {
+            if (ksFile != null && ksFile.exists() && ksPass) {
+                storeFile ksFile
+                storePassword ksPass
+                keyAlias ksAlias
+                keyPassword keyPass
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
-            // Пока подписываем отладочным ключом, чтобы .apk можно было сразу ставить на телефон.
-            // Для Google Play соберите .aab со своим ключом (см. README-android.txt).
-            signingConfig signingConfigs.debug
+            // Свой release-ключ, если он есть; иначе отладочный (ставится на телефон, но не годится для Google Play)
+            signingConfig (ksFile != null && ksFile.exists() && ksPass) ? signingConfigs.release : signingConfigs.debug
         }
     }
     compileOptions {
