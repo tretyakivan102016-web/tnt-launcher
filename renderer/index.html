@@ -78,7 +78,8 @@
 
         <div class="pane" id="p-mods">
           <p class="hint" data-i18n="mods.hint">Моды Modrinth под версию и загрузчик этой сборки. Нужные зависимости ставятся сами.</p>
-          <div class="searchbar"><i data-i="search"></i><input id="mQ" placeholder="Например: Sodium, JEI, Iris…" autocomplete="off" data-i18n="mods.example"><button class="btn primary" id="mGo" data-i18n="common.search">Найти</button></div>
+          <div class="searchbar"><i data-i="search"></i><input id="mQ" placeholder="Например: Sodium, JEI, Iris…" autocomplete="off" data-i18n="mods.example"><button class="btn primary" id="mGo" data-i18n="common.search">Найти</button><button class="btn" id="mCheck" title="Проверит все моды на совместимость с версией игры и найдёт недостающие зависимости" data-i18n-title="check.btnTitle"><i data-i="check"></i><span data-i18n="check.btn">Проверить сборку</span></button></div>
+          <div id="mCheckResult" hidden></div>
           <div class="grid" id="mList"></div>
         </div>
 
@@ -266,7 +267,7 @@
           <div class="form" style="max-width:none">
             <label><span data-i18n="acc.whereLabel">Где проблема?</span><select id="repWhere"><option value="launcher" data-i18n="acc.whereLauncher">В лаунчере</option><option value="site" data-i18n="acc.whereSite">На сайте</option></select></label>
             <label><span data-i18n="acc.whatLabel">Что случилось?</span><textarea id="repText" rows="4" maxlength="1000" placeholder="Что вы делали и что пошло не так?" data-i18n="acc.whatPh"></textarea></label>
-            <div class="row"><button class="btn primary" id="repSend" data-i18n="common.send">Отправить</button><button class="btn ghost" id="forumOpen" data-i18n="common.forum">Форум</button></div>
+            <div class="row"><button class="btn primary" id="repSend" data-i18n="common.send">Отправить</button><button class="btn ghost" id="forumOpen" data-i18n="common.forum">Форум</button><button class="btn ghost" id="supportOpen" data-i18n="common.support">Поддержка</button></div>
           </div>
         </div>
         <div class="panel danger-zone">
@@ -293,7 +294,7 @@
   <h3 data-i18n="deps.title">Установить зависимости?</h3>
   <p id="depsList" class="hint"></p>
   <label class="check"><input type="checkbox" id="depsNever"><i></i><span data-i18n="deps.never">Больше не спрашивать</span></label>
-  <div class="row end"><button class="btn ghost" id="depsNo" data-i18n="common.no">Нет</button><button class="btn primary" id="depsYes" data-i18n="common.yes">Да</button></div>
+  <div class="row end"><button class="btn ghost" id="depsNo" data-i18n="deps.only">Только этот мод</button><button class="btn primary" id="depsYes" data-i18n="deps.withAll">Установить всё</button></div>
 </dialog>
 <dialog id="dRepair">
   <h3 data-i18n="repair.title">Починить сборку</h3>

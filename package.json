@@ -1,7 +1,7 @@
 {
   "name": "tnt-launcher",
   "productName": "TnT Launcher",
-  "version": "1.8.2",
+  "version": "1.9.0",
   "description": "TnT Launcher — лаунчер Minecraft",
   "author": {
     "name": "TnT",
@@ -70,6 +70,7 @@
       ],
       "category": "public.app-category.games",
       "icon": "build/icon.icns",
+      "identity": "-",
       "notarize": false
     },
     "dmg": {

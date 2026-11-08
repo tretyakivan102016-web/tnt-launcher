@@ -11,7 +11,7 @@ const I18N = {
     'common.search': 'Найти', 'common.save': 'Сохранить', 'common.cancel': 'Отмена', 'common.no': 'Нет', 'common.yes': 'Да',
     'common.delete': 'Удалить', 'common.install': 'Установить', 'common.installed': 'Установлено', 'common.saved': 'Сохранено',
     'common.send': 'Отправить', 'common.close': 'Закрыть', 'common.apply': 'Применить', 'common.reset': 'Сбросить',
-    'common.forum': 'Форум', 'common.settings': 'Настройки', 'common.searching': 'Ищу…', 'common.checking': 'Проверяю…',
+    'common.forum': 'Форум', 'common.support': 'Поддержка', 'common.settings': 'Настройки', 'common.searching': 'Ищу…', 'common.checking': 'Проверяю…',
     'common.notFound': 'Ничего не найдено',
     // боковая панель
     'side.title': 'МОИ СБОРКИ', 'side.bedrock': 'BEDROCK', 'side.for': 'для Minecraft', 'side.new': 'Новая',
@@ -29,7 +29,12 @@ const I18N = {
     'mods.example': 'Например: Sodium, JEI, Iris…', 'mods.recommended': 'Рекомендуемые моды',
     'mods.noRec': 'Нет рекомендаций для этой версии', 'mods.notFound': 'Ничего не найдено для этой версии и загрузчика',
     'mods.vanillaWarn': 'В сборке Vanilla моды не работают — выберите Fabric или Forge в настройках сборки',
-    'deps.title': 'Установить зависимости?', 'deps.ask': 'Этот мод может требовать зависимости. Установить их?', 'deps.never': 'Больше не спрашивать',
+    'deps.title': 'Установить зависимости?', 'deps.list': 'Для этого мода нужны:', 'deps.withAll': 'Установить всё', 'deps.only': 'Только этот мод', 'deps.never': 'Больше не спрашивать',
+    'check.btn': 'Проверить сборку', 'check.btnTitle': 'Проверит все моды на совместимость с версией игры и найдёт недостающие зависимости',
+    'check.running': 'Проверяю сборку…', 'check.ok': '✅ Всё в порядке: моды подходят под версию игры, все зависимости на месте',
+    'check.problems': 'Найдены проблемы:', 'check.incompatible': 'Не подходят под версию игры / загрузчик:', 'check.missing': 'Не хватает зависимостей:',
+    'check.unknown': 'Часть файлов не удалось распознать (не с Modrinth) — они не проверялись.', 'check.fix': 'Починить', 'check.fixing': 'Чиню…',
+    'check.fixed': 'Готово: установлено {n} файл(ов)', 'check.fixedWithErrors': 'Установлено {n}, не удалось: {m} (список в журнале)',
     'repair.title': 'Починить сборку', 'repair.select': 'Выберите один приоритетный мод. Остальные будут удалены, а приоритетный переустановлен.',
     'repair.none': 'Нет модов', 'repair.pick': 'Выберите мод', 'repair.working': 'Чиним сборку…', 'repair.go': 'Починить', 'repair.done': 'Сборка починена',
     // настройки сборки
@@ -165,7 +170,7 @@ const I18N = {
     'common.search': 'Search', 'common.save': 'Save', 'common.cancel': 'Cancel', 'common.no': 'No', 'common.yes': 'Yes',
     'common.delete': 'Delete', 'common.install': 'Install', 'common.installed': 'Installed', 'common.saved': 'Saved',
     'common.send': 'Send', 'common.close': 'Close', 'common.apply': 'Apply', 'common.reset': 'Reset',
-    'common.forum': 'Forum', 'common.settings': 'Settings', 'common.searching': 'Searching…', 'common.checking': 'Checking…',
+    'common.forum': 'Forum', 'common.support': 'Support', 'common.settings': 'Settings', 'common.searching': 'Searching…', 'common.checking': 'Checking…',
     'common.notFound': 'Nothing found',
     // sidebar
     'side.title': 'MY INSTANCES', 'side.bedrock': 'BEDROCK', 'side.for': 'for Minecraft', 'side.new': 'New',
@@ -183,7 +188,12 @@ const I18N = {
     'mods.example': 'Try: Sodium, JEI, Iris…', 'mods.recommended': 'Recommended mods',
     'mods.noRec': 'No recommendations for this version', 'mods.notFound': 'Nothing found for this version and loader',
     'mods.vanillaWarn': 'Mods don\'t work in a Vanilla instance — pick Fabric or Forge in the instance settings',
-    'deps.title': 'Install dependencies?', 'deps.ask': 'This mod may require dependencies. Install them?', 'deps.never': 'Don\'t ask again',
+    'deps.title': 'Install dependencies?', 'deps.list': 'This mod requires:', 'deps.withAll': 'Install all', 'deps.only': 'Only this mod', 'deps.never': 'Don\'t ask again',
+    'check.btn': 'Check instance', 'check.btnTitle': 'Checks every mod for compatibility with the game version and finds missing dependencies',
+    'check.running': 'Checking instance…', 'check.ok': '✅ All good: mods match the game version, all dependencies are in place',
+    'check.problems': 'Problems found:', 'check.incompatible': 'Not compatible with the game version / loader:', 'check.missing': 'Missing dependencies:',
+    'check.unknown': 'Some files could not be recognized (not from Modrinth) — they were skipped.', 'check.fix': 'Fix', 'check.fixing': 'Fixing…',
+    'check.fixed': 'Done: {n} file(s) installed', 'check.fixedWithErrors': 'Installed {n}, failed: {m}',
     'repair.title': 'Repair instance', 'repair.select': 'Pick one priority mod. The rest will be removed and the priority mod reinstalled.',
     'repair.none': 'No mods', 'repair.pick': 'Pick a mod', 'repair.working': 'Repairing…', 'repair.go': 'Repair', 'repair.done': 'Instance repaired',
     // instance settings
@@ -397,7 +407,9 @@ const segVal = el => ($('button.on', el) || {}).dataset?.l;
 
 // ---------- состояние ----------
 const LOADER = { vanilla: 'Vanilla', fabric: 'Fabric', forge: 'Forge' };
+const bedrockAllowed = api.platform === 'win32';        // Bedrock есть только на Windows — на других ОС пункт скрыт полностью
 const S = { edition: localStorage.getItem('edition') || 'java', st: null, insts: [], cur: null, bedrockId: null, view: 'inst', tab: 'files', folder: 'mods', versions: [], playing: false, busy: false };
+if (!bedrockAllowed && S.edition === 'bedrock') { S.edition = 'java'; localStorage.setItem('edition', 'java'); }
 const cur = () => S.insts.find(i => i.id === S.cur);
 const bedrockProfile = () => S.insts.find(i => i.id === S.bedrockId && i.kind === 'bedrock');
 
@@ -427,6 +439,9 @@ function select(id) {
 
 function renderSide() {
   const bedrock = S.edition === 'bedrock';
+  const bedrockBtn = $('#edSeg').querySelector('[data-e=bedrock]');
+  if (bedrockBtn) bedrockBtn.hidden = !bedrockAllowed;   // не на Windows переключателя Bedrock вообще нет
+  if (!bedrockAllowed && S.edition === 'bedrock') S.edition = 'java';
   $('#bNew').hidden = false; $('#sideTitle').textContent = bedrock ? t('side.bedrock') : t('side.title'); seg($('#edSeg'), S.edition);
   if (bedrock) {
     const profiles = S.insts.filter(i => i.kind === 'bedrock');
@@ -469,10 +484,15 @@ function renderInst() {
   $('#hChips').innerHTML = `<span class="chip">${esc(i.version)}</span><span class="chip ${i.loader}">${LOADER[i.loader]}</span><span class="chip">${((i.ram || S.st.ram) / 1024).toFixed(1)}${esc(t('units.gb'))}</span>`;
   setPlayUi();
   fillSettings(i);
+  const modsTab = $('#tabs [data-t=mods]');
+  if (modsTab) modsTab.hidden = i.loader === 'vanilla';            // в Vanilla вкладки модов нет вообще
+  if (S.tab === 'mods' && i.loader === 'vanilla') setTab('files');
   renderFiles();
 }
 
 function setTab(t) {
+  const i = cur();
+  if (t === 'mods' && i && i.loader === 'vanilla') t = 'files';   // в Vanilla моды не работают — вкладки нет
   S.tab = t;
   $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   $$('#v-inst .pane').forEach(p => p.classList.toggle('on', p.id === 'p-' + t));
@@ -614,22 +634,68 @@ $('#mList').onclick = async e => {
   const auto = localStorage.getItem('auto_download_deps') === 'true';
   b.textContent = '…'; b.disabled = true;
   try {
-    // Check deps first via a new or existing call; for simplicity we ask always unless auto
+    let skipDeps = false;
     if (!auto) {
-      // In real impl, call API to get deps list. Here we show modal.
-      $('#depsList').textContent = t('deps.ask');
-      const dlg = $('#dDeps');
-      dlg.showModal();
-      const yes = await new Promise(res => {
-        $('#depsYes').onclick = () => { if ($('#depsNever').checked) localStorage.setItem('auto_download_deps', 'true'); res(true); dlg.close(); };
-        $('#depsNo').onclick = () => { res(false); dlg.close(); };
-      });
-      if (!yes) { b.textContent = t('common.install'); b.disabled = false; return; }
+      // спрашиваем только если у мода РЕАЛЬНО есть обязательные зависимости — и показываем какие
+      let deps = [];
+      try { deps = (await api.invoke('mods-deps', { id: S.cur, project: id })).deps || []; } catch {}
+      if (deps.length) {
+        $('#depsList').innerHTML = `${esc(t('deps.list'))}<ul style="margin:8px 0 0 18px">${deps.map(d => `<li>${esc(d.title)}</li>`).join('')}</ul>`;
+        const dlg = $('#dDeps');
+        dlg.showModal();
+        skipDeps = await new Promise(res => {
+          $('#depsYes').onclick = () => { if ($('#depsNever').checked) localStorage.setItem('auto_download_deps', 'true'); res(false); dlg.close(); };
+          $('#depsNo').onclick = () => { res(true); dlg.close(); };     // «Только этот мод» — без зависимостей
+        });
+      }
     }
-    const done = await api.invoke('mods-install', { id: S.cur, project: id });
+    const done = await api.invoke('mods-install', { id: S.cur, project: id, skipDeps });
     b.textContent = t('common.installed'); toast(t('common.installed') + ': ' + done.join(', ')); renderFiles();
   } catch (er) { b.textContent = t('common.install'); b.disabled = false; toast(errMsg(er), 'err'); }
 };
+
+// ---------- Проверить сборку ----------
+let lastCheck = null;
+$('#mCheck').onclick = async () => {
+  const i = cur(); if (!i) return;
+  const btn = $('#mCheck'), box = $('#mCheckResult');
+  btn.disabled = true;
+  box.hidden = false; box.innerHTML = `<p class="hint">${esc(t('check.running'))}</p>`;
+  try {
+    lastCheck = await api.invoke('mods-check', { id: i.id });
+    renderCheck(lastCheck);
+  } catch (e) { box.hidden = true; toast(errMsg(e), 'err'); }
+  btn.disabled = false;
+};
+function renderCheck(c) {
+  const box = $('#mCheckResult');
+  const i = cur();
+  if (!c) { box.hidden = true; return; }
+  const problems = (c.incompatible?.length || 0) + (c.missing?.length || 0);
+  if (!problems) {
+    box.innerHTML = `<p class="hint" style="color:var(--green)">${esc(t('check.ok'))}</p>`;
+    return;
+  }
+  const li = arr => arr.map(x => `<li>${esc(x.title || x.file || x)}</li>`).join('');
+  box.innerHTML = `<div class="panel" style="margin:0 0 12px">
+    <p class="hint" style="margin:0 0 6px"><b>${esc(t('check.problems'))}</b></p>
+    ${c.incompatible?.length ? `<p class="hint">${esc(t('check.incompatible'))}</p><ul class="hint" style="margin:2px 0 8px 18px">${li(c.incompatible)}</ul>` : ''}
+    ${c.missing?.length ? `<p class="hint">${esc(t('check.missing'))}</p><ul class="hint" style="margin:2px 0 8px 18px">${li(c.missing)}</ul>` : ''}
+    ${c.unknown?.length ? `<p class="hint">${esc(t('check.unknown'))}</p>` : ''}
+    <button class="btn primary" id="mFix"><i data-i="check"></i><span>${esc(t('check.fix'))}</span></button>
+  </div>`;
+  hydrate(box);
+  $('#mFix').onclick = async () => {
+    const f = $('#mFix'); f.disabled = true; f.textContent = t('check.fixing');
+    try {
+      const r = await api.invoke('mods-fix', { id: S.cur, check: lastCheck });
+      toast(r.failed.length ? t('check.fixedWithErrors', { n: r.done.length, m: r.failed.length }) : t('check.fixed', { n: r.done.length }));
+      lastCheck = await api.invoke('mods-check', { id: S.cur });
+      renderCheck(lastCheck);
+      renderFiles();
+    } catch (e) { toast(errMsg(e), 'err'); f.disabled = false; f.textContent = t('check.fix'); }
+  };
+}
 
 // -- настройки сборки
 function fillVersions(sel, selected, all) {
@@ -1051,6 +1117,7 @@ $('#repSend').onclick = async () => {
   b.disabled = false;
 };
 $('#forumOpen').onclick = () => api.invoke('open-forum-home');
+$('#supportOpen').onclick = () => api.invoke('open-external', 'https://tntlauncher.app/support');
 const SOLVED_REVIEWS = [
   'Прикиньте! Я нашёл проблему и её сразу же починили! Вот это разработчики!',
   'Написал о баге в TnT Launcher, а его уже исправили. Вот это скорость!',

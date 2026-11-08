@@ -434,23 +434,111 @@ const mrSearch = async (q, type, version, loader) => {
 };
 ipcMain.handle('mods-search', (_, { id, q }) => { const i = byId(id); return mrSearch(q, 'mod', i.version, i.loader); });
 ipcMain.handle('packs-search', (_, q) => mrSearch(q, 'modpack'));
-async function installMod(inst, pid, seen = new Set()) {
-  if (seen.has(pid)) return [];
-  seen.add(pid);
+const mrVersionUrl = (inst, pid) => {
   let url = `https://api.modrinth.com/v2/project/${pid}/version?game_versions=${enc(JSON.stringify([inst.version]))}`;
   if (inst.loader !== 'vanilla') url += `&loaders=${enc(JSON.stringify([inst.loader]))}`;
-  const vers = await getJson(url);
+  return url;
+};
+async function installMod(inst, pid, seen = new Set(), skipDeps = false) {
+  if (seen.has(pid)) return [];
+  seen.add(pid);
+  const vers = await getJson(mrVersionUrl(inst, pid));
   if (!vers.length) throw new Error(`Нет версии мода для ${inst.version} / ${inst.loader}`);
   const v = vers[0], f = v.files.find(x => x.primary) || v.files[0];
   await download(f.url, path.join(sub(inst, 'mods'), f.filename));
   const done = [f.filename];
-  for (const d of v.dependencies || [])
-    if (d.dependency_type === 'required' && d.project_id) {
-      try { done.push(...await installMod(inst, d.project_id, seen)); } catch (e) { log('Зависимость не установлена: ' + e.message); }
-    }
+  if (!skipDeps)
+    for (const d of v.dependencies || [])
+      if (d.dependency_type === 'required' && d.project_id) {
+        try { done.push(...await installMod(inst, d.project_id, seen)); } catch (e) { log('Зависимость не установлена: ' + e.message); }
+      }
   return done;
 }
-ipcMain.handle('mods-install', (_, { id, project }) => installMod(byId(id), project));
+ipcMain.handle('mods-install', (_, { id, project, skipDeps }) => installMod(byId(id), project, undefined, !!skipDeps));
+
+// какие обязательные зависимости поставятся вместе с модом (для показа списка перед установкой)
+ipcMain.handle('mods-deps', async (_, { id, project }) => {
+  const inst = byId(id);
+  const vers = await getJson(mrVersionUrl(inst, project));
+  if (!vers.length) return { deps: [] };
+  const req = (vers[0].dependencies || []).filter(d => d.dependency_type === 'required' && d.project_id);
+  const deps = [];
+  for (const d of req.slice(0, 12)) {
+    try { const p = await getJson(`https://api.modrinth.com/v2/project/${d.project_id}`); deps.push({ id: d.project_id, title: p.title }); }
+    catch { deps.push({ id: d.project_id, title: d.title || d.project_id }); }
+  }
+  return { deps };
+});
+
+// ---------- Проверить сборку: совместимость модов с версией игры и недостающие зависимости ----------
+const sha1of = p => crypto.createHash('sha1').update(fs.readFileSync(p)).digest('hex');
+async function modsCheck(inst) {
+  const modsDir = sub(inst, 'mods');
+  const empty = { incompatible: [], missing: [], unknown: [] };
+  if (!fs.existsSync(modsDir)) return empty;
+  const files = fs.readdirSync(modsDir).filter(f => f.endsWith('.jar')).slice(0, 60);
+  if (!files.length) return empty;
+  const shas = new Map(files.map(f => { try { return [f, sha1of(path.join(modsDir, f))]; } catch { return [f, null]; } }));
+  const found = [];
+  const unknown = [];
+  for (const f of files) {
+    const h = shas.get(f);
+    if (!h) { unknown.push(f); continue; }
+    try { const v = await getJson(`https://api.modrinth.com/v2/version_file/${h}`); found.push({ file: f, sha1: h, projectId: v.project_id, version: v }); }
+    catch { unknown.push(f); }
+  }
+  const incompatible = [], okVersions = [];
+  for (const x of found) {
+    const okMc = (x.version.game_versions || []).includes(inst.version);
+    const okLd = inst.loader === 'vanilla' ? true : (x.version.loaders || []).includes(inst.loader);
+    (okMc && okLd ? okVersions : incompatible).push(x);
+  }
+  // обязательные зависимости «правильных» модов, которых нет среди локальных файлов
+  const reqIds = new Set();
+  for (const x of okVersions) for (const d of x.version.dependencies || []) if (d.dependency_type === 'required' && d.project_id) reqIds.add(d.project_id);
+  const localHashes = new Set([...shas.values()].filter(Boolean));
+  const missing = [];
+  for (const pid of [...reqIds].slice(0, 30)) {
+    try {
+      const vers = await getJson(mrVersionUrl(inst, pid));
+      if (!vers.length) continue;
+      const depHashes = new Set(vers.slice(0, 5).flatMap(v => (v.files || []).map(x => x.hashes && x.hashes.sha1).filter(Boolean)));
+      if (![...localHashes].some(h => depHashes.has(h))) {
+        try { const p = await getJson(`https://api.modrinth.com/v2/project/${pid}`); missing.push({ projectId: pid, title: p.title || pid }); }
+        catch { missing.push({ projectId: pid, title: pid }); }
+      }
+    } catch {}
+  }
+  for (const x of incompatible.slice(0, 20)) {
+    try { const p = await getJson(`https://api.modrinth.com/v2/project/${x.projectId}`); x.title = p.title; } catch { x.title = x.file; }
+  }
+  return { incompatible, missing, unknown };
+}
+ipcMain.handle('mods-check', async (_, { id }) => modsCheck(byId(id)));
+
+// ---------- Починить по результатам проверки: докачать зависимости, заменить несовместимые моды ----------
+ipcMain.handle('mods-fix', async (_, { id, check }) => {
+  const inst = byId(id);
+  if (!inst) throw new Error('Сборка не найдена');
+  const modsDir = sub(inst, 'mods');
+  fs.mkdirSync(modsDir, { recursive: true });
+  const done = [], failed = [];
+  for (const m of (check.missing || []).slice(0, 20)) {
+    try { done.push(...await installMod(inst, m.projectId)); } catch (e) { failed.push(`${m.title}: ${e.message}`); }
+  }
+  for (const x of (check.incompatible || []).slice(0, 20)) {
+    try {
+      const vers = await getJson(mrVersionUrl(inst, x.projectId));
+      if (!vers.length) { failed.push(`${x.title || x.file}: нет версии для ${inst.version}`); continue; }
+      const v = vers[0], f = v.files.find(y => y.primary) || v.files[0];
+      fs.rmSync(path.join(modsDir, x.file), { force: true });
+      await download(f.url, path.join(modsDir, f.filename));
+      done.push(f.filename);
+      for (const d of v.dependencies || []) if (d.dependency_type === 'required' && d.project_id) { try { done.push(...await installMod(inst, d.project_id)); } catch {} }
+    } catch (e) { failed.push(`${x.title || x.file}: ${e.message}`); }
+  }
+  return { done, failed };
+});
 
 // ---------- Починить сборку ----------
 ipcMain.handle('mods-repair', async (_, { id, priority }) => {
