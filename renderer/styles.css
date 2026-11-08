@@ -398,3 +398,9 @@ body.light .toast.err{color:var(--text)}
 /* анимация появления списков (вкладка Ресурсы и др.) */
 .grid.anim{animation:gridIn .35s cubic-bezier(.2,.8,.2,1) both}
 @keyframes gridIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* лицо скина — чёткие пиксели, не размыто */
+.av-face{image-rendering:pixelated;object-fit:cover;image-rendering:crisp-edges}
+/* каскадное появление карточек (Ресурсы) */
+.grid.anim .card-item{animation:cardIn .32s cubic-bezier(.2,.8,.2,1) both}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}

@@ -1045,8 +1045,8 @@ async function searchRes(type) {
   skeleton(grid);
   try {
     const hits = await api.invoke('res-search', { q: $(type === 'shader' ? '#shQ' : '#rpQ').value, type });
-    $('#resList').innerHTML = hits.length ? hits.map(h => `
-      <div class="card-item" data-id="${esc(h.id)}" data-title="${esc(h.title)}" data-type="${type}">
+    $('#resList').innerHTML = hits.length ? hits.map((h, n) => `
+      <div class="card-item" data-id="${esc(h.id)}" data-title="${esc(h.title)}" data-type="${type}" style="animation-delay:${Math.min(n * 45, 400)}ms">
         <div class="ci-ico">${h.icon ? `<img src="${esc(h.icon)}" alt="">` : esc(h.title[0])}</div>
         <div class="ci-body"><b>${esc(h.title)}</b><p>${esc(h.desc)}</p><small>${type === 'shader' ? '🕶 шейдер' : '🖼 ресурспак'} · ${fmt(h.downloads)}</small></div>
         <button class="btn primary sm" data-a="install">${esc(t('common.install'))}</button></div>`).join('') : `<div class="empty">${esc(t('common.notFound'))}</div>`;

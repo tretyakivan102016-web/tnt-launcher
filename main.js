@@ -27,8 +27,9 @@ const saveInsts = () => fs.writeFileSync(instFile, JSON.stringify(insts, null, 2
 const instRoot = path.join(root, 'instances');
 const instDir = i => path.join(instRoot, i.dir || i.id);          // папка сборки носит её название
 const RESERVED = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+const SAFE_DIR = (function(){ try { return new RegExp('[^\\p{L}\\p{N} _().\\-]', 'gu'); } catch (e) { return /[^0-9A-Za-zА-Яа-яЁё _().\-]/g; } })();  // эмодзи в имени папки ломают путь в Java на Windows
 function dirNameFor(name, exceptId) {
-  let base = String(name || '').replace(/[<>:"\/\\|?*\x00-\x1f]/g, '').replace(/^\.+/, '').replace(/[. ]+$/, '').trim().slice(0, 40).trim() || 'Сборка';
+  let base = String(name || '').replace(SAFE_DIR, '').replace(/[<>:"\/\\|?*\x00-\x1f]/g, '').replace(/^\.+/, '').replace(/[. ]+$/, '').trim().slice(0, 40).trim() || 'Сборка';
   if (RESERVED.test(base)) base += '_';
   const mine = exceptId && insts.find(x => x.id === exceptId);
   const taken = new Set(insts.filter(x => x.id !== exceptId).map(x => (x.dir || x.id).toLowerCase()));
@@ -37,16 +38,23 @@ function dirNameFor(name, exceptId) {
   while (!free(d)) d = `${base} (${n++})`;
   return d;
 }
-function migrateDirs() {                                           // старые сборки с папками-кодами переименовываем по названию
+function migrateDirs() {                                           // папки-коды → названия; имена с эмодзи → безопасные
   let changed = false;
   for (const i of insts) {
-    if (i.dir) continue;
-    const old = path.join(instRoot, i.id), d = dirNameFor(i.name, i.id);
-    try { if (fs.existsSync(old)) fs.renameSync(old, path.join(instRoot, d)); i.dir = d; }
-    catch { i.dir = i.id; }
+    const want = dirNameFor(i.name, i.id);
+    if (i.dir && i.dir === want && !SAFE_DIR.test(i.dir)) continue;
+    if (i.dir && i.dir !== want && !SAFE_DIR.test(i.dir) && fs.existsSync(path.join(instRoot, i.dir))) {
+      // безопасное имя, но не совпадает (переименовали сборку) — оставляем как есть
+      continue;
+    }
+    const from = path.join(instRoot, i.dir || i.id);
+    try {
+      if (fs.existsSync(from)) fs.renameSync(from, path.join(instRoot, want));
+      i.dir = want;
+    } catch { i.dir = i.dir || i.id; }
     changed = true;
   }
-  if (changed) saveInsts();
+  if (changed) { saveInsts(); console.log('Папки сборок приведены к безопасным именам'); }
 }
 fs.mkdirSync(instRoot, { recursive: true });
 migrateDirs();
@@ -510,7 +518,13 @@ async function installMod(inst, pid, seen = new Set(), skipDeps = false) {
   const vers = await getJson(mrVersionUrl(inst, pid));
   if (!vers.length) throw new Error(`Нет версии мода для ${inst.version} / ${inst.loader}`);
   const v = vers[0], f = v.files.find(x => x.primary) || v.files[0];
-  await download(f.url, path.join(sub(inst, 'mods'), f.filename));
+  const dest = path.join(sub(inst, 'mods'), f.filename);
+  await download(f.url, dest);
+  const wantSha1 = f.hashes && f.hashes.sha1;                     // битый jar = краши вида NoClassDefFoundError
+  if (wantSha1) {
+    const got = crypto.createHash('sha1').update(fs.readFileSync(dest)).digest('hex');
+    if (got !== wantSha1) { fs.rmSync(dest, { force: true }); throw new Error(`Мод «${v.name}» скачался битым — попробуйте ещё раз`); }
+  }
   const done = [f.filename];
   if (!skipDeps)
     for (const d of v.dependencies || [])
