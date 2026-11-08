@@ -29,7 +29,7 @@ public abstract class ChatHudMixin {
                 clean = TntBadgeClient.GLYPH + author + " » " + m.group(2);
             }
             ci.cancel();
-            ((ChatHud) (Object) this).addMessage(Text.literal(clean).styled(message.getStyle()));
+            ((ChatHud) (Object) this).addMessage(Text.literal(clean));
         } catch (Throwable ignored) {}
     }
 }
