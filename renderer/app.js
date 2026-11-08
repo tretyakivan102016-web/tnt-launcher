@@ -166,7 +166,7 @@ const I18N = {
     'cat.by': 'от', 'cat.installs': 'установок', 'cat.install': 'Установить', 'cat.installed': 'Модпак установлен',
     'cat.empty': 'Пока нет модпаков — создайте первый!', 'cat.myEmpty': 'Вы ещё не публиковали модпаки', 'cat.delete': 'Удалить',
     'cat.deleted': 'Модпак удалён', 'cat.published': 'Модпак опубликован! Теперь он виден всем в каталоге', 'cat.cfOpen': 'Открыть на CurseForge',
-    'cat.mustLogin': 'Чтобы публиковать модпаки, войдите через Microsoft', 'cat.modsN': 'модов',
+    'cat.mustLogin': 'Чтобы публиковать модпаки, войдите через Microsoft', 'cat.modsN': 'модов', 'pack.confirmInstall': 'Установить модпак #%{id} из TnT?', 'upd.ready': 'Скачано — нажмите «Обновить», установка займёт секунду',
     // ресурспаки/шейдеры
     'res.title': 'Ресурспаки и шейдеры', 'res.hint': 'Ресурспаки и шейдеры с Modrinth — установка одной кнопкой в эту сборку (в папки resourcepacks / shaderpacks).', 'res.rp': 'Ресурспаки', 'res.sh': 'Шейдеры', 'res.rpExample': 'Ресурспаки: например Fresh Animations…', 'res.shExample': 'Шейдеры: например Complementary…',
     'res.installed': 'Установлено в сборку: {name}', 'res.installedShared': 'Установлено (общая папка): {name}', 'res.needInst': 'Выберите Java-сборку слева — установится в неё',
@@ -352,7 +352,7 @@ const I18N = {
     'cat.by': 'by', 'cat.installs': 'installs', 'cat.install': 'Install', 'cat.installed': 'Modpack installed',
     'cat.empty': 'No modpacks yet — create the first one!', 'cat.myEmpty': 'You have not published any modpacks', 'cat.delete': 'Delete',
     'cat.deleted': 'Modpack deleted', 'cat.published': 'Published! Everyone can see it now', 'cat.cfOpen': 'Open on CurseForge',
-    'cat.mustLogin': 'Sign in via Microsoft to publish modpacks', 'cat.modsN': 'mods',
+    'cat.mustLogin': 'Sign in via Microsoft to publish modpacks', 'cat.modsN': 'mods', 'pack.confirmInstall': 'Install modpack #%{id} from TnT?', 'upd.ready': 'Downloaded — press Update, install takes a second',
     // resourcepacks/shaders
     'res.title': 'Resource packs & shaders', 'res.hint': 'Resource packs and shaders from Modrinth — one click into this instance (resourcepacks / shaderpacks folders).', 'res.rp': 'Resource packs', 'res.sh': 'Shaders', 'res.rpExample': 'Resource packs: e.g. Fresh Animations…', 'res.shExample': 'Shaders: e.g. Complementary…',
     'res.installed': 'Installed into instance: {name}', 'res.installedShared': 'Installed (shared folder): {name}', 'res.needInst': 'Pick a Java instance on the left — it will install there',
@@ -580,7 +580,7 @@ function setTab(t) {
   $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   $$('#v-inst .pane').forEach(p => p.classList.toggle('on', p.id === 'p-' + t));
   if (t === 'mods') { loadRecommendedMods(); renderInstalledMods(); }
-  if (t === 'res' && !$('#resList').children.length) searchRes('resourcepack');
+  if (t === 'res') { const g = $('#resList'); g.classList.remove('anim'); void g.offsetWidth; g.classList.add('anim'); if (!g.children.length) searchRes('resourcepack'); }
 }
 $('#tabs').onclick = e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.t); };
 
@@ -914,7 +914,7 @@ async function loadPacks() {
       <div class="pack-card" data-id="${pk.id}">
         ${av(pk.name, PACK_COLOR(pk.id), '', { avatarText: (pk.name || 'M').replace(/[^\p{L}\p{N} ]/gu, '').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'M' })}
         <div class="pc-body">
-          <b>${esc(pk.name)} ${pk.mine ? '<span class="mine-badge">ваша</span>' : ''}</b>
+          <b>${esc(pk.name)} ${pk.mine ? `<span class="mine-badge">${pk.status === 'pending' ? '⏳ на проверке' : pk.status === 'rejected' ? '❌ отклонён' : 'ваша'}</span>` : ''}</b>
           <div class="pc-meta">${esc(t('cat.by'))} ${esc(pk.author.name)}${pk.author.admin ? ' 👑' : ''} · ${esc(pk.version)} · ${LOADER[pk.loader] || pk.loader} · ${(pk.mods || []).length} ${esc(t('cat.modsN'))} · ${fmt(pk.installs)} ${esc(t('cat.installs'))}</div>
           <div class="pc-tags">${(pk.tagNames || []).map(x => `<span class="minitag">${esc(x)}</span>`).join(' ')}</div>
           ${pk.desc ? `<p>${esc(pk.desc)}</p>` : ''}
@@ -1040,7 +1040,9 @@ $('#resTabs').onclick = e => {
   searchRes(shader ? 'shader' : 'resourcepack');
 };
 async function searchRes(type) {
-  skeleton($('#resList'));
+  const grid = $('#resList');
+  grid.classList.remove('anim'); void grid.offsetWidth; grid.classList.add('anim');   // плавное появление
+  skeleton(grid);
   try {
     const hits = await api.invoke('res-search', { q: $(type === 'shader' ? '#shQ' : '#rpQ').value, type });
     $('#resList').innerHTML = hits.length ? hits.map(h => `
@@ -1378,6 +1380,9 @@ async function checkUpdate(manual) {
   if (r.state === 'new') {
     updInfo = r; $('#updVer').textContent = r.version; $('#updBanner').hidden = false; $('#updBanner').title = r.notes || '';
     if (manual) $('#updState').textContent = t('upd.stateNew', { version: r.version });
+    if (r.hasAsset) {                                             // качаем сразу — «Обновить» поставит мгновенно
+      api.invoke('update-download').then(() => { $('#updMsg').textContent = t('upd.ready'); }).catch(() => {});
+    }
   } else if (manual) {
     $('#updState').textContent = r.state === 'latest' ? t('upd.latest') : (/404/.test(r.error) ? t('upd.noReleases') : t('upd.checkFailed', { error: r.error }));
   }
@@ -1418,6 +1423,13 @@ $('#siteGo').onclick = () => { const c = $('#siteCode').value.trim(); if (c.repl
 $('#siteSave').onclick = async () => { try { S.st.site = await api.invoke('set-site', $('#siteUrl').value); $('#siteUrl').value = S.st.site; toast(t('acc.urlSaved')); } catch (e) { toast(errMsg(e), 'err'); } };
 $('#siteYes').onclick = () => siteClaim();
 $('#siteNo').onclick = () => $('#siteBanner').hidden = true;
+api.onPackCode(async pid => {                        // tntlauncher://pack/<id> — установка модпака из Telegram
+  if (!pid) return;
+  go('catalog');
+  if (!confirm(t('pack.confirmInstall', { id: pid }))) return;
+  try { const inst = await api.invoke('packs-cloud-install', { id: +pid }); await refresh(); toast(t('cat.installed')); select(inst.id); }
+  catch (e) { toast(errMsg(e), 'err'); }
+});
 api.onSiteCode(async code => {                       // пришли по кнопке «Открыть в лаунчере» на сайте
   go('account');
   const r = await api.invoke('site-peek', code);

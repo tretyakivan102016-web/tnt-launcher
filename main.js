@@ -106,7 +106,12 @@ if (process.defaultApp) { if (process.argv.length >= 2) app.setAsDefaultProtocol
 else app.setAsDefaultProtocolClient('tntlauncher');
 let pendingLink = process.argv.find(a => a.startsWith('tntlauncher://'));
 function deepLink(url) {
-  try { const u = new URL(url); const code = u.hostname === 'login' && u.searchParams.get('code'); if (code) send('site-code', code); } catch {}
+  try {
+    const u = new URL(url);
+    const code = u.hostname === 'login' && u.searchParams.get('code');
+    if (code) send('site-code', code);
+    if (u.hostname === 'pack') send('pack-code', u.pathname.replace(/[^0-9]/g, ''));   // tntlauncher://pack/<id> — из Telegram
+  } catch {}
 }
 app.on('second-instance', (_, argv) => {
   if (win) { if (win.isMinimized()) win.restore(); win.focus(); }
@@ -398,19 +403,18 @@ const readOptionsTxt = (file, keys) => {
   try { for (const l of fs.readFileSync(file, 'utf8').split(/\r?\n/)) { const m = l.match(/^(\w+)=(.+)$/); if (m && keys.includes(m[1])) out[m[1]] = m[2]; } } catch {}
   return out;
 };
-function syncSharedInto(inst) {                     // перед запуском: общее → в сборку
+const sharedOptions = path.join(root, 'options.txt');    // ВСЕ настройки игры общие между сборками
+function syncSharedInto(inst) {                     // перед запуском: общие серверы и настройки → в сборку
   try {
     if (fs.existsSync(sharedServers)) fs.copyFileSync(sharedServers, path.join(instDir(inst), 'servers.dat'));
-    const vals = JSON.parse(fs.readFileSync(sharedMcOpts, 'utf8'));
-    if (vals && Object.keys(vals).length) patchOptionsTxt(path.join(instDir(inst), 'options.txt'), vals);
+    if (fs.existsSync(sharedOptions)) fs.copyFileSync(sharedOptions, path.join(instDir(inst), 'options.txt'));
   } catch {}
 }
-function syncSharedFrom(inst) {                     // после игры: сборка → общее
+function syncSharedFrom(inst) {                     // после игры: сборка → общие
   try {
-    const sv = path.join(instDir(inst), 'servers.dat');
-    if (fs.existsSync(sv)) fs.copyFileSync(sv, sharedServers);
-    const got = readOptionsTxt(path.join(instDir(inst), 'options.txt'), ['lang', 'narrator']);
-    if (Object.keys(got).length) fs.writeFileSync(sharedMcOpts, JSON.stringify(got, null, 2));
+    const d = instDir(inst);
+    const sv = path.join(d, 'servers.dat'); if (fs.existsSync(sv)) fs.copyFileSync(sv, sharedServers);
+    const op = path.join(d, 'options.txt'); if (fs.existsSync(op)) fs.copyFileSync(op, sharedOptions);
   } catch {}
 }
 
@@ -890,10 +894,7 @@ ipcMain.handle('update-check', async () => {
     return { state: 'new', version: r.tag_name.replace(/^v/i, ''), notes: (r.body || '').slice(0, 1200), page: r.html_url, hasAsset: !!pick };
   } catch (e) { return { state: 'error', error: String(e.message || e) }; }
 });
-ipcMain.handle('update-install', async () => {
-  if (!pendingUpdate) throw new Error('В релизе нет установщика для вашей системы');
-  const dest = path.join(app.getPath('temp'), pendingUpdate.name);
-  // Скачиваем через зеркало сайта (часто быстрее прямых ссылок GitHub); GitHub — запасной вариант.
+async function fetchUpdate(dest, onProgress) {        // скачивание обновления (зеркало → GitHub), без установки
   const mirrorKey = { win32: 'windows', darwin: 'mac', linux: 'linux' }[process.platform];
   let res = null;
   try { res = await fetch(siteBase() + '/mirror/' + mirrorKey, { headers: UA, redirect: 'follow' }); } catch {}
@@ -909,17 +910,33 @@ ipcMain.handle('update-install', async () => {
     const { done, value } = await reader.read();
     if (done) break;
     out.write(value); got += value.length;
-    send('update-progress', total ? got / total : 0);
+    if (onProgress) onProgress(total ? got / total : 0);
   }
   await new Promise(r => out.end(r));
-  if (pendingUpdate.digest) {                                     // защита от подделок: сверяем контрольную сумму с релизом
-    const got = crypto.createHash('sha256').update(fs.readFileSync(dest)).digest('hex');
-    if (got !== pendingUpdate.digest) {
+  if (pendingUpdate.digest) {                                     // защита от подделок: сверяем sha256
+    const gotHash = crypto.createHash('sha256').update(fs.readFileSync(dest)).digest('hex');
+    if (gotHash !== pendingUpdate.digest) {
       fs.rmSync(dest, { force: true });
-      throw new Error('Файл не прошёл проверку целостности — скачивание прервано. Скачайте установщик с tntlauncher.app');
+      pendingUpdate.downloaded = null;
+      throw new Error('Файл не прошёл проверку целостности. Скачайте установщик с tntlauncher.app');
     }
     log('Целостность обновления подтверждена (sha256)');
   }
+  pendingUpdate.downloaded = dest;
+  return dest;
+}
+ipcMain.handle('update-download', async () => {       // фоновая загрузка сразу после проверки обновлений
+  if (!pendingUpdate) throw new Error('Обновление не найдено');
+  if (pendingUpdate.downloaded && fs.existsSync(pendingUpdate.downloaded)) return { ready: true, path: pendingUpdate.downloaded };
+  const dest = path.join(app.getPath('temp'), pendingUpdate.name);
+  await fetchUpdate(dest, f => send('update-progress', f));
+  return { ready: true, path: dest };
+});
+ipcMain.handle('update-install', async () => {
+  if (!pendingUpdate) throw new Error('В релизе нет установщика для вашей системы');
+  const dest = pendingUpdate.downloaded && fs.existsSync(pendingUpdate.downloaded)
+    ? pendingUpdate.downloaded
+    : await fetchUpdate(path.join(app.getPath('temp'), pendingUpdate.name), f => send('update-progress', f));
   if (process.platform === 'win32') {
     // тихая установка: без окон, в ту же папку, где лаунчер уже стоит; после установки лаунчер запускается сам
     spawn(dest, ['/S', '--updated', '--force-run'], { detached: true, stdio: 'ignore' }).unref();

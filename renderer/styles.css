@@ -394,3 +394,7 @@ body.light select option{background:#fff;color:#1a222c}
 body.light select{color:var(--text)}
 body.light dialog::backdrop{background:rgba(20,26,34,.35)}
 body.light .toast.err{color:var(--text)}
+
+/* анимация появления списков (вкладка Ресурсы и др.) */
+.grid.anim{animation:gridIn .35s cubic-bezier(.2,.8,.2,1) both}
+@keyframes gridIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
