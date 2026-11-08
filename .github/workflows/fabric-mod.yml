@@ -26,7 +26,7 @@ jobs:
         working-directory: mod-tntbadge
         run: gradle build --no-daemon
       - name: Pick jar
-        run: cp mod-tntbadge/build/libs/tntbadge-*.jar TnT-Badge-latest.jar
+        run: cp "$(ls mod-tntbadge/build/libs/tntbadge-*.jar | grep -v sources | head -1)" TnT-Badge-latest.jar
       - uses: actions/upload-artifact@v4
         with:
           name: tnt-badge-mod
