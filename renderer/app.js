@@ -20,7 +20,7 @@ const I18N = {
     // запуск
     'play': 'ИГРАТЬ', 'stop': 'СТОП', 'launching': 'ЗАПУСК…', 'prog.ready': 'Готов к запуску',
     'q.folder': 'Папка игры', 'q.folderTitle': 'Открыть папку игры', 'q.mods': 'Моды', 'q.rp': 'Ресурспаки', 'q.shaders': 'Шейдеры', 'q.saves': 'Миры',
-    'tab.files': 'Файлы', 'tab.mods': 'Установка модов', 'tab.set': 'Настройки сборки', 'tab.log': 'Журнал',
+    'tab.files': 'Файлы', 'tab.mods': 'Установка модов', 'tab.res': 'Ресурсы', 'tab.set': 'Настройки сборки', 'tab.log': 'Журнал',
     // файлы
     'files.add': 'Добавить файлы', 'files.open': 'Открыть папку', 'files.root': 'Папка сборки',
     'files.empty': 'Здесь пока пусто', 'files.enable': 'Включить', 'files.disable': 'Выключить', 'files.disabledSuffix': ' · выключен',
@@ -167,13 +167,13 @@ const I18N = {
     'cat.deleted': 'Модпак удалён', 'cat.published': 'Модпак опубликован! Теперь он виден всем в каталоге', 'cat.cfOpen': 'Открыть на CurseForge',
     'cat.mustLogin': 'Чтобы публиковать модпаки, войдите через Microsoft', 'cat.modsN': 'модов',
     // ресурспаки/шейдеры
-    'res.title': 'Ресурспаки и шейдеры', 'res.rpExample': 'Ресурспаки: например Fresh Animations…', 'res.shExample': 'Шейдеры: например Complementary…',
+    'res.title': 'Ресурспаки и шейдеры', 'res.hint': 'Ресурспаки и шейдеры с Modrinth — установка одной кнопкой в эту сборку (в папки resourcepacks / shaderpacks).', 'res.rp': 'Ресурспаки', 'res.sh': 'Шейдеры', 'res.rpExample': 'Ресурспаки: например Fresh Animations…', 'res.shExample': 'Шейдеры: например Complementary…',
     'res.installed': 'Установлено в сборку: {name}', 'res.installedShared': 'Установлено (общая папка): {name}', 'res.needInst': 'Выберите Java-сборку слева — установится в неё',
     // версии
     'ver.all': 'Все', 'ver.release': 'Релизы', 'ver.snapshot': 'Снапшоты', 'ver.beta': 'Беты', 'ver.alpha': 'Альфы', 'new.verTypes': 'Показывать версии',
     // настройки сборки
     'set.avatar': 'Аватар сборки', 'set.avatarPh': '1-2 буквы', 'set.avatarImg': 'Картинка…', 'set.avatarClear': 'Сбросить',
-    'set.fps': '🚀 FPS-пресет (оптимальные JVM-флаги)', 'set.avatarSaved': 'Аватар обновлён',
+    'set.fps': '🚀 FPS-пресет (оптимальные JVM-флаги)', 'set.badge': '🧨 Значок TnT в чате и таблице игроков', 'set.avatarSaved': 'Аватар обновлён',
     // внешний вид
     'app.title': 'Внешний вид', 'app.theme': 'Тема', 'app.dark': 'Тёмная', 'app.light': 'Светлая', 'app.font': 'Шрифт консоли',
     'app.fontSize': 'Размер шрифта', 'app.opacity': 'Непрозрачность окна', 'app.transparent': 'Прозрачный', 'app.opaque': 'Непрозрачный', 'app.reload': 'Перезагрузить все',
@@ -204,7 +204,7 @@ const I18N = {
     // play
     'play': 'PLAY', 'stop': 'STOP', 'launching': 'LAUNCHING…', 'prog.ready': 'Ready to launch',
     'q.folder': 'Game folder', 'q.folderTitle': 'Open the game folder', 'q.mods': 'Mods', 'q.rp': 'Resource packs', 'q.shaders': 'Shaders', 'q.saves': 'Worlds',
-    'tab.files': 'Files', 'tab.mods': 'Mods', 'tab.set': 'Instance settings', 'tab.log': 'Log',
+    'tab.files': 'Files', 'tab.mods': 'Mods', 'tab.res': 'Resources', 'tab.set': 'Instance settings', 'tab.log': 'Log',
     // files
     'files.add': 'Add files', 'files.open': 'Open folder', 'files.root': 'Instance folder',
     'files.empty': 'Nothing here yet', 'files.enable': 'Enable', 'files.disable': 'Disable', 'files.disabledSuffix': ' · disabled',
@@ -351,13 +351,13 @@ const I18N = {
     'cat.deleted': 'Modpack deleted', 'cat.published': 'Published! Everyone can see it now', 'cat.cfOpen': 'Open on CurseForge',
     'cat.mustLogin': 'Sign in via Microsoft to publish modpacks', 'cat.modsN': 'mods',
     // resourcepacks/shaders
-    'res.title': 'Resource packs & shaders', 'res.rpExample': 'Resource packs: e.g. Fresh Animations…', 'res.shExample': 'Shaders: e.g. Complementary…',
+    'res.title': 'Resource packs & shaders', 'res.hint': 'Resource packs and shaders from Modrinth — one click into this instance (resourcepacks / shaderpacks folders).', 'res.rp': 'Resource packs', 'res.sh': 'Shaders', 'res.rpExample': 'Resource packs: e.g. Fresh Animations…', 'res.shExample': 'Shaders: e.g. Complementary…',
     'res.installed': 'Installed into instance: {name}', 'res.installedShared': 'Installed (shared folder): {name}', 'res.needInst': 'Pick a Java instance on the left — it will install there',
     // versions
     'ver.all': 'All', 'ver.release': 'Releases', 'ver.snapshot': 'Snapshots', 'ver.beta': 'Betas', 'ver.alpha': 'Alphas', 'new.verTypes': 'Show versions',
     // instance settings
     'set.avatar': 'Instance avatar', 'set.avatarPh': '1-2 letters', 'set.avatarImg': 'Image…', 'set.avatarClear': 'Reset',
-    'set.fps': '🚀 FPS preset (optimal JVM flags)', 'set.avatarSaved': 'Avatar updated',
+    'set.fps': '🚀 FPS preset (optimal JVM flags)', 'set.badge': '🧨 TnT badge in chat and player list', 'set.avatarSaved': 'Avatar updated',
     // appearance
     'app.title': 'Appearance', 'app.theme': 'Theme', 'app.dark': 'Dark', 'app.light': 'Light', 'app.font': 'Console font',
     'app.fontSize': 'Font size', 'app.opacity': 'Window opacity', 'app.transparent': 'Transparent', 'app.opaque': 'Opaque', 'app.reload': 'Reload all',
@@ -513,7 +513,7 @@ function renderSide() {
   $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.v === S.view));
   const a = S.st && S.st.account;
   if (a && (a.uuid || a.name)) {
-    $('#acctAv').outerHTML = `<img id="acctAv" class="av sm av-face" alt="" src="https://mc-heads.net/avatar/${enc(a.uuid || a.name)}/48">`;
+    $('#acctAv').outerHTML = `<img id="acctAv" class="av sm av-face" alt="" src="https://mc-heads.net/avatar/${encodeURIComponent(a.uuid || a.name)}/48">`;
   } else $('#acctAv').outerHTML = av('?', '#4a5663', 'sm', null, 'acctAv');
   $('#acctName').textContent = a ? a.name : t('acct.guest');
   $('#acctSub').textContent = a ? (a.type === 'microsoft' ? 'Microsoft' : t('acc.offlineShort')) : t('acct.none');
@@ -559,6 +559,7 @@ function setTab(t) {
   $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   $$('#v-inst .pane').forEach(p => p.classList.toggle('on', p.id === 'p-' + t));
   if (t === 'mods') { loadRecommendedMods(); renderInstalledMods(); }
+  if (t === 'res' && !$('#resList').children.length) searchRes('resourcepack');
 }
 $('#tabs').onclick = e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.t); };
 
@@ -663,12 +664,13 @@ async function loadRecommendedMods() {
   skeleton($('#mList'));
   try {
     // Popular recommended: Fabric API, Sodium, Iris (search or specific)
-    const popular = ['fabric-api', 'sodium', 'iris'];
-    const hits = [];
+    const popular = i.loader === 'forge' ? ['jei', 'appleskin', 'sodium'] : ['fabric-api', 'sodium', 'iris'];
+    const hits = []; const seen = new Set();
     for (const slug of popular) {
       try {
         const res = await api.invoke('mods-search', { id: i.id, q: slug });
-        if (res && res[0]) hits.push(res[0]);
+        const h = res && res[0];
+        if (h && h.id && !seen.has(h.id)) { seen.add(h.id); hits.push(h); }   // без пустых слотов и дублей
       } catch {}
     }
     if (!hits.length) {
@@ -679,11 +681,22 @@ async function loadRecommendedMods() {
   } catch (e) { $('#mList').innerHTML = ''; }
 }
 
+let mSrc = 'mr';
+$('#mSrc').onclick = e => { const b = e.target.closest('button'); if (b) { mSrc = b.dataset.s; seg($('#mSrc'), mSrc); } };
 async function searchMods() {
   const i = cur(); if (!i) return;
   if (i.loader === 'vanilla') { toast(t('mods.vanillaWarn'), 'warn'); return; }
   skeleton($('#mList'));
   try {
+    if (mSrc === 'cf') {                                 // CurseForge: ставим напрямую в эту сборку
+      const hits = await api.invoke('cf-search', { q: $('#mQ').value, type: 'mod' });
+      $('#mList').innerHTML = hits.length ? hits.map(h => `
+        <div class="card-item" data-cf="${esc(h.id)}">
+          <div class="ci-ico">${h.icon ? `<img src="${esc(h.icon)}" alt="">` : esc(h.title[0])}</div>
+          <div class="ci-body"><b>${esc(h.title)}</b><p>${esc(h.desc)}</p><small>CurseForge · ${fmt(h.downloads)}</small></div>
+          <button class="btn primary sm" data-a="cf-install">${esc(t('common.install'))}</button></div>`).join('') : `<div class="empty">${esc(t('common.notFound'))}</div>`;
+      return;
+    }
     const hits = await api.invoke('mods-search', { id: i.id, q: $('#mQ').value });
     $('#mList').innerHTML = hits.length ? hits.map(h => card(h, t('common.install'))).join('') : `<div class="empty">${esc(t('mods.notFound'))}</div>`;
   } catch (e) { $('#mList').innerHTML = ''; toast(errMsg(e), 'err'); }
@@ -705,16 +718,24 @@ async function renderInstalledMods() {
       (files.length ? files.sort((a, b) => a.name.localeCompare(b.name)).map(f => `
         <span class="selchip"><i>${esc(f.name.replace(/\.disabled$/, '').replace(/\.(jar|zip)$/i, ''))}</i>${f.enabled ? '' : ' <small>(off)</small>'} <b data-del="${esc(f.name)}">×</b></span>`).join('') : `<span class="muted small">—</span>`);
   } catch { box.innerHTML = ''; }
+  box.onclick = async e => {                          // удаление в один клик (вешаем после создания блока)
+    const b = e.target.closest('[data-del]'); if (!b) return;
+    const name = b.dataset.del;
+    try { await api.invoke('file-delete', { id: S.cur, folder: 'mods', name }); renderInstalledMods(); renderFiles(); }
+    catch (er) { toast(errMsg(er), 'err'); }
+  };
 }
-$('#mInstalled') && ($('#mInstalled').onclick = async e => {
-  const b = e.target.closest('[data-del]'); if (!b) return;
-  const name = b.dataset.del;
-  try { await api.invoke('file-delete', { id: S.cur, folder: 'mods', name }); renderInstalledMods(); renderFiles(); }
-  catch (er) { toast(errMsg(er), 'err'); }
-});
 $('#mGo').onclick = searchMods;
 $('#mQ').onkeydown = e => { if (e.key === 'Enter') searchMods(); };
 $('#mList').onclick = async e => {
+  const cf = e.target.closest('[data-a=cf-install]');
+  if (cf) {
+    const c = cf.closest('.card-item');
+    cf.textContent = '…'; cf.disabled = true;
+    try { const fn = await api.invoke('cf-install', { id: c.dataset.cf, instId: S.cur }); toast(t('common.installed') + ': ' + fn); renderFiles(); renderInstalledMods(); }
+    catch (er) { cf.textContent = t('common.install'); cf.disabled = false; toast(errMsg(er), 'err'); }
+    return;
+  }
   const b = e.target.closest('[data-a=install]'); if (!b) return;
   const id = b.closest('.card-item').dataset.id;
   const auto = localStorage.getItem('auto_download_deps') === 'true';
@@ -791,6 +812,7 @@ function fillVersions(sel, selected, all) {
 function fillSettings(i) {
   $('#sName').value = i.name; $('#sJvm').value = i.jvm || '';
   $('#sFps').checked = !!i.optimize; $('#sAvatarText').value = i.avatarText || '';
+  $('#sBadgeRow').hidden = i.loader !== 'fabric'; $('#sBadge').checked = i.tntBadge !== false;
   fillVersions($('#sVer'), i.version, true); $('#sVer').value = i.version;
   seg($('#sLoader'), i.loader);
   const r = $('#sRam'); r.max = Math.max(2048, Math.floor(S.st.totalMemMB / 512) * 512); r.value = i.ram || S.st.ram;
@@ -802,7 +824,7 @@ $('#sDef').onchange = ramLabel;
 $('#sLoader').onclick = e => { const b = e.target.closest('button'); if (b) seg($('#sLoader'), b.dataset.l); };
 $('#sSave').onclick = async () => {
   try {
-    await api.invoke('inst-update', { id: S.cur, patch: { name: $('#sName').value, version: $('#sVer').value, loader: segVal($('#sLoader')), jvm: $('#sJvm').value.trim(), ram: $('#sDef').checked ? null : +$('#sRam').value, optimize: $('#sFps').checked } });
+    await api.invoke('inst-update', { id: S.cur, patch: { name: $('#sName').value, version: $('#sVer').value, loader: segVal($('#sLoader')), jvm: $('#sJvm').value.trim(), ram: $('#sDef').checked ? null : +$('#sRam').value, optimize: $('#sFps').checked, tntBadge: $('#sBadge').checked } });
     const at = $('#sAvatarText').value.trim().slice(0, 2);
     if (at !== (cur().avatarText || '')) await api.invoke('inst-avatar', { id: S.cur, text: at });
     await refresh(); renderSide(); renderInst(); toast(t('common.saved'));
@@ -987,7 +1009,15 @@ $('#pList').onclick = async e => {
   try { const i = await api.invoke('packs-install', { project: c.dataset.id, title: c.dataset.title }); await refresh(); toast(t('cat.installed', { name: i.name })); select(i.id); }
   catch (er) { b.textContent = t('common.install'); b.disabled = false; toast(errMsg(er), 'err'); }
 };
-// ресурспаки и шейдеры — 1 кнопкой в текущую сборку
+// ресурспаки и шейдеры — вкладка сборки, 1 кнопкой в текущую сборку
+$('#resTabs').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const shader = b.dataset.rt === 'shader';
+  seg($('#resTabs'), b.dataset.rt);
+  $('#rpQ').hidden = shader; $('#rpGo').hidden = shader;
+  $('#shQ').hidden = !shader; $('#shGo').hidden = !shader;
+  searchRes(shader ? 'shader' : 'resourcepack');
+};
 async function searchRes(type) {
   skeleton($('#resList'));
   try {
@@ -1006,6 +1036,7 @@ $('#resList').onclick = async e => {
   const c = b.closest('.card-item');
   const javaInst = S.insts.find(i => i.kind !== 'bedrock' && i.id === S.cur);
   if (!javaInst) { toast(t('res.needInst'), 'warn'); return; }
+  void c;
   b.textContent = '…'; b.disabled = true;
   try { const r = await api.invoke('res-install', { project: c.dataset.id, type: c.dataset.type, instId: javaInst.id }); toast(t('res.installed', { name: r.filename })); renderFiles(); }
   catch (er) { b.textContent = t('common.install'); b.disabled = false; toast(errMsg(er), 'err'); }
@@ -1024,7 +1055,7 @@ function renderAccount() {
   $('#nick').value = S.st.nick || '';
   const g = $('#gRam'); g.max = Math.max(2048, Math.floor(S.st.totalMemMB / 512) * 512); g.value = S.st.ram; $('#gRamV').textContent = (S.st.ram / 1024).toFixed(1) + t('units.gb');
   const ap = S.st.appearance || { theme: 'dark', font: 'Consolas', fontSize: 12, opacity: 100 };
-  $('#appTheme').value = ap.theme; $('#appFont').value = ap.font; $('#appFontSize').value = ap.fontSize; $('#appOpacity').value = ap.opacity;
+  $('#appTheme').value = ap.theme; $('#appFont').value = ap.font; $('#appFontSize').value = ap.fontSize;
   // при открытии настроек проверяем обновления (не чаще раза в 10 минут), чтобы предложение не зависело от старта
   if (Date.now() - (renderAccount.lastCheck || 0) > 600000) { renderAccount.lastCheck = Date.now(); checkUpdate(false).catch(() => {}); }
 }
@@ -1038,11 +1069,11 @@ function applyAppearance(ap) {
   document.documentElement.style.setProperty('--console-fs', ap.fontSize + 'px');
 }
 const apChange = async () => {
-  const ap = { theme: $('#appTheme').value, font: $('#appFont').value, fontSize: +$('#appFontSize').value || 12, opacity: +$('#appOpacity').value };
+  const ap = { theme: $('#appTheme').value, font: $('#appFont').value, fontSize: +$('#appFontSize').value || 12, opacity: 100 };
   S.st.appearance = await api.invoke('appearance-set', ap);
   applyAppearance(S.st.appearance);
 };
-$('#appTheme').onchange = apChange; $('#appFont').onchange = apChange; $('#appFontSize').onchange = apChange; $('#appOpacity').oninput = apChange;
+$('#appTheme').onchange = apChange; $('#appFont').onchange = apChange; $('#appFontSize').onchange = apChange;
 $('#appReload').onclick = () => location.reload();
 $('#gRam').oninput = e => { S.st.ram = +e.target.value; $('#gRamV').textContent = (S.st.ram / 1024).toFixed(1) + t('units.gb'); api.invoke('set-ram', S.st.ram); };
 

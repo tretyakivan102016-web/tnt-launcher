@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "tntbadge",
+  "version": "${version}",
+  "name": "TnT Badge",
+  "description": "Shows the TnT Launcher dynamite badge next to nicknames of TnT players in chat and tab list.",
+  "authors": ["TnT Launcher"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": { "client": ["app.tnt.badge.TntBadgeClient"] },
+  "mixins": ["tntbadge.mixins.json"],
+  "depends": { "fabricloader": ">=0.16.0", "minecraft": "~1.21", "java": ">=17" }
+}

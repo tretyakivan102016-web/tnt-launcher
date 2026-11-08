@@ -1,0 +1,38 @@
+name: Build TnT Badge mod
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Тег релиза для прикрепления мода (например v1.10.1); пусто — только артефакт'
+        required: false
+        default: ''
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  mod:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.9'
+      - name: Build mod
+        working-directory: mod-tntbadge
+        run: gradle build --no-daemon
+      - name: Pick jar
+        run: cp mod-tntbadge/build/libs/tntbadge-*.jar TnT-Badge-latest.jar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tnt-badge-mod
+          path: TnT-Badge-latest.jar
+      - uses: softprops/action-gh-release@v2
+        if: ${{ startsWith(github.ref, 'refs/tags/') || inputs.tag != '' }}
+        with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          files: TnT-Badge-latest.jar

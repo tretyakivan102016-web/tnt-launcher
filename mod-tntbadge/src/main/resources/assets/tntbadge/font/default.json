@@ -1,0 +1,6 @@
+{
+  "providers": [
+    { "type": "bitmap", "file": "tntbadge:font/tnt.png", "ascent": 8, "height": 8,
+      "chars": ["\uE001"] }
+  ]
+}

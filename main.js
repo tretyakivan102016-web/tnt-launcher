@@ -135,7 +135,7 @@ ipcMain.handle('inst-update', (_, { id, patch }) => {
   if (i.kind === 'bedrock') {                       // у Bedrock-сборок нет версии/загрузчика/памяти JVM
     for (const k of ['name', 'color']) if (k in patch) i[k] = patch[k];
   } else {
-    for (const k of ['name', 'version', 'loader', 'ram', 'jvm', 'color']) if (k in patch) i[k] = patch[k];
+    for (const k of ['name', 'version', 'loader', 'ram', 'jvm', 'color', 'tntBadge']) if (k in patch) i[k] = patch[k];
     if ('version' in patch || 'loader' in patch) i.loaderVersion = null;
   }
   i.name = (i.name || 'Сборка').trim().slice(0, 40);
@@ -414,12 +414,23 @@ function syncSharedFrom(inst) {                     // после игры: сб
   } catch {}
 }
 
+// 🧨 значок TnT: fabric-мод tntbadge из релиза (ставится автоматически, ошибки не мешают игре)
+const BADGE_URL = 'https://github.com/tretyakivan102016-web/tnt-launcher/releases/latest/download/TnT-Badge-latest.jar';
+async function ensureTntBadge(inst) {
+  if (inst.loader !== 'fabric' || inst.tntBadge === false) return;
+  const mods = sub(inst, 'mods');
+  try { if (fs.readdirSync(mods).some(f => /^tntbadge.*\.jar$/i.test(f))) return; } catch {}
+  try { log('TnT: устанавливаю значок 🧨 (мод tntbadge)'); await download(BADGE_URL, path.join(mods, 'tntbadge.jar')); }
+  catch (e) { log('TnT: значок не установлен — ' + (e.message || e)); }
+}
+
 ipcMain.handle('play', async (_, id) => {
   if (child) throw new Error('Игра уже запущена');
   if (!cfg.account) throw new Error('Сначала войдите в аккаунт');
   const inst = byId(id);
   ensureGameDirs(inst);
   syncSharedInto(inst);                              // серверы/язык/диктор — общие для всех сборок
+  await ensureTntBadge(inst);                        // 🧨 значок TnT в чате и таблице игроков
   send('log-clear');
   prog('Готовлю игру…', 0);
   const entry = (await getManifest()).versions.find(v => v.id === inst.version);

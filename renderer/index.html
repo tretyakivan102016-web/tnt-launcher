@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https://cdn.modrinth.com https://media.forgecdn.net; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https://cdn.modrinth.com https://media.forgecdn.net https://mc-heads.net; style-src 'self' 'unsafe-inline'; script-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TnT Launcher</title>
 <link rel="stylesheet" href="styles.css">
@@ -58,6 +58,7 @@
         <div class="tabs" id="tabs">
           <button data-t="files" class="on"><i data-i="folder"></i><span data-i18n="tab.files">Файлы</span></button>
           <button data-t="mods"><i data-i="cube"></i><span data-i18n="tab.mods">Установка модов</span></button>
+          <button data-t="res"><i data-i="image"></i><span data-i18n="tab.res">Ресурсы</span></button>
           <button data-t="set"><i data-i="sliders"></i><span data-i18n="tab.set">Настройки сборки</span></button>
           <button data-t="log"><i data-i="terminal"></i><span data-i18n="tab.log">Журнал</span></button>
         </div>
@@ -78,9 +79,21 @@
 
         <div class="pane" id="p-mods">
           <p class="hint" data-i18n="mods.hint">Моды Modrinth под версию и загрузчик этой сборки. Нужные зависимости ставятся сами.</p>
-          <div class="searchbar"><i data-i="search"></i><input id="mQ" placeholder="Например: Sodium, JEI, Iris…" autocomplete="off" data-i18n="mods.example"><button class="btn primary" id="mGo" data-i18n="common.search">Найти</button><button class="btn" id="mCheck" title="Проверит все моды на совместимость с версией игры и найдёт недостающие зависимости" data-i18n-title="check.btnTitle"><i data-i="check"></i><span data-i18n="check.btn">Проверить сборку</span></button></div>
+          <div class="searchbar"><i data-i="search"></i><input id="mQ" placeholder="Например: Sodium, JEI, Iris…" autocomplete="off" data-i18n="mods.example"><div class="seg" id="mSrc"><button data-s="mr" class="on">Modrinth</button><button data-s="cf">CurseForge</button></div><button class="btn primary" id="mGo" data-i18n="common.search">Найти</button><button class="btn" id="mCheck" title="Проверит все моды на совместимость с версией игры и найдёт недостающие зависимости" data-i18n-title="check.btnTitle"><i data-i="check"></i><span data-i18n="check.btn">Проверить сборку</span></button></div>
           <div id="mCheckResult" hidden></div>
           <div class="grid" id="mList"></div>
+        </div>
+
+        <div class="pane" id="p-res">
+          <p class="hint" data-i18n="res.hint">Ресурспаки и шейдеры с Modrinth — установка одной кнопкой в эту сборку (в папки resourcepacks / shaderpacks).</p>
+          <div class="searchbar" style="margin-bottom:10px"><i data-i="image"></i>
+            <div class="seg" id="resTabs"><button data-rt="resourcepack" class="on" data-i18n="res.rp">Ресурспаки</button><button data-rt="shader" data-i18n="res.sh">Шейдеры</button></div>
+            <input id="rpQ" placeholder="Например: Fresh Animations…" autocomplete="off" data-i18n="res.rpExample">
+            <input id="shQ" placeholder="Например: Complementary…" autocomplete="off" data-i18n="res.shExample" hidden>
+            <button class="btn primary" id="rpGo" data-i18n="common.search">Найти</button>
+            <button class="btn primary" id="shGo" data-i18n="common.search" hidden>Найти</button>
+          </div>
+          <div class="grid" id="resList"></div>
         </div>
 
         <div class="pane" id="p-set">
@@ -95,6 +108,7 @@
                 <button class="btn ghost" id="sAvatarClear" data-i18n="set.avatarClear">Сбросить</button>
               </div></div>
             <label class="check"><input type="checkbox" id="sFps"><i></i><span data-i18n="set.fps">🚀 FPS-пресет (оптимальные JVM-флаги)</span></label>
+            <label class="check" id="sBadgeRow"><input type="checkbox" id="sBadge"><i></i><span data-i18n="set.badge">🧨 Значок TnT в чате и таблице игроков</span></label>
             <div class="field"><span data-i18n="set.loader">Загрузчик</span><div class="seg" id="sLoader"><button data-l="vanilla">Vanilla</button><button data-l="fabric">Fabric</button><button data-l="forge">Forge</button></div></div>
             <div class="field"><span data-i18n="set.ram">Память (RAM)</span>
               <div class="ramrow"><label class="check"><input type="checkbox" id="sDef"><i></i><span data-i18n="set.shared">общая</span></label><input type="range" id="sRam" min="1024" step="512"><b id="sRamV"></b></div></div>
@@ -188,12 +202,6 @@
           <button class="btn primary" id="pGo" data-i18n="common.search">Найти</button><button class="btn" id="pImp" data-i18n="cat.import">Импорт .mrpack</button></div>
         <div class="grid" id="pList"></div>
 
-        <h3 class="sub" data-i18n="res.title">Ресурспаки и шейдеры</h3>
-        <div class="res-row">
-          <div class="searchbar grow"><i data-i="image"></i><input id="rpQ" placeholder="Ресурспаки: например Fresh Animations…" autocomplete="off" data-i18n="res.rpExample"><button class="btn primary" id="rpGo" data-i18n="common.search">Найти</button></div>
-          <div class="searchbar grow"><i data-i="sun"></i><input id="shQ" placeholder="Шейдеры: например Complementary…" autocomplete="off" data-i18n="res.shExample"><button class="btn primary" id="shGo" data-i18n="common.search">Найти</button></div>
-        </div>
-        <div class="grid" id="resList"></div>
       </section>
 
       <section class="page" id="v-skin">
@@ -295,8 +303,6 @@
             <label><span data-i18n="app.font">Шрифт консоли</span>
               <select id="appFont"><option>Consolas</option><option>Segoe UI Mono</option><option>Courier New</option><option>Arial</option><option>Impact</option></select></label>
             <label><span data-i18n="app.fontSize">Размер шрифта</span><input id="appFontSize" type="number" min="8" max="24" step="1" value="12"></label>
-            <div class="field"><span data-i18n="app.opacity">Непрозрачность окна</span>
-              <div class="opacity-row"><small data-i18n="app.transparent">Прозрачный</small><input type="range" id="appOpacity" min="20" max="100" step="5" value="100"><small data-i18n="app.opaque">Непрозрачный</small></div></div>
           </div>
           <div class="row" style="margin-top:12px"><button class="btn" id="appReload" data-i18n="app.reload">Перезагрузить все</button></div>
         </div>
