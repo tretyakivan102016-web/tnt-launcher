@@ -15,7 +15,7 @@ const I18N = {
     'common.notFound': 'Ничего не найдено',
     // боковая панель
     'side.title': 'МОИ СБОРКИ', 'side.bedrock': 'BEDROCK', 'side.for': 'для Minecraft', 'side.new': 'Новая',
-    'nav.catalog': 'Каталог сборок', 'nav.skin': 'Редактор скина', 'nav.account': 'Аккаунт и настройки',
+    'nav.catalog': 'Модпаки', 'nav.skin': 'Редактор скина', 'nav.account': 'Аккаунт и настройки',
     'acct.guest': 'Гость', 'acct.none': 'аккаунт не выбран', 'acc.offlineShort': 'офлайн',
     // запуск
     'play': 'ИГРАТЬ', 'stop': 'СТОП', 'launching': 'ЗАПУСК…', 'prog.ready': 'Готов к запуску',
@@ -41,7 +41,7 @@ const I18N = {
     'set.name': 'Название', 'set.version': 'Версия Minecraft', 'set.color': 'Цвет сборки', 'set.loader': 'Загрузчик',
     'set.ram': 'Память (RAM)', 'set.shared': 'общая', 'set.jvm': 'Аргументы JVM', 'set.delete': 'Удалить сборку',
     'set.renameLocked': 'Остановите игру, чтобы переименовать сборку',
-    'confirm.deleteInst': 'Удалить «{name}» вместе с модами и мирами?',
+    'confirm.deleteInst': 'Удалить «{name}» вместе с модами и мирами?', 'confirm.deletePack': 'Удалить модпак «{name}» из каталога?',
     'new.title': 'Новая сборка', 'new.namePh': 'Необязательно', 'new.version': 'Версия', 'new.snapshots': 'показать снапшоты и старые версии', 'new.create': 'Создать',
     'inst.none': 'Сборок пока нет', 'inst.noneHint': 'создайте первую кнопкой «Новая» слева',
     // каталог
@@ -158,6 +158,31 @@ const I18N = {
     'un.finalDelAll': '<b>Все миры будут удалены без возможности восстановления.</b>', 'un.finalNoWorlds': 'Миров в сборках нет.',
     'un.thenQuits': 'Затем лаунчер закроется и удалится.', 'un.run': 'Удалить лаунчер', 'un.deleting': 'Удаляю…',
     'un.done': 'Готово', 'un.doneText': 'Лаунчер удаляется и сейчас закроется.', 'un.savedTo': 'Миры сохранены:', 'un.back': 'Назад', 'un.toCancel': 'Отмена',
+    // модпаки-облако
+    'cat.cloudExample': 'Поиск модпаков TnT…', 'cat.sortTrend': '🔥 В тренде', 'cat.sortPopular': '⭐ Популярные', 'cat.sortNew': 'Новые',
+    'cat.mine': 'Мои', 'cat.create': 'Создать свой', 'cat.storesTitle': 'Готовые с площадок', 'cat.desc': 'Описание (необязательно)',
+    'cat.tagsLabel': 'Метки', 'cat.findMods': 'Найти мод для сборки', 'cat.selected': 'В сборке', 'cat.publish': 'Опубликовать',
+    'cat.by': 'от', 'cat.installs': 'установок', 'cat.install': 'Установить', 'cat.installed': 'Модпак установлен',
+    'cat.empty': 'Пока нет модпаков — создайте первый!', 'cat.myEmpty': 'Вы ещё не публиковали модпаки', 'cat.delete': 'Удалить',
+    'cat.deleted': 'Модпак удалён', 'cat.published': 'Модпак опубликован! Теперь он виден всем в каталоге', 'cat.cfOpen': 'Открыть на CurseForge',
+    'cat.mustLogin': 'Чтобы публиковать модпаки, войдите через Microsoft', 'cat.modsN': 'модов',
+    // ресурспаки/шейдеры
+    'res.title': 'Ресурспаки и шейдеры', 'res.rpExample': 'Ресурспаки: например Fresh Animations…', 'res.shExample': 'Шейдеры: например Complementary…',
+    'res.installed': 'Установлено в сборку: {name}', 'res.installedShared': 'Установлено (общая папка): {name}', 'res.needInst': 'Выберите Java-сборку слева — установится в неё',
+    // версии
+    'ver.all': 'Все', 'ver.release': 'Релизы', 'ver.snapshot': 'Снапшоты', 'ver.beta': 'Беты', 'ver.alpha': 'Альфы', 'new.verTypes': 'Показывать версии',
+    // настройки сборки
+    'set.avatar': 'Аватар сборки', 'set.avatarPh': '1-2 буквы', 'set.avatarImg': 'Картинка…', 'set.avatarClear': 'Сбросить',
+    'set.fps': '🚀 FPS-пресет (оптимальные JVM-флаги)', 'set.avatarSaved': 'Аватар обновлён',
+    // внешний вид
+    'app.title': 'Внешний вид', 'app.theme': 'Тема', 'app.dark': 'Тёмная', 'app.light': 'Светлая', 'app.font': 'Шрифт консоли',
+    'app.fontSize': 'Размер шрифта', 'app.opacity': 'Непрозрачность окна', 'app.transparent': 'Прозрачный', 'app.opaque': 'Непрозрачный', 'app.reload': 'Перезагрузить все',
+    // редактор скина
+    'skin.hideParts': 'Скрыть части (для рисования)', 'skin.arms': 'Руки', 'skin.legs': 'Ноги', 'skin.catalogTitle': 'Готовые скины',
+    // моды: несовместимые
+    'mods.incompatible': 'Нет версии для {v} — скачать нельзя', 'mods.installedTitle': 'Установленные моды', 'mods.remove': 'Удалить', 'mods.countOff': ' · выключено: {n}',
+    // поддержка
+    'common.supportChat': 'Чат с поддержкой',
     // язык
     'lang.title': 'Язык интерфейса', 'lang.hint': 'Выберите язык лаунчера — настройка применяется сразу и запоминается.',
     'lang.changed': 'Язык изменён: Русский', 'lang.label': 'Language / Язык',
@@ -174,7 +199,7 @@ const I18N = {
     'common.notFound': 'Nothing found',
     // sidebar
     'side.title': 'MY INSTANCES', 'side.bedrock': 'BEDROCK', 'side.for': 'for Minecraft', 'side.new': 'New',
-    'nav.catalog': 'Modpack catalog', 'nav.skin': 'Skin editor', 'nav.account': 'Account & settings',
+    'nav.catalog': 'Modpacks', 'nav.skin': 'Skin editor', 'nav.account': 'Account & settings',
     'acct.guest': 'Guest', 'acct.none': 'no account selected', 'acc.offlineShort': 'offline',
     // play
     'play': 'PLAY', 'stop': 'STOP', 'launching': 'LAUNCHING…', 'prog.ready': 'Ready to launch',
@@ -200,7 +225,7 @@ const I18N = {
     'set.name': 'Name', 'set.version': 'Minecraft version', 'set.color': 'Instance color', 'set.loader': 'Loader',
     'set.ram': 'Memory (RAM)', 'set.shared': 'shared', 'set.jvm': 'JVM arguments', 'set.delete': 'Delete instance',
     'set.renameLocked': 'Stop the game to rename this instance',
-    'confirm.deleteInst': 'Delete "{name}" with all its mods and worlds?',
+    'confirm.deleteInst': 'Delete "{name}" with all its mods and worlds?', 'confirm.deletePack': 'Delete modpack "{name}" from the catalog?',
     'new.title': 'New instance', 'new.namePh': 'Optional', 'new.version': 'Version', 'new.snapshots': 'show snapshots and old versions', 'new.create': 'Create',
     'inst.none': 'No instances yet', 'inst.noneHint': 'create your first one with the "New" button on the left',
     // catalog
@@ -317,6 +342,31 @@ const I18N = {
     'un.finalDelAll': '<b>All worlds will be deleted permanently.</b>', 'un.finalNoWorlds': 'No worlds in instances.',
     'un.thenQuits': 'Then the launcher will close and uninstall.', 'un.run': 'Uninstall', 'un.deleting': 'Uninstalling…',
     'un.done': 'Done', 'un.doneText': 'The launcher is being uninstalled and will close now.', 'un.savedTo': 'Worlds saved:', 'un.back': 'Back', 'un.toCancel': 'Cancel',
+    // cloud modpacks
+    'cat.cloudExample': 'Search TnT modpacks…', 'cat.sortTrend': '🔥 Trending', 'cat.sortPopular': '⭐ Popular', 'cat.sortNew': 'New',
+    'cat.mine': 'Mine', 'cat.create': 'Create your own', 'cat.storesTitle': 'From the stores', 'cat.desc': 'Description (optional)',
+    'cat.tagsLabel': 'Tags', 'cat.findMods': 'Find a mod for the pack', 'cat.selected': 'In this pack', 'cat.publish': 'Publish',
+    'cat.by': 'by', 'cat.installs': 'installs', 'cat.install': 'Install', 'cat.installed': 'Modpack installed',
+    'cat.empty': 'No modpacks yet — create the first one!', 'cat.myEmpty': 'You have not published any modpacks', 'cat.delete': 'Delete',
+    'cat.deleted': 'Modpack deleted', 'cat.published': 'Published! Everyone can see it now', 'cat.cfOpen': 'Open on CurseForge',
+    'cat.mustLogin': 'Sign in via Microsoft to publish modpacks', 'cat.modsN': 'mods',
+    // resourcepacks/shaders
+    'res.title': 'Resource packs & shaders', 'res.rpExample': 'Resource packs: e.g. Fresh Animations…', 'res.shExample': 'Shaders: e.g. Complementary…',
+    'res.installed': 'Installed into instance: {name}', 'res.installedShared': 'Installed (shared folder): {name}', 'res.needInst': 'Pick a Java instance on the left — it will install there',
+    // versions
+    'ver.all': 'All', 'ver.release': 'Releases', 'ver.snapshot': 'Snapshots', 'ver.beta': 'Betas', 'ver.alpha': 'Alphas', 'new.verTypes': 'Show versions',
+    // instance settings
+    'set.avatar': 'Instance avatar', 'set.avatarPh': '1-2 letters', 'set.avatarImg': 'Image…', 'set.avatarClear': 'Reset',
+    'set.fps': '🚀 FPS preset (optimal JVM flags)', 'set.avatarSaved': 'Avatar updated',
+    // appearance
+    'app.title': 'Appearance', 'app.theme': 'Theme', 'app.dark': 'Dark', 'app.light': 'Light', 'app.font': 'Console font',
+    'app.fontSize': 'Font size', 'app.opacity': 'Window opacity', 'app.transparent': 'Transparent', 'app.opaque': 'Opaque', 'app.reload': 'Reload all',
+    // skin editor
+    'skin.hideParts': 'Hide parts (for painting)', 'skin.arms': 'Arms', 'skin.legs': 'Legs', 'skin.catalogTitle': 'Ready skins',
+    // mods: incompatible
+    'mods.incompatible': 'No version for {v} — cannot download', 'mods.installedTitle': 'Installed mods', 'mods.remove': 'Remove', 'mods.countOff': ' · disabled: {n}',
+    // support
+    'common.supportChat': 'Support chat',
     // language
     'lang.title': 'Interface language', 'lang.hint': 'Pick the launcher language — it applies instantly and is remembered.',
     'lang.changed': 'Language changed: English', 'lang.label': 'Language / Язык',
@@ -400,7 +450,12 @@ function toast(text, kind = '') {
   $('#toasts').appendChild(t);
   setTimeout(() => { t.style.opacity = 0; t.style.transition = '.3s'; setTimeout(() => t.remove(), 300); }, kind === 'err' ? 7000 : 3800);
 }
-const av = (name, color, cls = '') => `<div class="av ${cls}" style="--c:${esc(color)}">${esc((name || '?').trim()[0] || '?').toUpperCase()}</div>`;
+const av = (name, color, cls = '', inst = null, id = '') => {
+  const idAttr = id ? ` id="${id}"` : '';
+  if (inst && inst.avatarImg) return `<div class="av ${cls} av-img"${idAttr} style="--c:${esc(color)}"><img src="${inst.avatarImg}" alt=""></div>`;
+  const txt = inst && inst.avatarText ? inst.avatarText : ((name || '?').trim()[0] || '?').toUpperCase();
+  return `<div class="av ${cls}"${idAttr} style="--c:${esc(color)}">${esc(txt)}</div>`;
+};
 const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(1) + t('units.m') : n >= 1e3 ? Math.round(n / 1e3) + t('units.k') : String(n);
 const seg = (el, val) => $$('button', el).forEach(b => b.classList.toggle('on', (b.dataset.l || b.dataset.f || b.dataset.t || b.dataset.e || b.dataset.k) === val));
 const segVal = el => ($('button.on', el) || {}).dataset?.l;
@@ -427,9 +482,11 @@ function go(view) {
   if (view === 'inst') renderInst();
   if (view === 'account') renderAccount();
   if (view === 'bedrock') renderBedrock();
+  if (view === 'catalog') loadPacks();
   $('#pages').scrollTop = 0;
 }
 function select(id) {
+  const le = $('#log'); if (le) le.textContent = '';               // журнал — только текущей сборки
   S.edition = id === 'bedrock' ? 'bedrock' : 'java'; localStorage.setItem('edition', S.edition);
   if (id === 'bedrock') { S.bedrockId = null; go('bedrock'); return; }
   const inst = S.insts.find(i => i.id === id);
@@ -449,13 +506,15 @@ function renderSide() {
       `<button class="inst ${S.view === 'bedrock' && !S.bedrockId ? 'on' : ''}" data-id="bedrock" style="--c:#4da3ff">${av('B', '#4da3ff')}<div><b>Minecraft: Bedrock Edition</b><small>Windows</small></div></button>` +
       profiles.map(i => `
         <button class="inst ${S.view === 'bedrock' && S.bedrockId === i.id ? 'on' : ''}" data-id="${i.id}" style="--c:${esc(i.color)}">
-          ${av(i.name, i.color)}<div><b>${esc(i.name)}</b><small>${esc(t('be.profileChip'))}</small></div></button>`).join('');
+          ${av(i.name, i.color, '', i)}<div><b>${esc(i.name)}</b><small>${esc(t('be.profileChip'))}</small></div></button>`).join('');
   } else $('#instList').innerHTML = S.insts.filter(i => i.kind !== 'bedrock').map(i => `
     <button class="inst ${S.view === 'inst' && i.id === S.cur ? 'on' : ''}" data-id="${i.id}" style="--c:${esc(i.color)}">
-      ${av(i.name, i.color)}<div><b>${esc(i.name)}</b><small>${esc(i.version)} · ${LOADER[i.loader]}</small></div></button>`).join('');
+      ${av(i.name, i.color, '', i)}<div><b>${esc(i.name)}</b><small>${esc(i.version)} · ${LOADER[i.loader]}</small></div></button>`).join('');
   $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.v === S.view));
   const a = S.st && S.st.account;
-  $('#acctAv').outerHTML = av(a ? a.name : '?', a ? '#ffb82e' : '#4a5663', 'sm').replace('class="av sm"', 'class="av sm" id="acctAv"');
+  if (a && (a.uuid || a.name)) {
+    $('#acctAv').outerHTML = `<img id="acctAv" class="av sm av-face" alt="" src="https://mc-heads.net/avatar/${enc(a.uuid || a.name)}/48">`;
+  } else $('#acctAv').outerHTML = av('?', '#4a5663', 'sm', null, 'acctAv');
   $('#acctName').textContent = a ? a.name : t('acct.guest');
   $('#acctSub').textContent = a ? (a.type === 'microsoft' ? 'Microsoft' : t('acc.offlineShort')) : t('acct.none');
 }
@@ -473,19 +532,22 @@ function renderInst() {
   const i = cur();
   const hero = $('#hero');
   if (!i) {
-    $('#hAv').outerHTML = av('+', '#4a5663', 'xl').replace('class="av xl"', 'class="av xl" id="hAv"');
+    $('#hAv').outerHTML = av('+', '#4a5663', 'xl', null, 'hAv');
     $('#hName').textContent = t('inst.none');
     $('#hChips').innerHTML = `<span class="chip">${esc(t('inst.noneHint'))}</span>`;
     $('#bPlay').disabled = true; return;
   }
   hero.style.setProperty('--c', i.color);
-  $('#hAv').outerHTML = av(i.name, i.color, 'xl').replace('class="av xl"', 'class="av xl" id="hAv"');
+  $('#hAv').outerHTML = av(i.name, i.color, 'xl', i, 'hAv');
   $('#hName').textContent = i.name;
   $('#hChips').innerHTML = `<span class="chip">${esc(i.version)}</span><span class="chip ${i.loader}">${LOADER[i.loader]}</span><span class="chip">${((i.ram || S.st.ram) / 1024).toFixed(1)}${esc(t('units.gb'))}</span>`;
   setPlayUi();
   fillSettings(i);
   const modsTab = $('#tabs [data-t=mods]');
   if (modsTab) modsTab.hidden = i.loader === 'vanilla';            // в Vanilla вкладки модов нет вообще
+  const quickMods = $('#quickMods'), folderMods = $('#folderSeg [data-f=mods]');
+  if (quickMods) quickMods.hidden = i.loader === 'vanilla';        // и кнопка «Моды» в быстрых
+  if (folderMods) folderMods.hidden = i.loader === 'vanilla';      // и папка «Моды» в файлах
   if (S.tab === 'mods' && i.loader === 'vanilla') setTab('files');
   renderFiles();
 }
@@ -496,7 +558,7 @@ function setTab(t) {
   S.tab = t;
   $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   $$('#v-inst .pane').forEach(p => p.classList.toggle('on', p.id === 'p-' + t));
-  if (t === 'mods') loadRecommendedMods();
+  if (t === 'mods') { loadRecommendedMods(); renderInstalledMods(); }
 }
 $('#tabs').onclick = e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.t); };
 
@@ -589,10 +651,10 @@ $('#fOpen').onclick = () => api.invoke('inst-open', { id: S.cur, folder: S.folde
 $('#fRoot').onclick = () => api.invoke('inst-open', { id: S.cur });
 
 // -- карточки Modrinth
-const card = (h, btn) => `<div class="card-item" data-id="${esc(h.id)}" data-title="${esc(h.title)}">
+const card = (h, btn) => `<div class="card-item${h.incompatible ? ' off' : ''}" data-id="${esc(h.id)}" data-title="${esc(h.title)}">
   <div class="ci-ico">${h.icon ? `<img src="${esc(h.icon)}" alt="">` : esc(h.title[0])}</div>
-  <div class="ci-body"><b>${esc(h.title)}</b><p>${esc(h.desc)}</p><small>${fmt(h.downloads)} · ${esc(h.author || '')}</small></div>
-  <button class="btn primary sm" data-a="install">${btn}</button></div>`;
+  <div class="ci-body"><b>${esc(h.title)}</b><p>${esc(h.desc)}</p><small>${fmt(h.downloads)} · ${esc(h.author || '')}${h.incompatible ? ' · ⚠ нет версии для ' + esc(cur()?.version || '') : ''}</small></div>
+  <button class="btn primary sm" data-a="install" ${h.incompatible ? 'disabled' : ''}>${h.incompatible ? '✕' : btn}</button></div>`;
 const skeleton = el => el.innerHTML = `<div class="empty">${esc(t('common.searching'))}</div>`;
 
 async function loadRecommendedMods() {
@@ -626,6 +688,30 @@ async function searchMods() {
     $('#mList').innerHTML = hits.length ? hits.map(h => card(h, t('common.install'))).join('') : `<div class="empty">${esc(t('mods.notFound'))}</div>`;
   } catch (e) { $('#mList').innerHTML = ''; toast(errMsg(e), 'err'); }
 }
+// установленные моды: сколько их (включая выключенные) и удаление в один клик
+async function renderInstalledMods() {
+  let box = $('#mInstalled');
+  if (!box) {
+    const modsPane = $('#p-mods');
+    const h = document.createElement('h3'); h.className = 'sub'; h.textContent = t('mods.installedTitle');
+    box = document.createElement('div'); box.id = 'mInstalled'; box.className = 'instmods';
+    modsPane.append(h, box);
+  }
+  const i = cur(); if (!i) { box.innerHTML = ''; return; }
+  try {
+    const files = await api.invoke('files-list', { id: i.id, folder: 'mods' });
+    const off = files.filter(f => !f.enabled).length;
+    box.innerHTML = `<span class="muted small">${files.length}${off ? esc(t('mods.countOff', { n: off })) : ''}</span>` +
+      (files.length ? files.sort((a, b) => a.name.localeCompare(b.name)).map(f => `
+        <span class="selchip"><i>${esc(f.name.replace(/\.disabled$/, '').replace(/\.(jar|zip)$/i, ''))}</i>${f.enabled ? '' : ' <small>(off)</small>'} <b data-del="${esc(f.name)}">×</b></span>`).join('') : `<span class="muted small">—</span>`);
+  } catch { box.innerHTML = ''; }
+}
+$('#mInstalled') && ($('#mInstalled').onclick = async e => {
+  const b = e.target.closest('[data-del]'); if (!b) return;
+  const name = b.dataset.del;
+  try { await api.invoke('file-delete', { id: S.cur, folder: 'mods', name }); renderInstalledMods(); renderFiles(); }
+  catch (er) { toast(errMsg(er), 'err'); }
+});
 $('#mGo').onclick = searchMods;
 $('#mQ').onkeydown = e => { if (e.key === 'Enter') searchMods(); };
 $('#mList').onclick = async e => {
@@ -650,7 +736,7 @@ $('#mList').onclick = async e => {
       }
     }
     const done = await api.invoke('mods-install', { id: S.cur, project: id, skipDeps });
-    b.textContent = t('common.installed'); toast(t('common.installed') + ': ' + done.join(', ')); renderFiles();
+    b.textContent = t('common.installed'); toast(t('common.installed') + ': ' + done.join(', ')); renderFiles(); renderInstalledMods();
   } catch (er) { b.textContent = t('common.install'); b.disabled = false; toast(errMsg(er), 'err'); }
 };
 
@@ -699,10 +785,12 @@ function renderCheck(c) {
 
 // -- настройки сборки
 function fillVersions(sel, selected, all) {
-  sel.innerHTML = S.versions.filter(v => all || v.type === 'release' || v.id === selected).map(v => `<option ${v.id === selected ? 'selected' : ''}>${v.id}</option>`).join('');
+  const types = verFilter ? verFilter.on : new Set(['release']);
+  sel.innerHTML = S.versions.filter(v => types.has(v.type) || v.id === selected || all).map(v => `<option ${v.id === selected ? 'selected' : ''}>${v.id}</option>`).join('');
 }
 function fillSettings(i) {
   $('#sName').value = i.name; $('#sJvm').value = i.jvm || '';
+  $('#sFps').checked = !!i.optimize; $('#sAvatarText').value = i.avatarText || '';
   fillVersions($('#sVer'), i.version, true); $('#sVer').value = i.version;
   seg($('#sLoader'), i.loader);
   const r = $('#sRam'); r.max = Math.max(2048, Math.floor(S.st.totalMemMB / 512) * 512); r.value = i.ram || S.st.ram;
@@ -714,10 +802,17 @@ $('#sDef').onchange = ramLabel;
 $('#sLoader').onclick = e => { const b = e.target.closest('button'); if (b) seg($('#sLoader'), b.dataset.l); };
 $('#sSave').onclick = async () => {
   try {
-    await api.invoke('inst-update', { id: S.cur, patch: { name: $('#sName').value, version: $('#sVer').value, loader: segVal($('#sLoader')), jvm: $('#sJvm').value.trim(), ram: $('#sDef').checked ? null : +$('#sRam').value } });
+    await api.invoke('inst-update', { id: S.cur, patch: { name: $('#sName').value, version: $('#sVer').value, loader: segVal($('#sLoader')), jvm: $('#sJvm').value.trim(), ram: $('#sDef').checked ? null : +$('#sRam').value, optimize: $('#sFps').checked } });
+    const at = $('#sAvatarText').value.trim().slice(0, 2);
+    if (at !== (cur().avatarText || '')) await api.invoke('inst-avatar', { id: S.cur, text: at });
     await refresh(); renderSide(); renderInst(); toast(t('common.saved'));
   } catch (e) { toast(errMsg(e), 'err'); }
 };
+$('#sAvatarImg').onclick = async () => {
+  try { const img = await api.invoke('avatar-pick'); if (img) { await api.invoke('inst-avatar', { id: S.cur, img }); await refresh(); renderSide(); renderInst(); toast(t('set.avatarSaved')); } }
+  catch (e) { toast(errMsg(e), 'err'); }
+};
+$('#sAvatarClear').onclick = async () => { await api.invoke('inst-avatar', { id: S.cur, text: '', img: null }); await refresh(); renderSide(); renderInst(); };
 $('#sDel').onclick = async () => {
   const i = cur(); if (!i || !confirm(t('confirm.deleteInst', { name: i.name }))) return;
   await api.invoke('inst-delete', i.id); await refresh(); go('inst');
@@ -729,10 +824,19 @@ $('#bNew').onclick = () => {
   $('#dNewJava').hidden = bedrock;                                   // у Bedrock-сборок нет версии и загрузчика
   $('#dNew').querySelector('h3').textContent = bedrock ? t('new.bedrock') : t('new.title');
   $('#dName').value = '';
-  if (!bedrock) { $('#dSnap').checked = false; fillVersions($('#dVer'), S.versions.find(v => v.type === 'release')?.id, false); seg($('#dLoader'), 'vanilla'); }
+  if (!bedrock) { fillVersions($('#dVer'), S.versions.find(v => v.type === 'release')?.id, false); seg($('#dLoader'), 'vanilla'); }
   $('#dNew').showModal();
 };
-$('#dSnap').onchange = () => fillVersions($('#dVer'), $('#dVer').value, $('#dSnap').checked);
+// фильтр типов версий: чипы (релизы/снапшоты/беты/альфы) — любые комбинации
+const verFilter = { on: new Set(['release']) };
+$('#dVerFilter').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const f = b.dataset.f;
+  if (verFilter.on.has(f)) { if (f !== 'release' || verFilter.on.size > 1) verFilter.on.delete(f); }   // хотя бы один тип включён
+  else verFilter.on.add(f);
+  $$('#dVerFilter button').forEach(x => x.classList.toggle('on', verFilter.on.has(x.dataset.f)));
+  fillVersions($('#dVer'), $('#dVer').value, false);
+};
 $('#dLoader').onclick = e => { const b = e.target.closest('button'); if (b) seg($('#dLoader'), b.dataset.l); };
 $('#dCancel').onclick = () => $('#dNew').close();
 $('#dOk').onclick = async () => {
@@ -748,21 +852,162 @@ $('#dOk').onclick = async () => {
   $('#dNew').close(); await refresh(); S.tab = 'files'; setTab('files'); select(i.id);
 };
 
-// ---------- каталог сборок ----------
+// ---------- Модпаки: облако tntlauncher.app + площадки + ресурспаки/шейдеры ----------
+const PACK_COLOR = id => ['#ff4d36', '#ffb82e', '#34d399', '#4da3ff', '#a78bfa', '#fb923c'][Number(id) % 6];
+let pkTag = '', pkSort = 'trend', pkMine = false, pkTagNames = {};
+function renderPkTags() {
+  const chips = [['', t('ver.all') || 'Все']].concat(Object.entries(pkTagNames));
+  $('#pkTags').innerHTML = chips.map(([k, n]) => `<button class="tagchip ${k === pkTag ? 'on' : ''}" data-t="${esc(k)}">${esc(n)}</button>`).join('');
+}
+async function loadPacks() {
+  const list = $('#pkList');
+  list.innerHTML = `<div class="empty">${esc(t('common.checking'))}</div>`;
+  try {
+    const r = await api.invoke('packs-cloud-list', { q: $('#pkQ').value, tag: pkTag, sort: pkSort, mine: pkMine });
+    pkTagNames = r.tags || {};
+    renderPkTags();
+    const items = r.list || [];
+    list.innerHTML = items.length ? items.map(pk => `
+      <div class="pack-card" data-id="${pk.id}">
+        ${av(pk.name, PACK_COLOR(pk.id), '', { avatarText: (pk.name || 'M').replace(/[^\p{L}\p{N} ]/gu, '').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'M' })}
+        <div class="pc-body">
+          <b>${esc(pk.name)} ${pk.mine ? '<span class="mine-badge">ваша</span>' : ''}</b>
+          <div class="pc-meta">${esc(t('cat.by'))} ${esc(pk.author.name)}${pk.author.admin ? ' 👑' : ''} · ${esc(pk.version)} · ${LOADER[pk.loader] || pk.loader} · ${(pk.mods || []).length} ${esc(t('cat.modsN'))} · ${fmt(pk.installs)} ${esc(t('cat.installs'))}</div>
+          <div class="pc-tags">${(pk.tagNames || []).map(x => `<span class="minitag">${esc(x)}</span>`).join(' ')}</div>
+          ${pk.desc ? `<p>${esc(pk.desc)}</p>` : ''}
+        </div>
+        <div class="pc-acts">
+          <button class="btn primary sm" data-a="install">${esc(t('cat.install'))}</button>
+          ${pk.mine ? `<button class="btn ghost sm" data-a="del">${esc(t('cat.delete'))}</button>` : ''}
+        </div>
+      </div>`).join('') : `<div class="empty">${esc(pkMine ? t('cat.myEmpty') : t('cat.empty'))}</div>`;
+  } catch (e) { list.innerHTML = ''; toast(errMsg(e), 'err'); }
+}
+$('#pkTags').onclick = e => { const b = e.target.closest('.tagchip'); if (!b) return; pkTag = b.dataset.t; renderPkTags(); loadPacks(); };
+$('#pkGo').onclick = loadPacks;
+$('#pkQ').onkeydown = e => { if (e.key === 'Enter') loadPacks(); };
+$('#pkSort').onchange = e => { pkSort = e.target.value; loadPacks(); };
+$('#pkMine').onclick = () => { pkMine = !pkMine; $('#pkMine').classList.toggle('primary', pkMine); loadPacks(); };
+$('#pkList').onclick = async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const cardEl = b.closest('.pack-card'), id = +cardEl.dataset.id;
+  if (b.dataset.a === 'del') {
+    if (!confirm(t('confirm.deletePack', { name: cardEl.querySelector('b').textContent.replace('ваша', '').trim() }))) return;
+    try { await api.invoke('packs-cloud-delete', { id }); toast(t('cat.deleted')); loadPacks(); } catch (er) { toast(errMsg(er), 'err'); }
+    return;
+  }
+  b.disabled = true; b.textContent = '…';
+  try { const inst = await api.invoke('packs-cloud-install', { id }); await refresh(); toast(t('cat.installed')); select(inst.id); }
+  catch (er) { b.disabled = false; b.textContent = t('cat.install'); toast(errMsg(er), 'err'); }
+};
+
+// конструктор модпаков
+const pkDlg = $('#dPack'), pkSel = new Map();      // id -> title
+function openPackBuilder() {
+  if (!S.st.account || S.st.account.type !== 'microsoft') { toast(t('cat.mustLogin'), 'warn'); go('account'); return; }
+  $('#pkName').value = ''; $('#pkDesc').value = ''; $('#pkModQ').value = '';
+  $('#pkModList').innerHTML = ''; pkSel.clear(); renderPkSelected();
+  fillVersions($('#pkVer'), S.versions.find(v => v.type === 'release')?.id, false);
+  seg($('#pkLoader'), 'vanilla'); $$('#pkTags button').forEach(b => b.classList.remove('on'));
+  pkDlg.showModal();
+}
+function renderPkSelected() {
+  $('#pkSelected').innerHTML = pkSel.size ? [...pkSel.entries()].map(([id, title]) => `<span class="selchip" data-id="${esc(id)}">${esc(title)} <b>×</b></span>`).join('') : `<span class="muted small">—</span>`;
+}
+$('#pkNew').onclick = openPackBuilder;
+$('#pkCancel').onclick = () => pkDlg.close();
+$('#pkLoader').onclick = e => { const b = e.target.closest('button'); if (b) seg($('#pkLoader'), b.dataset.l); };
+$('#pkTags').onclick = e => { const b = e.target.closest('button'); if (b) b.classList.toggle('on'); };
+$('#pkSelected').onclick = e => { const c = e.target.closest('.selchip'); if (c) { pkSel.delete(c.dataset.id); renderPkSelected(); } };
+async function pkFindMods() {
+  const box = $('#pkModList');
+  box.innerHTML = `<div class="empty">${esc(t('common.searching'))}</div>`;
+  try {
+    const hits = await api.invoke('mods-search-free', { q: $('#pkModQ').value, version: $('#pkVer').value, loader: segVal($('#pkLoader')) });
+    box.innerHTML = hits.length ? hits.slice(0, 12).map(h => `
+      <div class="card-item" data-id="${esc(h.id)}" data-title="${esc(h.title)}">
+        <div class="ci-ico">${h.icon ? `<img src="${esc(h.icon)}" alt="">` : esc(h.title[0])}</div>
+        <div class="ci-body"><b>${esc(h.title)}</b><small>${fmt(h.downloads)}</small></div>
+        <button class="btn sm primary" data-a="add">+</button>
+      </div>`).join('') : `<div class="empty">${esc(t('common.notFound'))}</div>`;
+  } catch (e) { box.innerHTML = ''; }
+}
+$('#pkModGo').onclick = pkFindMods;
+$('#pkModQ').onkeydown = e => { if (e.key === 'Enter') pkFindMods(); };
+$('#pkModList').onclick = e => {
+  const b = e.target.closest('[data-a=add]'); if (!b) return;
+  const c = b.closest('.card-item');
+  pkSel.set(c.dataset.id, c.dataset.title);
+  b.textContent = '✓'; b.disabled = true;
+  renderPkSelected();
+};
+$('#pkPublish').onclick = async () => {
+  const b = $('#pkPublish'); b.disabled = true;
+  try {
+    await api.invoke('packs-cloud-publish', {
+      name: $('#pkName').value, desc: $('#pkDesc').value, version: $('#pkVer').value, loader: segVal($('#pkLoader')),
+      mods: [...pkSel.entries()].map(([id, title]) => ({ id, title })),
+      tags: $$('#pkTags button.on').map(x => x.dataset.t),
+    });
+    pkDlg.close(); toast(t('cat.published')); pkMine = true; loadPacks();
+  } catch (e) { toast(errMsg(e), 'err'); }
+  b.disabled = false;
+};
+
+// готовые с площадок: Modrinth / CurseForge
+let pSrc = 'mr';
+$('#pSrc').onclick = e => { const b = e.target.closest('button'); if (b) { pSrc = b.dataset.s; seg($('#pSrc'), pSrc); } };
 async function searchPacks() {
   skeleton($('#pList'));
   try {
-    const hits = await api.invoke('packs-search', $('#pQ').value);
-    $('#pList').innerHTML = hits.length ? hits.map(h => card(h, t('common.install'))).join('') : `<div class="empty">${esc(t('common.notFound'))}</div>`;
+    if (pSrc === 'mr') {
+      const hits = await api.invoke('packs-search', $('#pQ').value);
+      $('#pList').innerHTML = hits.length ? hits.map(h => `
+        <div class="card-item" data-id="${esc(h.id)}" data-title="${esc(h.title)}">
+          <div class="ci-ico">${h.icon ? `<img src="${esc(h.icon)}" alt="">` : esc(h.title[0])}</div>
+          <div class="ci-body"><b>${esc(h.title)}</b><p>${esc(h.desc)}</p><small>${fmt(h.downloads)} · ${esc(h.author || '')}</small></div>
+          <button class="btn primary sm" data-a="install">${esc(t('common.install'))}</button></div>`).join('') : `<div class="empty">${esc(t('common.notFound'))}</div>`;
+    } else {
+      const hits = await api.invoke('cf-search', { q: $('#pQ').value, type: 'modpack' });
+      $('#pList').innerHTML = hits.length ? hits.map(h => `
+        <div class="card-item" data-id="${esc(h.id)}" data-url="${esc(h.url || '')}">
+          <div class="ci-ico">${h.icon ? `<img src="${esc(h.icon)}" alt="">` : esc(h.title[0])}</div>
+          <div class="ci-body"><b>${esc(h.title)}</b><p>${esc(h.desc)}</p><small>CurseForge · ${fmt(h.downloads)}</small></div>
+          <button class="btn sm" data-a="open">${esc(t('cat.cfOpen'))}</button></div>`).join('') : `<div class="empty">${esc(t('common.notFound'))}</div>`;
+    }
   } catch (e) { $('#pList').innerHTML = ''; toast(errMsg(e), 'err'); }
 }
 $('#pGo').onclick = searchPacks;
 $('#pQ').onkeydown = e => { if (e.key === 'Enter') searchPacks(); };
 $('#pList').onclick = async e => {
-  const b = e.target.closest('[data-a=install]'); if (!b) return;
+  const b = e.target.closest('button'); if (!b) return;
   const c = b.closest('.card-item');
+  if (b.dataset.a === 'open') { if (c.dataset.url) api.invoke('open-external', c.dataset.url); return; }
   b.textContent = '…'; b.disabled = true;
   try { const i = await api.invoke('packs-install', { project: c.dataset.id, title: c.dataset.title }); await refresh(); toast(t('cat.installed', { name: i.name })); select(i.id); }
+  catch (er) { b.textContent = t('common.install'); b.disabled = false; toast(errMsg(er), 'err'); }
+};
+// ресурспаки и шейдеры — 1 кнопкой в текущую сборку
+async function searchRes(type) {
+  skeleton($('#resList'));
+  try {
+    const hits = await api.invoke('res-search', { q: $(type === 'shader' ? '#shQ' : '#rpQ').value, type });
+    $('#resList').innerHTML = hits.length ? hits.map(h => `
+      <div class="card-item" data-id="${esc(h.id)}" data-title="${esc(h.title)}" data-type="${type}">
+        <div class="ci-ico">${h.icon ? `<img src="${esc(h.icon)}" alt="">` : esc(h.title[0])}</div>
+        <div class="ci-body"><b>${esc(h.title)}</b><p>${esc(h.desc)}</p><small>${type === 'shader' ? '🕶 шейдер' : '🖼 ресурспак'} · ${fmt(h.downloads)}</small></div>
+        <button class="btn primary sm" data-a="install">${esc(t('common.install'))}</button></div>`).join('') : `<div class="empty">${esc(t('common.notFound'))}</div>`;
+  } catch (e) { $('#resList').innerHTML = ''; toast(errMsg(e), 'err'); }
+}
+$('#rpGo').onclick = () => searchRes('resourcepack');
+$('#shGo').onclick = () => searchRes('shader');
+$('#resList').onclick = async e => {
+  const b = e.target.closest('[data-a=install]'); if (!b) return;
+  const c = b.closest('.card-item');
+  const javaInst = S.insts.find(i => i.kind !== 'bedrock' && i.id === S.cur);
+  if (!javaInst) { toast(t('res.needInst'), 'warn'); return; }
+  b.textContent = '…'; b.disabled = true;
+  try { const r = await api.invoke('res-install', { project: c.dataset.id, type: c.dataset.type, instId: javaInst.id }); toast(t('res.installed', { name: r.filename })); renderFiles(); }
   catch (er) { b.textContent = t('common.install'); b.disabled = false; toast(errMsg(er), 'err'); }
 };
 $('#pImp').onclick = async () => {
@@ -778,12 +1023,27 @@ function renderAccount() {
   $('#bOut').hidden = !a;
   $('#nick').value = S.st.nick || '';
   const g = $('#gRam'); g.max = Math.max(2048, Math.floor(S.st.totalMemMB / 512) * 512); g.value = S.st.ram; $('#gRamV').textContent = (S.st.ram / 1024).toFixed(1) + t('units.gb');
+  const ap = S.st.appearance || { theme: 'dark', font: 'Consolas', fontSize: 12, opacity: 100 };
+  $('#appTheme').value = ap.theme; $('#appFont').value = ap.font; $('#appFontSize').value = ap.fontSize; $('#appOpacity').value = ap.opacity;
   // при открытии настроек проверяем обновления (не чаще раза в 10 минут), чтобы предложение не зависело от старта
   if (Date.now() - (renderAccount.lastCheck || 0) > 600000) { renderAccount.lastCheck = Date.now(); checkUpdate(false).catch(() => {}); }
 }
 async function onLogin(acc) { S.st.account = acc; renderSide(); renderAccount(); toast(t('acc.loggedInAs', { name: acc.name })); }
 $('#bOff').onclick = async () => { try { await onLogin(await api.invoke('login-offline', $('#nick').value)); S.st.nick = $('#nick').value.trim(); } catch (e) { toast(errMsg(e), 'err'); } };
 $('#bOut').onclick = async () => { await api.invoke('logout'); S.st.account = null; renderSide(); renderAccount(); };
+// внешний вид: применяется сразу и сохраняется
+function applyAppearance(ap) {
+  document.body.classList.toggle('light', ap.theme === 'light');
+  document.documentElement.style.setProperty('--console-font', `${ap.font}, Consolas, Menlo, monospace`);
+  document.documentElement.style.setProperty('--console-fs', ap.fontSize + 'px');
+}
+const apChange = async () => {
+  const ap = { theme: $('#appTheme').value, font: $('#appFont').value, fontSize: +$('#appFontSize').value || 12, opacity: +$('#appOpacity').value };
+  S.st.appearance = await api.invoke('appearance-set', ap);
+  applyAppearance(S.st.appearance);
+};
+$('#appTheme').onchange = apChange; $('#appFont').onchange = apChange; $('#appFontSize').onchange = apChange; $('#appOpacity').oninput = apChange;
+$('#appReload').onclick = () => location.reload();
 $('#gRam').oninput = e => { S.st.ram = +e.target.value; $('#gRamV').textContent = (S.st.ram / 1024).toFixed(1) + t('units.gb'); api.invoke('set-ram', S.st.ram); };
 
 let devUri = 'https://www.microsoft.com/link';
@@ -909,6 +1169,8 @@ function buildModel() {
     [0, [4, 12, 4], [0, 16], [-2, 10, 0]], [1, [4, 12, 4], [0, 32], [-2, 10, 0]],
     [0, [4, 12, 4], [16, 48], [2, 10, 0]], [1, [4, 12, 4], [0, 48], [2, 10, 0]],
   ];
+  const PART_OF = ['head', 'head', 'body', 'body', 'arms', 'arms', 'arms', 'arms', 'legs', 'legs', 'legs', 'legs'];
+  defs.forEach((d, di) => { if (model.children[di]) model.children[di].dataset.part = PART_OF[di]; });
   for (const [l, [w, h, d], [u, v], [bx, by, bz]] of defs) {
     const g = l ? 0.5 : 0, W = (w + 2 * g) * U, H = (h + 2 * g) * U, D = (d + 2 * g) * U;
     const box = document.createElement('div'); box.className = 'box l' + l;
@@ -980,6 +1242,15 @@ $('#layerSeg').onclick = e => {
   stage.classList.toggle('edit-over', layer === 1); stage.classList.toggle('edit-base', layer === 0);
 };
 $('#skOver').onchange = e => stage.classList.toggle('hide-over', !e.target.checked);
+$('#skParts').onclick = e => {                                      // скрыть часть модели, чтобы рисовать под ней
+  const b = e.target.closest('button'); if (!b) return;
+  b.classList.toggle('on');
+  $$('#model .box').forEach(box => { if (box.dataset.part === b.dataset.p) box.classList.toggle('part-hidden', b.classList.contains('on')); });
+};
+$('#skCatalog').onclick = e => {                                    // готовые скины известных игроков
+  const b = e.target.closest('button'); if (!b) return;
+  $('#skNick').value = b.dataset.n; $('#skFetch').click();
+};
 $('#skSlim').onchange = e => { slim = e.target.checked; buildModel(); dirty(); };
 $('#skGuide').onchange = () => dirty();
 $('#tools').onclick = e => { const b = e.target.closest('button'); if (b) setTool(b.dataset.tool); };
@@ -1117,7 +1388,7 @@ $('#repSend').onclick = async () => {
   b.disabled = false;
 };
 $('#forumOpen').onclick = () => api.invoke('open-forum-home');
-$('#supportOpen').onclick = () => api.invoke('open-external', 'https://tntlauncher.app/support');
+$('#supportOpen').onclick = () => api.invoke('open-support');
 const SOLVED_REVIEWS = [
   'Прикиньте! Я нашёл проблему и её сразу же починили! Вот это разработчики!',
   'Написал о баге в TnT Launcher, а его уже исправили. Вот это скорость!',
@@ -1190,7 +1461,7 @@ $('#beTabs').onclick = e => { const b = e.target.closest('button'); if (b) beTab
 async function renderBedrock() {
   const p = bedrockProfile();
   if (p) {                                          // выбранная сборка Bedrock
-    $('#beAv').outerHTML = av(p.name, p.color, 'xl').replace('class="av xl"', 'class="av xl" id="beAv"');
+    $('#beAv').outerHTML = av(p.name, p.color, 'xl', p, 'beAv');
     $('#beHero').style.setProperty('--c', p.color);
     $('#beChips').innerHTML = `<span class="chip">${esc(t('be.profileChip'))}</span>`;
     $('#beNote').hidden = true; $('#beText').textContent = '';
@@ -1203,7 +1474,7 @@ async function renderBedrock() {
     return;
   }
   $('#beProfilePanel').hidden = true;
-  $('#beAv').outerHTML = av('B', '#4da3ff', 'xl').replace('class="av xl"', 'class="av xl" id="beAv"');
+  $('#beAv').outerHTML = av('B', '#4da3ff', 'xl', null, 'beAv');
   $('#beHero').style.setProperty('--c', '#4da3ff');
   $('#beChips').innerHTML = `<span class="chip">${esc(t('be.checking'))}</span>`;
   beInfo = await api.invoke('be-info');
@@ -1384,6 +1655,7 @@ $('#unStart').onclick = () => { unStep1(); un.showModal(); };
   } catch {}
   skinReady = true; dirty();
   S.st = await api.invoke('state');
+  applyAppearance(S.st.appearance || { theme: 'dark', font: 'Consolas', fontSize: 12, opacity: 100 });
   await refresh();
   renderSide(); go(S.edition === 'bedrock' ? 'bedrock' : 'inst');
   try {

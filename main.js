@@ -118,7 +118,7 @@ app.on('window-all-closed', () => app.quit());
 
 // ---------- общее ----------
 ipcMain.handle('state', () => ({
-  ram: cfg.ram, nick: cfg.nick, account: cfg.account && { type: cfg.account.type, name: cfg.account.name },
+  ram: cfg.ram, nick: cfg.nick, appearance: cfg.appearance || { theme: 'dark', font: 'Consolas', fontSize: 12, opacity: 100 }, account: cfg.account && { type: cfg.account.type, name: cfg.account.name, uuid: cfg.account.uuid || null },
   totalMemMB: Math.floor(os.totalmem() / 1048576), platform: process.platform, version: app.getVersion(),
 }));
 ipcMain.handle('set-ram', (_, ram) => { cfg.ram = ram; saveCfg(); });
@@ -327,7 +327,8 @@ async function ensureJava(major) {
   if (fs.existsSync(home)) { const b = findJavaBin(home); if (b) { log(`Java ${major} найдена`); return b; } }
   log(`Java ${major} не найдена — скачиваю…`); prog(`Скачиваю Java ${major}…`, 0);
   const osName = { win32: 'windows', darwin: 'mac', linux: 'linux' }[process.platform];
-  const arch = process.arch === 'arm64' ? 'aarch64' : 'x64';
+  let arch = process.arch === 'arm64' ? 'aarch64' : 'x64';
+  if (osName === 'mac' && major <= 8) { log(`Java ${major} для Apple Silicon не выпускается — использую x64-сборку (Rosetta)`); arch = 'x64'; }   // иначе 404 у Adoptium
   const isZip = process.platform === 'win32';
   const archive = path.join(runtimeDir, `java-${major}.${isZip ? 'zip' : 'tar.gz'}`);
   await download(`https://api.adoptium.net/v3/binary/latest/${major}/ga/${osName}/${arch}/jre/hotspot/normal/eclipse`, archive);
@@ -380,11 +381,46 @@ async function prepareLoader(inst) {
 }
 
 // ---------- запуск ----------
+// ---------- общие для всех сборок: серверы (servers.dat) и язык/диктор (options.txt) ----------
+const sharedServers = path.join(root, 'servers.dat');
+const sharedMcOpts = path.join(root, 'mc-options.json');
+const patchOptionsTxt = (file, vals) => {          // заменить/добавить ключи вида lang=ru_ru
+  let lines = [];
+  try { lines = fs.readFileSync(file, 'utf8').split(/\r?\n/); } catch { return; }
+  for (const [k, v] of Object.entries(vals)) {
+    const i = lines.findIndex(l => l.startsWith(k + '='));
+    if (i >= 0) lines[i] = `${k}=${v}`; else lines.push(`${k}=${v}`);
+  }
+  fs.writeFileSync(file, lines.join('\n'));
+};
+const readOptionsTxt = (file, keys) => {
+  const out = {};
+  try { for (const l of fs.readFileSync(file, 'utf8').split(/\r?\n/)) { const m = l.match(/^(\w+)=(.+)$/); if (m && keys.includes(m[1])) out[m[1]] = m[2]; } } catch {}
+  return out;
+};
+function syncSharedInto(inst) {                     // перед запуском: общее → в сборку
+  try {
+    if (fs.existsSync(sharedServers)) fs.copyFileSync(sharedServers, path.join(instDir(inst), 'servers.dat'));
+    const vals = JSON.parse(fs.readFileSync(sharedMcOpts, 'utf8'));
+    if (vals && Object.keys(vals).length) patchOptionsTxt(path.join(instDir(inst), 'options.txt'), vals);
+  } catch {}
+}
+function syncSharedFrom(inst) {                     // после игры: сборка → общее
+  try {
+    const sv = path.join(instDir(inst), 'servers.dat');
+    if (fs.existsSync(sv)) fs.copyFileSync(sv, sharedServers);
+    const got = readOptionsTxt(path.join(instDir(inst), 'options.txt'), ['lang', 'narrator']);
+    if (Object.keys(got).length) fs.writeFileSync(sharedMcOpts, JSON.stringify(got, null, 2));
+  } catch {}
+}
+
 ipcMain.handle('play', async (_, id) => {
   if (child) throw new Error('Игра уже запущена');
   if (!cfg.account) throw new Error('Сначала войдите в аккаунт');
   const inst = byId(id);
   ensureGameDirs(inst);
+  syncSharedInto(inst);                              // серверы/язык/диктор — общие для всех сборок
+  send('log-clear');
   prog('Готовлю игру…', 0);
   const entry = (await getManifest()).versions.find(v => v.id === inst.version);
   if (!entry) throw new Error('Версия ' + inst.version + ' не найдена');
@@ -406,7 +442,7 @@ ipcMain.handle('play', async (_, id) => {
   launcher.on('debug', m => log(m));
   launcher.on('data', m => log(m));
   launcher.on('progress', p => prog(`Загрузка: ${p.type}`, p.total ? p.task / p.total : 0));
-  launcher.on('close', code => { child = null; runningId = null; send('closed', code); log(`Игра закрыта (код ${code})`); });
+  launcher.on('close', code => { child = null; runningId = null; syncSharedFrom(inst); send('closed', code); log(`Игра закрыта (код ${code})`); });
 
   log(`Запускаю «${inst.name}»…`);
   const proc = await launcher.launch({
@@ -414,7 +450,12 @@ ipcMain.handle('play', async (_, id) => {
     version: { number: inst.version, type: entry.type, ...(extra.custom ? { custom: extra.custom } : {}) },
     forge: extra.forge,
     memory: { max: `${inst.ram || cfg.ram}M`, min: '1024M' },
-    customArgs: (inst.jvm || '').split(/\s+/).filter(Boolean),
+    customArgs: (() => {
+      const args = (inst.jvm || '').split(/\s+/).filter(Boolean);
+      if (process.platform === 'darwin' && !args.includes('-XstartOnFirstThread')) args.unshift('-XstartOnFirstThread');   // macOS: без него SDL не получает видеосистему
+      if (inst.optimize && !args.some(a => /^-XX:/.test(a))) args.push('-XX:+UseG1GC', '-XX:+ParallelRefProcEnabled', '-XX:MaxGCPauseMillis=40', '-XX:+UnlockExperimentalVMOptions', '-XX:+DisableExplicitGC');   // FPS-пресет
+      return args;
+    })(),
     overrides: { gameDirectory: instDir(inst) },
   });
   if (!proc) throw new Error('Запуск не удался — смотрите журнал');
@@ -432,7 +473,16 @@ const mrSearch = async (q, type, version, loader) => {
   const r = await getJson(`https://api.modrinth.com/v2/search?limit=24&query=${enc(q || '')}&facets=${enc(JSON.stringify(facets))}`);
   return r.hits.map(h => ({ id: h.project_id, title: h.title, desc: h.description, downloads: h.downloads, icon: h.icon_url, author: h.author }));
 };
-ipcMain.handle('mods-search', (_, { id, q }) => { const i = byId(id); return mrSearch(q, 'mod', i.version, i.loader); });
+ipcMain.handle('mods-search', async (_, { id, q }) => {
+  const i = byId(id);
+  const hits = await mrSearch(q, 'mod', i.version, i.loader);
+  if (hits.length || !q) return hits;
+  // ничего под эту версию: покажем, что находится вообще, но пометим несовместимым (скачать нельзя)
+  try {
+    const any = await mrSearch(q, 'mod', null, null);
+    return any.slice(0, 24).map(h => ({ ...h, incompatible: true }));
+  } catch { return hits; }
+});
 ipcMain.handle('packs-search', (_, q) => mrSearch(q, 'modpack'));
 const mrVersionUrl = (inst, pid) => {
   let url = `https://api.modrinth.com/v2/project/${pid}/version?game_versions=${enc(JSON.stringify([inst.version]))}`;
@@ -454,7 +504,11 @@ async function installMod(inst, pid, seen = new Set(), skipDeps = false) {
       }
   return done;
 }
-ipcMain.handle('mods-install', (_, { id, project, skipDeps }) => installMod(byId(id), project, undefined, !!skipDeps));
+ipcMain.handle('mods-install', (_, { id, project, skipDeps }) => {
+  const inst = byId(id);
+  if (inst.loader === 'vanilla') throw new Error('В сборке Vanilla моды не работают — выберите Fabric или Forge в настройках сборки');
+  return installMod(inst, project, undefined, !!skipDeps);
+});
 
 // какие обязательные зависимости поставятся вместе с модом (для показа списка перед установкой)
 ipcMain.handle('mods-deps', async (_, { id, project }) => {
@@ -629,6 +683,115 @@ ipcMain.handle('packs-import', async () => {
   return r.canceled ? null : installMrpack(r.filePaths[0]);
 });
 
+// ---------- облачные модпаки tntlauncher.app + CurseForge + ресурспаки/шейдеры ----------
+ipcMain.handle('packs-cloud-list', async (_, { q = '', tag = '', sort = 'trend', mine = false } = {}) => {
+  const r = await siteFetch(`/api/modpacks?q=${enc(q)}&tag=${enc(tag)}&sort=${enc(sort)}${mine ? '&mine=1' : ''}`);
+  if (!r.ok) throw new Error(r.j.message || `Сайт ответил ${r.status}`);
+  return r.j;
+});
+ipcMain.handle('packs-cloud-publish', async (_, pack) => {
+  const r = await siteFetch('/api/modpacks', pack, await launcherAuth());
+  if (!r.ok) throw new Error(r.j.message || `Сайт ответил ${r.status}`);
+  return r.j;
+});
+ipcMain.handle('packs-cloud-delete', async (_, { id }) => {
+  const r = await siteFetch('/api/modpacks/delete', { id }, await launcherAuth());
+  if (!r.ok) throw new Error(r.j.message || `Сайт ответил ${r.status}`);
+  return r.j;
+});
+ipcMain.handle('packs-cloud-install', async (_, { id }) => {
+  const r = await siteFetch('/api/modpacks/install', { id }, await launcherAuth());
+  if (!r.ok) throw new Error(r.j.message || `Сайт ответил ${r.status}`);
+  const pack = r.j.pack;
+  if (!pack) throw new Error('Модпак не найден');
+  prog(`Устанавливаю «${pack.name}»…`, 0);
+  const inst = createInst({ name: pack.name, version: pack.version, loader: pack.loader });
+  const initials = (pack.name || 'MP').replace(/[^\p{L}\p{N} ]/gu, '').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'MP';
+  inst.avatarText = initials;
+  saveInsts();
+  const total = (pack.mods || []).length;
+  let n = 0;
+  for (const m of pack.mods || []) {
+    n++;
+    prog(`«${pack.name}»: мод ${n}/${total}`, n / Math.max(1, total));
+    try { await installMod(inst, m.id); } catch (e) { log(`Мод «${m.title}» не установлен: ${e.message}`); }
+  }
+  prog('Модпак установлен', 1);
+  return inst;
+});
+ipcMain.handle('mods-search-free', async (_, { q, version, loader }) => mrSearch(q, 'mod', version, loader));   // для конструктора модпаков
+ipcMain.handle('cf-search', async (_, { q, type }) => {
+  const r = await siteFetch(`/api/cf/search?q=${enc(q || '')}&type=${type === 'modpack' ? 'modpack' : 'mod'}`);
+  if (!r.ok) throw new Error(r.j.message || `Сайт ответил ${r.status}`);
+  return (r.j.list || []).map(x => ({ ...x, source: 'cf' }));
+});
+ipcMain.handle('cf-install', async (_, { id, instId }) => {
+  const r = await siteFetch(`/api/cf/file?id=${enc(String(id))}`);
+  if (!r.ok) throw new Error(r.j.message || `Сайт ответил ${r.status}`);
+  const dest = path.join(sub(byId(instId), 'mods'), String(r.j.filename || `cf-${Date.now()}.jar`).replace(/[\\/:*?"<>|]/g, '_'));
+  await download(r.j.url, dest);
+  return r.j.filename;
+});
+ipcMain.handle('res-search', async (_, { q, type }) => {           // ресурспаки и шейдеры с Modrinth
+  const facets = [[`project_type:${type}`]];
+  const r = await getJson(`https://api.modrinth.com/v2/search?limit=24&query=${enc(q || '')}&facets=${enc(JSON.stringify(facets))}`);
+  return r.hits.map(h => ({ id: h.project_id, title: h.title, desc: h.description, downloads: h.downloads, icon: h.icon_url, author: h.author }));
+});
+ipcMain.handle('res-install', async (_, { project, type, instId }) => {   // 1 кнопкой: ресурспак или шейдер в сборку
+  const vers = await getJson(`https://api.modrinth.com/v2/project/${project}/version`);
+  if (!vers.length) throw new Error('У этого пакета нет файлов');
+  const v = vers[0], f = v.files.find(x => x.primary) || v.files[0];
+  const inst = instId ? byId(instId) : null;
+  const folder = type === 'shader' ? 'shaderpacks' : 'resourcepacks';
+  const dir = inst ? sub(inst, folder) : path.join(sharedDir, folder);
+  fs.mkdirSync(dir, { recursive: true });
+  await download(f.url, path.join(dir, f.filename));
+  return { filename: f.filename, folder };
+});
+
+// ---------- окно поддержки (чат прямо из лаунчера) ----------
+ipcMain.handle('open-support', () => {
+  const w = new BrowserWindow({ width: 560, height: 760, parent: win, modal: true, title: 'Поддержка TnT Launcher', autoHideMenuBar: true, backgroundColor: '#0a0e13', webPreferences: { contextIsolation: true } });
+  w.loadURL(siteBase() + '/support');
+});
+
+// ---------- внешний вид ----------
+ipcMain.handle('appearance-set', (_, a) => {
+  cfg.appearance = {
+    theme: a.theme === 'light' ? 'light' : 'dark',
+    font: String(a.font || 'Consolas').slice(0, 40),
+    fontSize: Math.min(24, Math.max(8, +a.fontSize || 12)),
+    opacity: Math.min(100, Math.max(20, +a.opacity || 100)),
+  };
+  saveCfg();
+  try { win.setOpacity(cfg.appearance.opacity / 100); } catch {}
+  return cfg.appearance;
+});
+
+// ---------- аватарки сборок: 1-2 буквы или картинка ----------
+ipcMain.handle('inst-avatar', (_, { id, text, img }) => {
+  const i = byId(id);
+  if (text !== undefined) i.avatarText = String(text || '').trim().slice(0, 2) || null;
+  if (img !== undefined) {
+    if (img === null) i.avatarImg = null;
+    else {
+      if (typeof img !== 'string' || !img.startsWith('data:image/') || img.length > 700000) throw new Error('Картинка слишком большая (до ~500 КБ)');
+      i.avatarImg = img;
+    }
+  }
+  saveInsts();
+  return { avatarText: i.avatarText || null, avatarImg: i.avatarImg || null };
+});
+ipcMain.handle('avatar-pick', async () => {                       // выбрать картинку для аватарки сборки
+  const r = await dialog.showOpenDialog(win, { filters: [{ name: 'Картинка', extensions: ['png', 'jpg', 'jpeg', 'webp'] }], properties: ['openFile'] });
+  if (r.canceled || !r.filePaths[0]) return null;
+  const buf = fs.readFileSync(r.filePaths[0]);
+  if (buf.length > 700000) throw new Error('Картинка слишком большая (до ~500 КБ)');
+  const ext0 = path.extname(r.filePaths[0]).toLowerCase().replace('.', '') || 'png';
+  const ext = ext0 === 'jpg' ? 'jpeg' : ext0;
+  return 'data:image/' + ext + ';base64,' + buf.toString('base64');
+});
+
 // ---------- скины ----------
 ipcMain.handle('skin-open', async () => {
   const r = await dialog.showOpenDialog(win, { filters: [{ name: 'PNG', extensions: ['png'] }], properties: ['openFile'] });
@@ -696,7 +859,9 @@ ipcMain.handle('update-check', async () => {
       const has = process.platform === 'win32' ? !!d.windows : process.platform === 'darwin' ? !!d.macAny : process.platform === 'linux' ? !!d.linux : false;
       if (isNewer(r.j.version, local)) {
         const ext = { win32: '.exe', darwin: '.dmg', linux: '.AppImage' }[process.platform] || '';
-        pendingUpdate = { url: null, name: `TnT-Launcher-${r.j.version}${ext}` };   // скачается через зеркало
+        const d = r.j.digests || {};
+        const digest = ({ win32: d.windows, darwin: process.arch === 'arm64' ? d.macArm : d.macIntel, linux: d.linux }[process.platform]) || null;
+        pendingUpdate = { url: null, name: `TnT-Launcher-${r.j.version}${ext}`, digest };   // скачается через зеркало
         return { state: 'new', version: r.j.version, notes: r.j.notes || '', page: r.j.page, hasAsset: has };
       }
       return { state: 'latest', version: local };
@@ -736,6 +901,14 @@ ipcMain.handle('update-install', async () => {
     send('update-progress', total ? got / total : 0);
   }
   await new Promise(r => out.end(r));
+  if (pendingUpdate.digest) {                                     // защита от подделок: сверяем контрольную сумму с релизом
+    const got = crypto.createHash('sha256').update(fs.readFileSync(dest)).digest('hex');
+    if (got !== pendingUpdate.digest) {
+      fs.rmSync(dest, { force: true });
+      throw new Error('Файл не прошёл проверку целостности — скачивание прервано. Скачайте установщик с tntlauncher.app');
+    }
+    log('Целостность обновления подтверждена (sha256)');
+  }
   if (process.platform === 'win32') {
     // тихая установка: без окон, в ту же папку, где лаунчер уже стоит; после установки лаунчер запускается сам
     spawn(dest, ['/S', '--updated', '--force-run'], { detached: true, stdio: 'ignore' }).unref();

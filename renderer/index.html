@@ -47,7 +47,7 @@
           </div>
           <div class="quick" id="quick">
             <button data-open="" title="Открыть папку игры" data-i18n-title="q.folderTitle"><i data-i="folder"></i><span data-i18n="q.folder">Папка игры</span></button>
-            <button data-open="mods"><i data-i="cube"></i><span data-i18n="q.mods">Моды</span></button>
+            <button data-open="mods" id="quickMods"><i data-i="cube"></i><span data-i18n="q.mods">Моды</span></button>
             <button data-open="resourcepacks"><i data-i="image"></i><span data-i18n="q.rp">Ресурспаки</span></button>
             <button data-open="shaderpacks"><i data-i="sun"></i><span data-i18n="q.shaders">Шейдеры</span></button>
             <button data-open="saves"><i data-i="globe"></i><span data-i18n="q.saves">Миры</span></button>
@@ -88,6 +88,13 @@
             <label><span data-i18n="set.name">Название</span><input id="sName" maxlength="40"></label>
             <label><span data-i18n="set.version">Версия Minecraft</span><select id="sVer"></select></label>
             <div class="field"><span data-i18n="set.color">Цвет сборки</span><div class="swatches colors" id="sColors"></div></div>
+            <div class="field"><span data-i18n="set.avatar">Аватар сборки</span>
+              <div class="row wrap" style="gap:8px">
+                <input id="sAvatarText" maxlength="2" style="width:72px;text-align:center" placeholder="AB" data-i18n="set.avatarPh">
+                <button class="btn" id="sAvatarImg" data-i18n="set.avatarImg">Картинка…</button>
+                <button class="btn ghost" id="sAvatarClear" data-i18n="set.avatarClear">Сбросить</button>
+              </div></div>
+            <label class="check"><input type="checkbox" id="sFps"><i></i><span data-i18n="set.fps">🚀 FPS-пресет (оптимальные JVM-флаги)</span></label>
             <div class="field"><span data-i18n="set.loader">Загрузчик</span><div class="seg" id="sLoader"><button data-l="vanilla">Vanilla</button><button data-l="fabric">Fabric</button><button data-l="forge">Forge</button></div></div>
             <div class="field"><span data-i18n="set.ram">Память (RAM)</span>
               <div class="ramrow"><label class="check"><input type="checkbox" id="sDef"><i></i><span data-i18n="set.shared">общая</span></label><input type="range" id="sRam" min="1024" step="512"><b id="sRamV"></b></div></div>
@@ -164,10 +171,29 @@
       </section>
 
       <section class="page" id="v-catalog">
-        <h2 class="title" data-i18n="nav.catalog">Каталог сборок</h2>
-        <p class="hint" data-i18n="cat.hint">Готовые сборки Modrinth ставятся отдельной сборкой со своими модами. Можно импортировать и свой файл .mrpack.</p>
-        <div class="searchbar"><i data-i="search"></i><input id="pQ" placeholder="Например: Fabulously Optimized, Better MC…" autocomplete="off" data-i18n="cat.example"><button class="btn primary" id="pGo" data-i18n="common.search">Найти</button><button class="btn" id="pImp" data-i18n="cat.import">Импорт .mrpack</button></div>
+        <h2 class="title" data-i18n="nav.catalog">Модпаки</h2>
+
+        <div class="cloud-head">
+          <div class="searchbar grow"><i data-i="search"></i><input id="pkQ" placeholder="Поиск модпаков TnT…" autocomplete="off" data-i18n="cat.cloudExample"><button class="btn primary" id="pkGo" data-i18n="common.search">Найти</button></div>
+          <select id="pkSort"><option value="trend" data-i18n="cat.sortTrend">🔥 В тренде</option><option value="popular" data-i18n="cat.sortPopular">⭐ Популярные</option><option value="new" data-i18n="cat.sortNew">Новые</option></select>
+          <button class="btn" id="pkMine" data-i18n="cat.mine">Мои</button>
+          <button class="btn primary" id="pkNew"><i data-i="plus"></i><span data-i18n="cat.create">Создать свой</span></button>
+        </div>
+        <div class="tagchips" id="pkTags"></div>
+        <div class="grid" id="pkList"></div>
+
+        <h3 class="sub" data-i18n="cat.storesTitle">Готовые с площадок</h3>
+        <div class="searchbar"><i data-i="search"></i><input id="pQ" placeholder="Например: Fabulously Optimized, Better MC…" autocomplete="off" data-i18n="cat.example">
+          <div class="seg" id="pSrc"><button data-s="mr" class="on">Modrinth</button><button data-s="cf">CurseForge</button></div>
+          <button class="btn primary" id="pGo" data-i18n="common.search">Найти</button><button class="btn" id="pImp" data-i18n="cat.import">Импорт .mrpack</button></div>
         <div class="grid" id="pList"></div>
+
+        <h3 class="sub" data-i18n="res.title">Ресурспаки и шейдеры</h3>
+        <div class="res-row">
+          <div class="searchbar grow"><i data-i="image"></i><input id="rpQ" placeholder="Ресурспаки: например Fresh Animations…" autocomplete="off" data-i18n="res.rpExample"><button class="btn primary" id="rpGo" data-i18n="common.search">Найти</button></div>
+          <div class="searchbar grow"><i data-i="sun"></i><input id="shQ" placeholder="Шейдеры: например Complementary…" autocomplete="off" data-i18n="res.shExample"><button class="btn primary" id="shGo" data-i18n="common.search">Найти</button></div>
+        </div>
+        <div class="grid" id="resList"></div>
       </section>
 
       <section class="page" id="v-skin">
@@ -201,6 +227,16 @@
             <label class="check"><input type="checkbox" id="skSlim"><i></i><span data-i18n="skin.slim">тонкие руки (Alex)</span></label>
             <label class="check" id="guideRow" hidden><input type="checkbox" id="skGuide" checked><i></i><span data-i18n="skin.guide">разметка частей тела</span></label>
             <div class="sep"></div>
+            <div class="field" style="margin-top:4px"><span data-i18n="skin.hideParts">Скрыть части (для рисования)</span>
+              <div class="seg wrap" id="skParts">
+                <button data-p="head" data-i18n="part.head">Голова</button><button data-p="body" data-i18n="part.body">Тело</button>
+                <button data-p="arms" data-i18n="skin.arms">Руки</button><button data-p="legs" data-i18n="skin.legs">Ноги</button>
+              </div></div>
+            <div class="field" style="margin-top:4px"><span data-i18n="skin.catalogTitle">Готовые скины</span>
+              <div class="seg wrap" id="skCatalog">
+                <button data-n="Notch">Notch</button><button data-n="jeb_">jeb_</button><button data-n="Dinnerbone">Dinnerbone</button>
+                <button data-n="Grumm">Grumm</button><button data-n="Dream">Dream</button><button data-n="Technoblade">Technoblade</button>
+              </div></div>
             <div class="nickrow"><input id="skNick" maxlength="16" placeholder="Ник лицензии" data-i18n="skin.nickPh"><button class="btn" id="skFetch" data-i18n="skin.fetch">Взять скин</button></div>
             <div class="row wrap"><button class="btn" id="skOpen" data-i18n="skin.openPng">Открыть PNG</button><button class="btn" id="skSave" data-i18n="common.save">Сохранить</button><button class="btn ghost" id="skClear" data-i18n="skin.clear">Очистить</button></div>
             <div class="sep"></div>
@@ -252,6 +288,19 @@
           <p class="hint" id="skinNickState" style="margin:0"></p>
         </div>
         <div class="panel">
+          <h3 data-i18n="app.title">Внешний вид</h3>
+          <div class="app-grid">
+            <label><span data-i18n="app.theme">Тема</span>
+              <select id="appTheme"><option value="dark" data-i18n="app.dark">Тёмная</option><option value="light" data-i18n="app.light">Светлая</option></select></label>
+            <label><span data-i18n="app.font">Шрифт консоли</span>
+              <select id="appFont"><option>Consolas</option><option>Segoe UI Mono</option><option>Courier New</option><option>Arial</option><option>Impact</option></select></label>
+            <label><span data-i18n="app.fontSize">Размер шрифта</span><input id="appFontSize" type="number" min="8" max="24" step="1" value="12"></label>
+            <div class="field"><span data-i18n="app.opacity">Непрозрачность окна</span>
+              <div class="opacity-row"><small data-i18n="app.transparent">Прозрачный</small><input type="range" id="appOpacity" min="20" max="100" step="5" value="100"><small data-i18n="app.opaque">Непрозрачный</small></div></div>
+          </div>
+          <div class="row" style="margin-top:12px"><button class="btn" id="appReload" data-i18n="app.reload">Перезагрузить все</button></div>
+        </div>
+        <div class="panel">
           <h3 data-i18n="acc.ramTitle">Память по умолчанию</h3>
           <p class="hint" data-i18n="acc.ramHint">В настройках каждой сборки можно задать свою.</p>
           <div class="ramrow"><input type="range" id="gRam" min="1024" step="512"><b id="gRamV"></b></div>
@@ -285,10 +334,36 @@
   <label><span data-i18n="set.name">Название</span><input id="dName" maxlength="40" placeholder="Необязательно" data-i18n="new.namePh"></label>
   <div id="dNewJava">
     <label><span data-i18n="new.version">Версия</span><select id="dVer"></select></label>
-    <label class="check"><input type="checkbox" id="dSnap"><i></i><span data-i18n="new.snapshots">показать снапшоты и старые версии</span></label>
+    <div class="field"><span data-i18n="new.verTypes">Показывать версии</span>
+      <div class="seg wrap" id="dVerFilter">
+        <button data-f="release" class="on" data-i18n="ver.release">Релизы</button>
+        <button data-f="snapshot" data-i18n="ver.snapshot">Снапшоты</button>
+        <button data-f="old_beta" data-i18n="ver.beta">Беты</button>
+        <button data-f="old_alpha" data-i18n="ver.alpha">Альфы</button>
+      </div></div>
     <div class="field"><span data-i18n="set.loader">Загрузчик</span><div class="seg" id="dLoader"><button data-l="vanilla" class="on">Vanilla</button><button data-l="fabric">Fabric</button><button data-l="forge">Forge</button></div></div>
   </div>
   <div class="row end"><button class="btn ghost" id="dCancel" data-i18n="common.cancel">Отмена</button><button class="btn primary" id="dOk" data-i18n="new.create">Создать</button></div>
+</dialog>
+<dialog id="dPack" class="wide">
+  <h3 id="dPackTitle" data-i18n="cat.create">Создать свой модпак</h3>
+  <div class="pack-form">
+    <label><span data-i18n="set.name">Название</span><input id="pkName" maxlength="60"></label>
+    <label><span data-i18n="cat.desc">Описание</span><input id="pkDesc" maxlength="300"></label>
+    <div class="row wrap">
+      <label style="flex:1;min-width:160px"><span data-i18n="new.version">Версия</span><select id="pkVer"></select></label>
+      <div class="field"><span data-i18n="set.loader">Загрузчик</span><div class="seg" id="pkLoader"><button data-l="vanilla" class="on">Vanilla</button><button data-l="fabric">Fabric</button><button data-l="forge">Forge</button></div></div>
+    </div>
+    <div class="field" id="pkTagsRow"><span data-i18n="cat.tagsLabel">Метки</span>
+      <div class="seg wrap" id="pkTags">
+        <button data-t="fps">🚀 FPS</button><button data-t="vanilla">✨ Ванилла+</button><button data-t="hardcore">💀 Хардкор</button>
+      </div></div>
+    <label><span data-i18n="cat.findMods">Найти мод для сборки</span>
+      <div class="searchbar"><i data-i="search"></i><input id="pkModQ" autocomplete="off"><button class="btn primary" id="pkModGo" data-i18n="common.search">Найти</button></div></label>
+    <div class="grid small" id="pkModList"></div>
+    <div class="field"><span data-i18n="cat.selected">В сборке</span><div id="pkSelected" class="chipbox"></div></div>
+  </div>
+  <div class="row end"><button class="btn ghost" id="pkCancel" data-i18n="common.cancel">Отмена</button><button class="btn primary" id="pkPublish" data-i18n="cat.publish">Опубликовать</button></div>
 </dialog>
 <dialog id="dDeps">
   <h3 data-i18n="deps.title">Установить зависимости?</h3>
