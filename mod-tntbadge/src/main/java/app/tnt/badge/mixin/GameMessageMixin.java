@@ -20,7 +20,7 @@ public abstract class GameMessageMixin {
     @Inject(method = "onGameMessage(Lnet/minecraft/network/packet/s2c/play/GameMessageS2CPacket;)V", at = @At("HEAD"), cancellable = true)
     private void tnt$badgeIncoming(GameMessageS2CPacket packet, CallbackInfo ci) {
         try {
-            Text msg = packet.message();
+            Text msg = ((app.tnt.badge.mixin.GameMessageAccessor) (Object) packet).tnt$message();
             String raw = msg.getString();
             if (!raw.contains(TntBadgeClient.MARK)) return;
             String clean = raw.replace(TntBadgeClient.MARK, "");
