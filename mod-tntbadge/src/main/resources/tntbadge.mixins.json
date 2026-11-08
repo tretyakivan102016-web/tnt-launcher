@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "app.tnt.badge.mixin",
   "compatibilityLevel": "JAVA_21",
-  "client": [ "ChatMessageMixin", "GameMessageMixin", "GameMessageAccessor", "PlayerListEntryMixin" ],
+  "client": [ "ChatMessageMixin", "ChatHudMixin", "PlayerListEntryMixin" ],
   "injectors": { "defaultRequire": 0 }
 }
