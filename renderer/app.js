@@ -139,6 +139,7 @@ const I18N = {
     'upd.manual': 'Откройте скачанный файл и установите вручную', 'upd.downloadFailed': 'Не удалось скачать обновление',
     // отчёты и уведомления
     'report.thanks': 'Спасибо! Мы получили сообщение. Когда проблема будет решена, вы увидите уведомление здесь или на сайте.',
+    'sugg.btn': 'Посоветовать улучшение', 'sugg.title': 'Посоветовать улучшение', 'sugg.ph': 'Что улучшить? Опишите идею…', 'sugg.thanks': 'Спасибо за идею! Мы уже думаем над ней 💡', 'rep.title': 'Сообщить о проблеме',
     'notif.solved': 'Ваша проблема решена!', 'notif.feature': 'Это оказалась фича',
     'notif.bodySolved': 'Спасибо за вашу преданность!', 'notif.bodyFeature': 'Спасибо за вашу преданность, но это была фича.',
     'notif.copied': 'Текст отзыва скопирован: если поле на форуме пустое, просто вставьте его',
@@ -323,6 +324,8 @@ const I18N = {
     'upd.manual': 'Open the downloaded file and install it manually', 'upd.downloadFailed': 'Failed to download the update',
     // reports and notifications
     'report.thanks': 'Thanks! We got your message. When the problem is fixed, you\'ll see a notification here or on the website.',
+    'sugg.btn': 'Suggest an improvement', 'sugg.title': 'Suggest an improvement', 'sugg.ph': 'What can we improve? Describe your idea…', 'sugg.thanks': 'Thanks for the idea! We are already thinking about it 💡',
+    'rep.title': 'Report a problem',
     'notif.solved': 'Your problem is fixed!', 'notif.feature': 'It turned out to be a feature',
     'notif.bodySolved': 'Thanks for your loyalty!', 'notif.bodyFeature': 'Thanks for your loyalty, but it was a feature.',
     'notif.copied': 'Review text copied: if the field on the forum is empty, just paste it',
@@ -463,7 +466,7 @@ const segVal = el => ($('button.on', el) || {}).dataset?.l;
 // ---------- состояние ----------
 const LOADER = { vanilla: 'Vanilla', fabric: 'Fabric', forge: 'Forge' };
 const bedrockAllowed = api.platform === 'win32';        // Bedrock есть только на Windows — на других ОС пункт скрыт полностью
-const S = { edition: localStorage.getItem('edition') || 'java', st: null, insts: [], cur: null, bedrockId: null, view: 'inst', tab: 'files', folder: 'mods', versions: [], playing: false, busy: false };
+const S = { edition: localStorage.getItem('edition') || 'java', st: null, insts: [], cur: null, bedrockId: null, view: 'inst', tab: 'files', folder: 'mods', versions: [], playing: false, busy: false, skinFace: null };
 if (!bedrockAllowed && S.edition === 'bedrock') { S.edition = 'java'; localStorage.setItem('edition', 'java'); }
 const cur = () => S.insts.find(i => i.id === S.cur);
 const bedrockProfile = () => S.insts.find(i => i.id === S.bedrockId && i.kind === 'bedrock');
@@ -494,6 +497,18 @@ function select(id) {
   S.bedrockId = null; S.cur = id; go('inst');
 }
 
+function updateSkinFace() {                                 // лицо из скина редактора (голова + оверлей)
+  try {
+    const c = document.createElement('canvas'); c.width = c.height = 8;
+    const x = c.getContext('2d');
+    x.imageSmoothingEnabled = false;
+    x.drawImage(sk, 8, 8, 8, 8, 0, 0, 8, 8);
+    x.drawImage(sk, 40, 8, 8, 8, 0, 0, 8, 8);
+    S.skinFace = c.toDataURL('image/png');
+    renderSide();
+  } catch {}
+}
+
 function renderSide() {
   const bedrock = S.edition === 'bedrock';
   const bedrockBtn = $('#edSeg').querySelector('[data-e=bedrock]');
@@ -512,9 +527,15 @@ function renderSide() {
       ${av(i.name, i.color, '', i)}<div><b>${esc(i.name)}</b><small>${esc(i.version)} · ${LOADER[i.loader]}</small></div></button>`).join('');
   $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.v === S.view));
   const a = S.st && S.st.account;
-  if (a && (a.uuid || a.name)) {
-    $('#acctAv').outerHTML = `<img id="acctAv" class="av sm av-face" alt="" src="https://mc-heads.net/avatar/${encodeURIComponent(a.uuid || a.name)}/48">`;
-  } else $('#acctAv').outerHTML = av('?', '#4a5663', 'sm', null, 'acctAv');
+  if (a && a.uuid) {
+    $('#acctAv').outerHTML = `<img id="acctAv" class="av sm av-face" alt="" src="https://mc-heads.net/avatar/${encodeURIComponent(a.uuid)}/48">`;
+  } else if (a && S.skinFace) {
+    $('#acctAv').outerHTML = `<img id="acctAv" class="av sm av-face" alt="" src="${S.skinFace}">`;
+  } else if (a && a.name) {
+    $('#acctAv').outerHTML = `<img id="acctAv" class="av sm av-face" alt="" src="https://mc-heads.net/avatar/${encodeURIComponent(a.name)}/48">`;
+  } else {
+    $('#acctAv').outerHTML = av('?', '#4a5663', 'sm', null, 'acctAv');
+  }
   $('#acctName').textContent = a ? a.name : t('acct.guest');
   $('#acctSub').textContent = a ? (a.type === 'microsoft' ? 'Microsoft' : t('acc.offlineShort')) : t('acct.none');
 }
@@ -1410,11 +1431,20 @@ async function startupSitePeek() {
 }
 
 // ---------- сообщить о проблеме и уведомления ----------
+let repMode = 'problem';
+$('#suggOpen').onclick = () => {                    // та же форма, но уходит как 💡 предложение
+  repMode = repMode === 'idea' ? 'problem' : 'idea';
+  $('#panelRepTitle').textContent = repMode === 'idea' ? t('sugg.title') : t('acc.reportTitle');
+  $('#repText').placeholder = repMode === 'idea' ? t('sugg.ph') : t('acc.whatPh');
+  $('#suggOpen').classList.toggle('primary', repMode === 'idea');
+  $('#repText').focus();
+};
 $('#repSend').onclick = async () => {
   const b = $('#repSend'); b.disabled = true;
   try {
-    const r = await api.invoke('report-send', { where: $('#repWhere').value, text: $('#repText').value });
-    $('#repText').value = ''; toast(t('report.thanks'));
+    const r = await api.invoke('report-send', { where: $('#repWhere').value, text: $('#repText').value, kind: repMode });
+    $('#repText').value = ''; toast(repMode === 'idea' ? t('sugg.thanks') : t('report.thanks'));
+    repMode = 'problem'; $('#panelRepTitle').textContent = t('acc.reportTitle'); $('#repText').placeholder = t('acc.whatPh'); $('#suggOpen').classList.remove('primary');
   } catch (e) { toast(errMsg(e), 'err'); }
   b.disabled = false;
 };
@@ -1684,7 +1714,7 @@ $('#unStart').onclick = () => { unStep1(); un.showModal(); };
       const r = await api.invoke('skin-fetch', S.st.account.name); await loadSkinUrl(r.dataUrl, true); setSlim(r.slim);
     }
   } catch {}
-  skinReady = true; dirty();
+  skinReady = true; dirty(); updateSkinFace();
   S.st = await api.invoke('state');
   applyAppearance(S.st.appearance || { theme: 'dark', font: 'Consolas', fontSize: 12, opacity: 100 });
   await refresh();

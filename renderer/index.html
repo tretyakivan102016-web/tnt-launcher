@@ -317,12 +317,13 @@
           <div class="seg" id="langSeg"><button data-lang="ru">Русский</button><button data-lang="en">English</button></div>
         </div>
       <div class="panel">
-          <h3 data-i18n="acc.reportTitle">Сообщить о проблеме</h3>
+          <h3 id="panelRepTitle" data-i18n="acc.reportTitle">Сообщить о проблеме</h3>
           <p class="hint" data-i18n="acc.reportHint">Расскажите, что не так: сообщение уйдёт разработчикам. Мы сохраним ваш IP-адрес (и ник, если вы вошли через Microsoft), чтобы сообщить о решении. Ответ придёт сюда или на сайт.</p>
           <div class="form" style="max-width:none">
             <label><span data-i18n="acc.whereLabel">Где проблема?</span><select id="repWhere"><option value="launcher" data-i18n="acc.whereLauncher">В лаунчере</option><option value="site" data-i18n="acc.whereSite">На сайте</option></select></label>
             <label><span data-i18n="acc.whatLabel">Что случилось?</span><textarea id="repText" rows="4" maxlength="1000" placeholder="Что вы делали и что пошло не так?" data-i18n="acc.whatPh"></textarea></label>
             <div class="row"><button class="btn primary" id="repSend" data-i18n="common.send">Отправить</button><button class="btn ghost" id="forumOpen" data-i18n="common.forum">Форум</button><button class="btn ghost" id="supportOpen" data-i18n="common.support">Поддержка</button></div>
+            <div class="row" style="margin-top:10px"><button class="btn" id="suggOpen">💡 <span data-i18n="sugg.btn">Посоветовать улучшение</span></button></div>
           </div>
         </div>
         <div class="panel danger-zone">

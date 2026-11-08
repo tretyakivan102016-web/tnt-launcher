@@ -1318,9 +1318,9 @@ async function launcherAuth() {                       // для лицензио
   }
   return { Authorization: `Bearer ${bearerCache.t}` };
 }
-ipcMain.handle('report-send', async (_, { where, text }) => {
+ipcMain.handle('report-send', async (_, { where, text, kind }) => {
   let r;
-  try { r = await siteFetch('/api/report', { where: where === 'site' ? 'site' : 'launcher', text, source: 'launcher', app: { version: app.getVersion(), platform: process.platform } }, await launcherAuth()); }
+  try { r = await siteFetch('/api/report', { where: where === 'site' ? 'site' : 'launcher', kind: kind === 'idea' ? 'idea' : 'problem', text, source: 'launcher', app: { version: app.getVersion(), platform: process.platform } }, await launcherAuth()); }
   catch { throw new Error('Не удалось связаться с сайтом. Проверьте интернет и адрес сайта в настройках.'); }
   if (!r.ok) throw new Error(r.j.message || `Сайт ответил ${r.status}`);
   cfg.rids = [...(cfg.rids || []), r.j.rid].slice(-50); saveCfg();
