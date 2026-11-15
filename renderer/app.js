@@ -906,6 +906,7 @@ function renderPkTags() {
   $('#pkTags').innerHTML = chips.map(([k, n]) => `<button class="tagchip ${k === pkTag ? 'on' : ''}" data-t="${esc(k)}">${esc(n)}</button>`).join('');
 }
 async function loadPacks() {
+  loadFeed();
   const list = $('#pkList');
   list.innerHTML = `<div class="empty">${esc(t('common.checking'))}</div>`;
   try {
@@ -924,6 +925,8 @@ async function loadPacks() {
         </div>
         <div class="pc-acts">
           <button class="btn primary sm" data-a="install">${esc(t('cat.install'))}</button>
+          <button class="btn ghost sm" data-a="com" title="Комментарии">💬</button>
+          ${pk.mine ? `<button class="btn ghost sm" data-a="share" title="Поделиться с другом">↗</button>` : ''}
           ${pk.mine ? `<button class="btn ghost sm" data-a="del">${esc(t('cat.delete'))}</button>` : ''}
         </div>
       </div>`).join('') : `<div class="empty">${esc(pkMine ? t('cat.myEmpty') : t('cat.empty'))}</div>`;
@@ -937,6 +940,14 @@ $('#pkMine').onclick = () => { pkMine = !pkMine; $('#pkMine').classList.toggle('
 $('#pkList').onclick = async e => {
   const b = e.target.closest('button'); if (!b) return;
   const cardEl = b.closest('.pack-card'), id = +cardEl.dataset.id;
+  if (b.dataset.a === 'com') { openPackComments(+cardEl.dataset.id, cardEl.querySelector('b').textContent.trim()); return; }
+  if (b.dataset.a === 'share') {
+    const nick = (prompt('Ник друга (аккаунт TnT):') || '').trim();
+    if (!nick) return;
+    try { await tntReq('/api/pack/share', 'POST', { id: +cardEl.dataset.id, nick }); toast('Поделились с ' + nick); }
+    catch (e) { toast(errMsg(e), 'err'); }
+    return;
+  }
   if (b.dataset.a === 'del') {
     if (!confirm(t('confirm.deletePack', { name: cardEl.querySelector('b').textContent.replace('ваша', '').trim() }))) return;
     try { await api.invoke('packs-cloud-delete', { id }); toast(t('cat.deleted')); loadPacks(); } catch (er) { toast(errMsg(er), 'err'); }
@@ -1069,6 +1080,7 @@ function renderAccount() {
   $('#bOut').hidden = !a;
   $('#nick').value = S.st.nick || '';
   const g = $('#gRam'); g.max = Math.max(2048, Math.floor(S.st.totalMemMB / 512) * 512); g.value = S.st.ram; $('#gRamV').textContent = (S.st.ram / 1024).toFixed(1) + t('units.gb');
+  renderTntPanel();
   const ap = S.st.appearance || { theme: 'dark', font: 'Consolas', fontSize: 12, opacity: 100 };
   $('#appTheme').value = ap.theme; $('#appFont').value = ap.font; $('#appFontSize').value = ap.fontSize;
   // при открытии настроек проверяем обновления (не чаще раза в 10 минут), чтобы предложение не зависело от старта
@@ -1077,6 +1089,109 @@ function renderAccount() {
 async function onLogin(acc) { S.st.account = acc; renderSide(); renderAccount(); toast(t('acc.loggedInAs', { name: acc.name })); }
 $('#bOff').onclick = async () => { try { await onLogin(await api.invoke('login-offline', $('#nick').value)); S.st.nick = $('#nick').value.trim(); } catch (e) { toast(errMsg(e), 'err'); } };
 $('#bOut').onclick = async () => { await api.invoke('logout'); S.st.account = null; renderSide(); renderAccount(); };
+// ---------- аккаунт TnT: вход/регистрация, друзья, админка ----------
+let TNT = null;                                                 // { nick, email, rights }
+const tntReq = async (path, method = 'GET', body = null) => {
+  const r = await api.invoke('tnt-req', { path, method, body });
+  if (!r.ok && path !== '/api/me') throw new Error((r.j && r.j.message) || ('HTTP ' + r.status));
+  return r;
+};
+async function renderTntPanel() {
+  const box = $('#tntPanel'); if (!box) return;
+  if (!TNT) {
+    // автологин сохранённого
+    try { const me = await tntReq('/api/me'); TNT = me.j && me.j.tnt || null; } catch {}
+  }
+  if (!TNT) {
+    box.innerHTML = `
+      <h3>Аккаунт TnT</h3>
+      <p class="hint">Ник + email + пароль: друзья, обмен сборками, комментарии. Email — восстановление пароля (через сайт).</p>
+      <div class="row wrap">
+        <input id="tNick" maxlength="16" placeholder="Ник (3–16)">
+        <input id="tEmail" type="email" placeholder="email (для регистрации)">
+        <input id="tPass" type="password" placeholder="Пароль (6+)">
+        <button class="btn primary" id="tReg">Зарегистрироваться</button>
+        <button class="btn" id="tLogin">Войти</button>
+      </div>`;
+    $('#tReg').onclick = async () => {
+      try { TNT = await api.invoke('tnt-login', { nick: $('#tNick').value, email: $('#tEmail').value, pass: $('#tPass').value, register: true }); toast(`Аккаунт ${TNT.nick} создан`); renderTntPanel(); loadPacks(); }
+      catch (e) { toast(errMsg(e), 'err'); }
+    };
+    $('#tLogin').onclick = async () => {
+      try { TNT = await api.invoke('tnt-login', { nick: $('#tNick').value, pass: $('#tPass').value }); toast(`Вы вошли как ${TNT.nick}`); renderTntPanel(); loadPacks(); }
+      catch (e) { toast(errMsg(e), 'err'); }
+    };
+    return;
+  }
+  const r = TNT.rights || {};
+  const badge = r.owner ? '👑 Владелец' : Object.values(r).some(Boolean) ? '🛡 Админ' : '';
+  box.innerHTML = `
+    <h3>Аккаунт TnT: ${esc(TNT.nick)} ${badge ? `<span class="mine-badge">${badge}</span>` : ''}</h3>
+    <p class="hint">${esc(TNT.email || '')}${r.packs || r.owner ? ' · ваши модпаки публикуются без проверки' : ''}</p>
+    <div class="row wrap">
+      ${r.admins || r.owner ? '<button class="btn primary" id="tAdmin">Админ-панель</button>' : ''}
+      <button class="btn ghost" id="tOut">Выйти</button>
+    </div>
+    <div class="field" style="margin-top:12px"><span>Друзья</span>
+      <div class="row wrap"><input id="tFr" maxlength="16" placeholder="Ник друга" style="max-width:200px"><button class="btn" id="tFrAdd">Добавить</button></div>
+      <div id="tFrList" class="hint" style="margin-top:6px">…</div></div>`;
+  if ($('#tAdmin')) $('#tAdmin').onclick = () => api.invoke('open-admin');
+  $('#tOut').onclick = async () => { await api.invoke('tnt-logout'); TNT = null; toast('Вы вышли'); renderTntPanel(); loadPacks(); };
+  const fr = async () => {
+    try {
+      const f = await tntReq('/api/friends');
+      $('#tFrList').innerHTML = f.j.list.length ? f.j.list.map(x => `<span class="selchip">${x.online ? '🟢' : '⚪'} ${esc(x.nick)} <b data-rm="${esc(x.nick)}" style="cursor:pointer;color:#ff6a4d">×</b></span>`).join(' ') : 'Пока никого';
+      $('#tFrList').querySelectorAll('[data-rm]').forEach(b => b.onclick = async () => { await tntReq('/api/friends', 'POST', { nick: b.dataset.rm, remove: true }); fr(); loadPacks(); });
+    } catch { $('#tFrList').textContent = ''; }
+  };
+  $('#tFrAdd').onclick = async () => {
+    try { await tntReq('/api/friends', 'POST', { nick: $('#tFr').value }); $('#tFr').value = ''; toast('Друг добавлен'); fr(); loadPacks(); }
+    catch (e) { toast(errMsg(e), 'err'); }
+  };
+  fr();
+}
+
+// лента друзей + поделились (в Модпаках)
+async function loadFeed() {
+  const box = $('#pkFeed'); if (!box) return;
+  try {
+    const r = await tntReq('/api/feed');
+    const list = r.j.list || [];
+    box.innerHTML = list.length ? `<h3 class="sub">🤝 Друзья и обмен</h3>` + list.map(pk => `
+      <div class="pack-card">
+        ${av(pk.name, PACK_COLOR(pk.id), '', { avatarText: (pk.name || 'M').replace(/[^\p{L}\p{N} ]/gu, '').trim().slice(0, 2) })}
+        <div class="pc-body"><b>${esc(pk.name)}</b>
+          <div class="pc-meta">${pk.shared ? '🤝 поделились с вами' : '👤 ' + esc(pk.friend)} · ${esc(pk.version)} · ${(pk.mods || []).length} модов</div></div>
+        <div class="pc-acts"><button class="btn primary sm" data-feed="${pk.id}">Установить</button></div>
+      </div>`).join('') : '';
+    box.querySelectorAll('[data-feed]').forEach(b => b.onclick = async () => {
+      b.disabled = true; b.textContent = '…';
+      try { const inst = await api.invoke('packs-cloud-install', { id: +b.dataset.feed }); await refresh(); toast(t('cat.installed')); select(inst.id); }
+      catch (e) { b.disabled = false; b.textContent = t('cat.install'); toast(errMsg(e), 'err'); }
+    });
+  } catch {}
+}
+
+// комментарии + «Поделиться» на карточках каталога
+const pcDlg = $('#dPackCom');
+let pcPack = null;
+async function openPackComments(id, name) {
+  pcPack = id; $('#pcTitle').textContent = 'Комментарии · ' + (name || '#' + id);
+  $('#pcList').innerHTML = '<div class="empty">…</div>';
+  pcDlg.showModal();
+  const load = async () => {
+    try { const r = await tntReq('/api/pack/comments?id=' + id);
+      $('#pcList').innerHTML = (r.j.list || []).map(c => `<div class="msg admin" style="max-width:100%;margin:4px 0"><b>${esc(c.nick)}</b>: ${esc(c.text)} <small class="muted">${new Date(c.at).toLocaleString('ru-RU')}</small></div>`).join('') || '<div class="empty">Пока нет комментариев</div>';
+    } catch (e) { $('#pcList').innerHTML = `<div class="empty">${esc(errMsg(e))}</div>`; }
+  };
+  await load();
+  $('#pcSend').onclick = async () => {
+    try { await tntReq('/api/pack/comments', 'POST', { id, text: $('#pcText').value }); $('#pcText').value = ''; load(); }
+    catch (e) { toast(errMsg(e), 'err'); }
+  };
+}
+$('#pcClose').onclick = () => pcDlg.close();
+
 // внешний вид: применяется сразу и сохраняется
 function applyAppearance(ap) {
   document.body.classList.toggle('light', ap.theme === 'light');

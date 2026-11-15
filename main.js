@@ -778,11 +778,55 @@ ipcMain.handle('res-install', async (_, { project, type, instId }) => {   // 1 �
   return { filename: f.filename, folder };
 });
 
-// ---------- окно поддержки (чат прямо из лаунчера) ----------
-ipcMain.handle('open-support', () => {
-  const w = new BrowserWindow({ width: 560, height: 760, parent: win, modal: true, title: 'Поддержка TnT Launcher', autoHideMenuBar: true, backgroundColor: '#0a0e13', webPreferences: { contextIsolation: true } });
-  w.loadURL(siteBase() + '/support');
+// ---------- аккаунт TnT: вход/регистрация, cookie-сессия с сайтом, онлайн-статус ----------
+let tntSid = null, tntLastPresence = 0;
+async function tntHttp(path, method = 'GET', body = null) {
+  const headers = { ...UA, 'Content-Type': 'application/json' };
+  if (tntSid) headers.Cookie = 'sid=' + tntSid;
+  const r = await fetch(siteBase() + path, { method, headers, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(10000) });
+  const sc = r.headers.get('set-cookie') || '';
+  const m = /sid=([a-f0-9]+)/.exec(sc);
+  if (m) tntSid = m[1];
+  let j = {}; try { j = await r.json(); } catch {}
+  if (tntSid && Date.now() - tntLastPresence > 60000) {          // онлайн-статус для друзей
+    tntLastPresence = Date.now();
+    fetch(siteBase() + '/api/presence', { method: 'POST', headers: { ...UA, 'Content-Type': 'application/json', Cookie: 'sid=' + tntSid }, body: '{}' }).catch(() => {});
+  }
+  return { ok: r.ok, status: r.status, j };
+}
+async function tntEnsure(nick, pass) {                           // логин и захват sid
+  const r = await tntHttp('/api/auth/login', 'POST', { nick: nick || (cfg.tnt && cfg.tnt.nick), pass: pass || (cfg.tnt && cfg.tnt.pass) });
+  if (!r.ok) throw new Error(r.j.message || 'Не удалось войти в аккаунт TnT');
+  return r.j;
+}
+ipcMain.handle('tnt-req', async (_, { path, method = 'GET', body = null } = {}) => {
+  if (!tntSid && cfg.tnt) { try { await tntEnsure(); } catch {} }
+  let r = await tntHttp(path, method, body);
+  if (r.status === 401 && cfg.tnt) {                             // сессия истекла — перелогин
+    tntSid = null;
+    try { await tntEnsure(); r = await tntHttp(path, method, body); } catch {}
+  }
+  return r;
 });
+ipcMain.handle('tnt-login', async (_, { nick, pass, register, email, remember }) => {
+  if (register) {
+    const r = await tntHttp('/api/auth/register', 'POST', { nick, email, pass });
+    if (!r.ok) throw new Error(r.j.message || 'Не удалось зарегистрироваться');
+  } else await tntEnsure(nick, pass);
+  if (remember !== false) { cfg.tnt = { nick: register ? nick : nick, pass }; saveCfg(); }
+  const me = await tntHttp('/api/me', 'GET');
+  return me.j && me.j.tnt ? me.j.tnt : { nick };
+});
+ipcMain.handle('tnt-logout', async () => { try { await tntHttp('/api/auth/logout', 'POST', {}); } catch {} tntSid = null; cfg.tnt = null; saveCfg(); return { ok: true }; });
+
+// ---------- окно поддержки (чат прямо из лаунчера) ----------
+ipcMain.handle('open-support', () => openSiteWindow('/support', 'Поддержка TnT Launcher'));
+ipcMain.handle('open-admin', () => openSiteWindow('/admin', 'Админ-панель TnT'));
+function openSiteWindow(path, title) {                          // окно сайта (поддержка, админка) с общими сессиями
+  const sess = session.fromPartition('tnt-site');
+  const w = new BrowserWindow({ width: path === '/admin' ? 900 : 560, height: 780, parent: win, title, autoHideMenuBar: true, backgroundColor: '#0a0e13', webPreferences: { session: sess, contextIsolation: true } });
+  w.loadURL(siteBase() + path);
+}
 
 // ---------- внешний вид ----------
 ipcMain.handle('appearance-set', (_, a) => {

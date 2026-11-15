@@ -195,6 +195,7 @@
           <button class="btn ghost" id="pImp" data-i18n="cat.import">Импорт .mrpack</button>
         </div>
         <div class="tagchips" id="pkTags"></div>
+        <div id="pkFeed"></div>
         <div class="grid" id="pkList"></div>
 
       </section>
@@ -290,6 +291,7 @@
           <div class="row wrap"><input id="skinNick" maxlength="16" placeholder="Ник лицензии, например Notch" data-i18n="acc.skinNickPh"><button class="btn primary" id="skinNickSave" data-i18n="common.apply">Применить</button><button class="btn ghost" id="skinNickClear" data-i18n="common.reset">Сбросить</button></div>
           <p class="hint" id="skinNickState" style="margin:0"></p>
         </div>
+        <div class="panel" id="tntPanel"></div>
         <div class="panel">
           <h3 data-i18n="app.title">Внешний вид</h3>
           <div class="app-grid">
@@ -366,6 +368,12 @@
     <div class="field"><span data-i18n="cat.selected">В сборке</span><div id="pkSelected" class="chipbox"></div></div>
   </div>
   <div class="row end"><button class="btn ghost" id="pkCancel" data-i18n="common.cancel">Отмена</button><button class="btn primary" id="pkPublish" data-i18n="cat.publish">Опубликовать</button></div>
+</dialog>
+<dialog id="dPackCom">
+  <h3 id="pcTitle">Комментарии</h3>
+  <div id="pcList" style="max-height:300px;overflow-y:auto;margin:8px 0"></div>
+  <div class="row"><input id="pcText" maxlength="500" placeholder="Ваш комментарий…" style="flex:1"><button class="btn primary" id="pcSend">Отправить</button></div>
+  <div class="row end" style="margin-top:10px"><button class="btn ghost" id="pcClose">Закрыть</button></div>
 </dialog>
 <dialog id="dDeps">
   <h3 data-i18n="deps.title">Установить зависимости?</h3>
