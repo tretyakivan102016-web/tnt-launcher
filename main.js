@@ -493,7 +493,7 @@ const mrSearch = async (q, type, version, loader) => {
   const facets = [[`project_type:${type}`]];
   if (version) facets.push([`versions:${version}`]);
   if (loader && loader !== 'vanilla') facets.push([`categories:${loader}`]);
-  const r = await getJson(`https://api.modrinth.com/v2/search?limit=24&query=${enc(q || '')}&facets=${enc(JSON.stringify(facets))}`);
+  const r = await getJson(`https://api.modrinth.com/v2/search?limit=40&query=${enc(q || '')}&facets=${enc(JSON.stringify(facets))}`);
   return r.hits.map(h => ({ id: h.project_id, title: h.title, desc: h.description, downloads: h.downloads, icon: h.icon_url, author: h.author }));
 };
 ipcMain.handle('mods-search', async (_, { id, q }) => {
@@ -763,7 +763,7 @@ ipcMain.handle('cf-install', async (_, { id, instId }) => {
 });
 ipcMain.handle('res-search', async (_, { q, type }) => {           // ресурспаки и шейдеры с Modrinth
   const facets = [[`project_type:${type}`]];
-  const r = await getJson(`https://api.modrinth.com/v2/search?limit=24&query=${enc(q || '')}&facets=${enc(JSON.stringify(facets))}`);
+  const r = await getJson(`https://api.modrinth.com/v2/search?limit=40&query=${enc(q || '')}&facets=${enc(JSON.stringify(facets))}`);
   return r.hits.map(h => ({ id: h.project_id, title: h.title, desc: h.description, downloads: h.downloads, icon: h.icon_url, author: h.author }));
 });
 ipcMain.handle('res-install', async (_, { project, type, instId }) => {   // 1 кнопкой: ресурспак или шейдер в сборку

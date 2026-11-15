@@ -404,3 +404,11 @@ body.light .toast.err{color:var(--text)}
 /* каскадное появление карточек (Ресурсы) */
 .grid.anim .card-item{animation:cardIn .32s cubic-bezier(.2,.8,.2,1) both}
 @keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+
+/* скин-вкладка: канва на всю ширину + отдельные части */
+.skin-wrap{align-items:stretch}
+.skin-canvas{flex:1;min-width:460px;display:flex;align-items:center;justify-content:center}
+.stage{width:100%;max-width:620px;height:min(600px,74vh)}
+.parts-checks{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
+#model .box.part-hidden{opacity:.12;pointer-events:none}
+.av-face{image-rendering:pixelated;object-fit:cover}

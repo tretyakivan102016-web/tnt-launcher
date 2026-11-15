@@ -179,7 +179,7 @@ const I18N = {
     'app.title': 'Внешний вид', 'app.theme': 'Тема', 'app.dark': 'Тёмная', 'app.light': 'Светлая', 'app.font': 'Шрифт консоли',
     'app.fontSize': 'Размер шрифта', 'app.opacity': 'Непрозрачность окна', 'app.transparent': 'Прозрачный', 'app.opaque': 'Непрозрачный', 'app.reload': 'Перезагрузить все',
     // редактор скина
-    'skin.hideParts': 'Скрыть части (для рисования)', 'skin.arms': 'Руки', 'skin.legs': 'Ноги', 'skin.catalogTitle': 'Готовые скины',
+    'skin.hideParts': 'Скрыть части (для рисования)', 'skin.armR': 'Пр. рука', 'skin.armL': 'Лев. рука', 'skin.legR': 'Пр. нога', 'skin.legL': 'Лев. нога',
     // моды: несовместимые
     'mods.incompatible': 'Нет версии для {v} — скачать нельзя', 'mods.installedTitle': 'Установленные моды', 'mods.remove': 'Удалить', 'mods.countOff': ' · выключено: {n}',
     // поддержка
@@ -365,7 +365,7 @@ const I18N = {
     'app.title': 'Appearance', 'app.theme': 'Theme', 'app.dark': 'Dark', 'app.light': 'Light', 'app.font': 'Console font',
     'app.fontSize': 'Font size', 'app.opacity': 'Window opacity', 'app.transparent': 'Transparent', 'app.opaque': 'Opaque', 'app.reload': 'Reload all',
     // skin editor
-    'skin.hideParts': 'Hide parts (for painting)', 'skin.arms': 'Arms', 'skin.legs': 'Legs', 'skin.catalogTitle': 'Ready skins',
+    'skin.hideParts': 'Hide parts (for painting)', 'skin.armR': 'R arm', 'skin.armL': 'L arm', 'skin.legR': 'R leg', 'skin.legL': 'L leg',
     // mods: incompatible
     'mods.incompatible': 'No version for {v} — cannot download', 'mods.installedTitle': 'Installed mods', 'mods.remove': 'Remove', 'mods.countOff': ' · disabled: {n}',
     // support
@@ -527,12 +527,15 @@ function renderSide() {
       ${av(i.name, i.color, '', i)}<div><b>${esc(i.name)}</b><small>${esc(i.version)} · ${LOADER[i.loader]}</small></div></button>`).join('');
   $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.v === S.view));
   const a = S.st && S.st.account;
+  const avFallback = () => { const d = document.getElementById('acctAv'); if (d) d.outerHTML = av(a ? a.name : '?', a ? '#ffb82e' : '#4a5663', 'sm', null, 'acctAv'); };
   if (a && a.uuid) {
     $('#acctAv').outerHTML = `<img id="acctAv" class="av sm av-face" alt="" src="https://mc-heads.net/avatar/${encodeURIComponent(a.uuid)}/48">`;
+    const el = document.getElementById('acctAv'); if (el) el.onerror = avFallback;
   } else if (a && S.skinFace) {
     $('#acctAv').outerHTML = `<img id="acctAv" class="av sm av-face" alt="" src="${S.skinFace}">`;
   } else if (a && a.name) {
     $('#acctAv').outerHTML = `<img id="acctAv" class="av sm av-face" alt="" src="https://mc-heads.net/avatar/${encodeURIComponent(a.name)}/48">`;
+    const el = document.getElementById('acctAv'); if (el) el.onerror = avFallback;
   } else {
     $('#acctAv').outerHTML = av('?', '#4a5663', 'sm', null, 'acctAv');
   }
@@ -997,9 +1000,7 @@ $('#pkPublish').onclick = async () => {
   b.disabled = false;
 };
 
-// готовые с площадок: Modrinth / CurseForge
-let pSrc = 'mr';
-$('#pSrc').onclick = e => { const b = e.target.closest('button'); if (b) { pSrc = b.dataset.s; seg($('#pSrc'), pSrc); } };
+// (секция «Готовые с площадок» убрана — во вкладке Модпаки только сборки TnT)
 async function searchPacks() {
   skeleton($('#pList'));
   try {
@@ -1020,16 +1021,7 @@ async function searchPacks() {
     }
   } catch (e) { $('#pList').innerHTML = ''; toast(errMsg(e), 'err'); }
 }
-$('#pGo').onclick = searchPacks;
-$('#pQ').onkeydown = e => { if (e.key === 'Enter') searchPacks(); };
-$('#pList').onclick = async e => {
-  const b = e.target.closest('button'); if (!b) return;
-  const c = b.closest('.card-item');
-  if (b.dataset.a === 'open') { if (c.dataset.url) api.invoke('open-external', c.dataset.url); return; }
-  b.textContent = '…'; b.disabled = true;
-  try { const i = await api.invoke('packs-install', { project: c.dataset.id, title: c.dataset.title }); await refresh(); toast(t('cat.installed', { name: i.name })); select(i.id); }
-  catch (er) { b.textContent = t('common.install'); b.disabled = false; toast(errMsg(er), 'err'); }
-};
+
 // ресурспаки и шейдеры — вкладка сборки, 1 кнопкой в текущую сборку
 $('#resTabs').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
@@ -1223,8 +1215,9 @@ function buildModel() {
     [0, [4, 12, 4], [0, 16], [-2, 10, 0]], [1, [4, 12, 4], [0, 32], [-2, 10, 0]],
     [0, [4, 12, 4], [16, 48], [2, 10, 0]], [1, [4, 12, 4], [0, 48], [2, 10, 0]],
   ];
-  const PART_OF = ['head', 'head', 'body', 'body', 'arms', 'arms', 'arms', 'arms', 'legs', 'legs', 'legs', 'legs'];
+  const PART_OF = ['head', 'head', 'body', 'body', 'armR', 'armR', 'armL', 'armL', 'legR', 'legR', 'legL', 'legL'];
   defs.forEach((d, di) => { if (model.children[di]) model.children[di].dataset.part = PART_OF[di]; });
+  applyParts();
   for (const [l, [w, h, d], [u, v], [bx, by, bz]] of defs) {
     const g = l ? 0.5 : 0, W = (w + 2 * g) * U, H = (h + 2 * g) * U, D = (d + 2 * g) * U;
     const box = document.createElement('div'); box.className = 'box l' + l;
@@ -1296,14 +1289,14 @@ $('#layerSeg').onclick = e => {
   stage.classList.toggle('edit-over', layer === 1); stage.classList.toggle('edit-base', layer === 0);
 };
 $('#skOver').onchange = e => stage.classList.toggle('hide-over', !e.target.checked);
-$('#skParts').onclick = e => {                                      // скрыть часть модели, чтобы рисовать под ней
-  const b = e.target.closest('button'); if (!b) return;
-  b.classList.toggle('on');
-  $$('#model .box').forEach(box => { if (box.dataset.part === b.dataset.p) box.classList.toggle('part-hidden', b.classList.contains('on')); });
-};
-$('#skCatalog').onclick = e => {                                    // готовые скины известных игроков
-  const b = e.target.closest('button'); if (!b) return;
-  $('#skNick').value = b.dataset.n; $('#skFetch').click();
+const hiddenParts = new Set();                                       // какие части модели скрыты (чтобы рисовать под ними)
+function applyParts() {                                              // вызывается после каждой пересборки модели
+  $$('#model .box').forEach(box => box.classList.toggle('part-hidden', hiddenParts.has(box.dataset.part)));
+}
+$('#skParts').onchange = e => {
+  const c = e.target.closest('input[data-part]'); if (!c) return;
+  if (c.checked) hiddenParts.add(c.dataset.part); else hiddenParts.delete(c.dataset.part);
+  applyParts();
 };
 $('#skSlim').onchange = e => { slim = e.target.checked; buildModel(); dirty(); };
 $('#skGuide').onchange = () => dirty();
