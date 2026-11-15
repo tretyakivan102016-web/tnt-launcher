@@ -15,7 +15,7 @@ const I18N = {
     'common.notFound': 'Ничего не найдено',
     // боковая панель
     'side.title': 'МОИ СБОРКИ', 'side.bedrock': 'BEDROCK', 'side.for': 'для Minecraft', 'side.new': 'Новая',
-    'nav.catalog': 'Модпаки', 'nav.skin': 'Редактор скина', 'nav.account': 'Аккаунт и настройки',
+    'nav.catalog': 'Модпаки', 'nav.skin': 'Редактор скина', 'nav.account': 'Аккаунт и настройки', 'nav.admin': 'Админ-панель',
     'acct.guest': 'Гость', 'acct.none': 'аккаунт не выбран', 'acc.offlineShort': 'офлайн',
     // запуск
     'play': 'ИГРАТЬ', 'stop': 'СТОП', 'launching': 'ЗАПУСК…', 'prog.ready': 'Готов к запуску',
@@ -200,7 +200,7 @@ const I18N = {
     'common.notFound': 'Nothing found',
     // sidebar
     'side.title': 'MY INSTANCES', 'side.bedrock': 'BEDROCK', 'side.for': 'for Minecraft', 'side.new': 'New',
-    'nav.catalog': 'Modpacks', 'nav.skin': 'Skin editor', 'nav.account': 'Account & settings',
+    'nav.catalog': 'Modpacks', 'nav.skin': 'Skin editor', 'nav.account': 'Account & settings', 'nav.admin': 'Admin panel',
     'acct.guest': 'Guest', 'acct.none': 'no account selected', 'acc.offlineShort': 'offline',
     // play
     'play': 'PLAY', 'stop': 'STOP', 'launching': 'LAUNCHING…', 'prog.ready': 'Ready to launch',
@@ -486,6 +486,7 @@ function go(view) {
   if (view === 'account') renderAccount();
   if (view === 'bedrock') renderBedrock();
   if (view === 'catalog') loadPacks();
+  if (view === 'admin') renderAdmin();
   $('#pages').scrollTop = 0;
 }
 function select(id) {
@@ -1098,29 +1099,21 @@ const tntReq = async (path, method = 'GET', body = null) => {
 };
 async function renderTntPanel() {
   const box = $('#tntPanel'); if (!box) return;
-  if (!TNT) {
-    // автологин сохранённого
-    try { const me = await tntReq('/api/me'); TNT = me.j && me.j.tnt || null; } catch {}
-  }
+  if (!TNT) { try { const me = await tntReq('/api/me'); TNT = me.j && me.j.tnt || null; } catch {} }
+  wireAuthDialogs();
+  const r0 = TNT && TNT.rights || {};
+  const adminNavBtn = $('#adminNav');
+  if (adminNavBtn) adminNavBtn.hidden = !(r0.admins || r0.owner || r0.packs || r0.tags);
   if (!TNT) {
     box.innerHTML = `
       <h3>Аккаунт TnT</h3>
-      <p class="hint">Ник + email + пароль: друзья, обмен сборками, комментарии. Email — восстановление пароля (через сайт).</p>
+      <p class="hint">Друзья, обмен сборками и комментарии. Регистрация: ник + email + пароль.</p>
       <div class="row wrap">
-        <input id="tNick" maxlength="16" placeholder="Ник (3–16)">
-        <input id="tEmail" type="email" placeholder="email (для регистрации)">
-        <input id="tPass" type="password" placeholder="Пароль (6+)">
-        <button class="btn primary" id="tReg">Зарегистрироваться</button>
-        <button class="btn" id="tLogin">Войти</button>
+        <button class="btn primary big" id="tntOpenLogin">Войти</button>
+        <button class="btn big" id="tntOpenReg">Регистрация</button>
       </div>`;
-    $('#tReg').onclick = async () => {
-      try { TNT = await api.invoke('tnt-login', { nick: $('#tNick').value, email: $('#tEmail').value, pass: $('#tPass').value, register: true }); toast(`Аккаунт ${TNT.nick} создан`); renderTntPanel(); loadPacks(); }
-      catch (e) { toast(errMsg(e), 'err'); }
-    };
-    $('#tLogin').onclick = async () => {
-      try { TNT = await api.invoke('tnt-login', { nick: $('#tNick').value, pass: $('#tPass').value }); toast(`Вы вошли как ${TNT.nick}`); renderTntPanel(); loadPacks(); }
-      catch (e) { toast(errMsg(e), 'err'); }
-    };
+    $('#tntOpenLogin').onclick = () => $('#dTntLogin').showModal();
+    $('#tntOpenReg').onclick = () => $('#dTntReg').showModal();
     return;
   }
   const r = TNT.rights || {};
@@ -1129,13 +1122,13 @@ async function renderTntPanel() {
     <h3>Аккаунт TnT: ${esc(TNT.nick)} ${badge ? `<span class="mine-badge">${badge}</span>` : ''}</h3>
     <p class="hint">${esc(TNT.email || '')}${r.packs || r.owner ? ' · ваши модпаки публикуются без проверки' : ''}</p>
     <div class="row wrap">
-      ${r.admins || r.owner ? '<button class="btn primary" id="tAdmin">Админ-панель</button>' : ''}
+      ${(r.admins || r.owner) ? '<button class="btn primary" id="tAdmin">👑 Админ-панель</button>' : ''}
       <button class="btn ghost" id="tOut">Выйти</button>
     </div>
     <div class="field" style="margin-top:12px"><span>Друзья</span>
       <div class="row wrap"><input id="tFr" maxlength="16" placeholder="Ник друга" style="max-width:200px"><button class="btn" id="tFrAdd">Добавить</button></div>
       <div id="tFrList" class="hint" style="margin-top:6px">…</div></div>`;
-  if ($('#tAdmin')) $('#tAdmin').onclick = () => api.invoke('open-admin');
+  if ($('#tAdmin')) $('#tAdmin').onclick = () => go('admin');
   $('#tOut').onclick = async () => { await api.invoke('tnt-logout'); TNT = null; toast('Вы вышли'); renderTntPanel(); loadPacks(); };
   const fr = async () => {
     try {
@@ -1149,6 +1142,97 @@ async function renderTntPanel() {
     catch (e) { toast(errMsg(e), 'err'); }
   };
   fr();
+}
+function wireAuthDialogs() {
+  const li = $('#dTntLogin'), rg = $('#dTntReg');
+  if (!li || li.dataset.wired) return;
+  li.dataset.wired = '1';
+  $('#liCancel').onclick = () => li.close();
+  $('#rgCancel').onclick = () => rg.close();
+  $('#liToReg').onclick = e => { e.preventDefault(); li.close(); rg.showModal(); };
+  $('#rgToLi').onclick = e => { e.preventDefault(); rg.close(); li.showModal(); };
+  $('#liGo').onclick = async () => {
+    const b = $('#liGo'); b.disabled = true;
+    try { TNT = await api.invoke('tnt-login', { nick: $('#liNick').value, pass: $('#liPass').value }); li.close(); toast(`Вы вошли как ${TNT.nick}`); renderTntPanel(); loadPacks(); }
+    catch (e) { toast(errMsg(e), 'err'); b.disabled = false; }
+  };
+  $('#rgGo').onclick = async () => {
+    const b = $('#rgGo'); b.disabled = true;
+    try { TNT = await api.invoke('tnt-login', { nick: $('#rgNick').value, email: $('#rgEmail').value, pass: $('#rgPass').value, register: true }); rg.close(); toast(`Аккаунт ${TNT.nick} создан`); renderTntPanel(); loadPacks(); }
+    catch (e) { toast(errMsg(e), 'err'); b.disabled = false; }
+  };
+}
+
+// ---------- страница «Админ» в лаунчере ----------
+const ADM_TAGS = [['fps', '🚀 FPS'], ['vanilla', '✨ Ванилла+'], ['hardcore', '💀 Хардкор'], ['dev', '🛠️ Разрабы'], ['players', '⭐ Игроки'], ['trend', '🔥 Тренд']];
+async function renderAdmin() {
+  const r = TNT && TNT.rights || {};
+  if (!(r.admins || r.owner || r.packs || r.tags)) { go('account'); return; }
+  // модерация модпаков
+  const box = $('#admPacks');
+  box.innerHTML = '<h3>Модерация модпаков</h3><p class="hint">Загружаю…</p>';
+  try {
+    const res = await tntReq('/api/modpacks?sort=pending');
+    const list = res.j.list || [];
+    const stName = { pending: '⏳ на проверке', approved: '✅ одобрен', rejected: '❌ отклонён' };
+    box.innerHTML = `<h3>Модерация модпаков (${list.length})</h3>` + (list.length ? list.map(pk => `
+      <div class="adm-pack" data-id="${pk.id}">
+        <b style="min-width:160px">${esc(pk.name)}</b>
+        <span class="muted small">${esc(pk.author.name)} · ${esc(pk.version)}</span>
+        <span class="st ${pk.status || 'approved'}">${stName[pk.status || 'approved']}</span>
+        <span class="adm-tags">${ADM_TAGS.map(([k, n]) => `<button data-t="${k}" class="${(pk.tags || []).includes(k) ? 'on' : ''}">${n}</button>`).join('')}</span>
+        <span style="flex:1"></span>
+        ${(r.packs || r.owner) ? `<button class="btn primary sm" data-st="approved">✅</button><button class="btn danger sm" data-st="rejected">❌</button>` : ''}
+      </div>`).join('') : '<p class="hint">Модпаков нет</p>');
+    box.querySelectorAll('.adm-pack').forEach(row => {
+      const id = +row.dataset.id;
+      row.querySelectorAll('[data-st]').forEach(b => b.onclick = async () => {
+        try { await tntReq('/api/admin/pack', 'POST', { id, status: b.dataset.st }); toast(b.dataset.st === 'approved' ? 'Одобрено' : 'Отклонено'); renderAdmin(); }
+        catch (e) { toast(errMsg(e), 'err'); }
+      });
+      row.querySelectorAll('.adm-tags button').forEach(b => b.onclick = async () => {
+        const tags = [...row.querySelectorAll('.adm-tags button.on')].map(x => x.dataset.t);
+        if (!b.classList.contains('on')) tags.push(b.dataset.t); else tags.splice(tags.indexOf(b.dataset.t), 1);
+        try { await tntReq('/api/admin/pack', 'POST', { id, tags }); toast('Метки обновлены'); renderAdmin(); }
+        catch (e) { toast(errMsg(e), 'err'); }
+      });
+    });
+  } catch (e) { box.innerHTML = `<h3>Модерация модпаков</h3><p class="hint">${esc(errMsg(e))}</p>`; }
+  // админы и права
+  const abox = $('#admAdmins'), aboxIn = $('#admAdminsBox');
+  if (!(r.admins || r.owner)) { abox.hidden = true; return; }
+  abox.hidden = false;
+  try {
+    const d = await tntReq('/api/admin/list');
+    const RIGHT_NAMES = { packs: '📦 Модпаки', tags: '🏷 Метки', reports: '🐞 Отчёты', support: '🛟 Поддержка', admins: '👑 Админы' };
+    aboxIn.innerHTML = `
+      <p class="hint">Владелец: <b>${esc(d.j.owner)} 👑</b></p>
+      <div class="row wrap" style="margin:10px 0"><input id="aaNick" maxlength="16" placeholder="Ник TnT" style="max-width:200px"><button class="btn primary" id="aaAdd">Назначить админом</button></div>
+      ${(d.j.admins || []).map(a => `
+        <div class="adm-pack" data-nick="${esc(a.nick)}">
+          <b style="min-width:140px">${esc(a.nick)}</b>
+          <span class="adm-tags">${Object.entries(RIGHT_NAMES).map(([k, n]) => `<button data-k="${k}" class="${a.rights[k] ? 'on' : ''}">${n}</button>`).join('')}</span>
+          <span style="flex:1"></span><button class="btn danger sm" data-rm="1">Убрать</button>
+        </div>`).join('') || '<p class="hint">Админов пока нет</p>'}`;
+    $('#aaAdd').onclick = async () => {
+      try { await tntReq('/api/admin/set', 'POST', { nick: $('#aaNick').value, rights: { packs: true } }); toast('Назначен (📦 Модпаки)'); renderAdmin(); }
+      catch (e) { toast(errMsg(e), 'err'); }
+    };
+    aboxIn.querySelectorAll('.adm-pack').forEach(row => {
+      const nick = row.dataset.nick;
+      row.querySelectorAll('.adm-tags button').forEach(b => b.onclick = async () => {
+        const rights = {}; row.querySelectorAll('.adm-tags button.on').forEach(x => rights[x.dataset.k] = true);
+        if (!b.classList.contains('on')) rights[b.dataset.k] = true; else delete rights[b.dataset.k];
+        try { await tntReq('/api/admin/set', 'POST', { nick, rights }); toast('Права обновлены'); renderAdmin(); }
+        catch (e) { toast(errMsg(e), 'err'); }
+      });
+      row.querySelector('[data-rm]').onclick = async () => {
+        if (!confirm(`Убрать все права у ${nick}?`)) return;
+        try { await tntReq('/api/admin/set', 'POST', { nick, remove: true }); toast('Убрано'); renderAdmin(); }
+        catch (e) { toast(errMsg(e), 'err'); }
+      };
+    });
+  } catch (e) { aboxIn.innerHTML = `<p class="hint">${esc(errMsg(e))}</p>`; }
 }
 
 // лента друзей + поделились (в Модпаках)

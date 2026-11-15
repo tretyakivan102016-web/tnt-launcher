@@ -412,3 +412,25 @@ body.light .toast.err{color:var(--text)}
 .parts-checks{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
 #model .box.part-hidden{opacity:.12;pointer-events:none}
 .av-face{image-rendering:pixelated;object-fit:cover}
+
+/* все текстовые поля тёмные (email/password и пр.) */
+input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=color]):not([type=file]),
+select,textarea{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--text)!important;border-radius:12px;padding:10px 14px;outline:none;transition:.15s}
+input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=color]):focus,select:focus,textarea:focus{border-color:var(--amber);background:rgba(255,255,255,.09)}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+/* яркие окна входа/регистрации */
+dialog.auth{width:min(430px,94vw);border:1px solid rgba(255,184,46,.45);box-shadow:0 30px 80px -20px #000}
+dialog.auth h3{font-size:20px;margin:0 0 4px}
+dialog.auth .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+dialog.auth input{width:100%;margin:4px 0 10px}
+dialog.auth .btn.primary{width:100%;padding:13px;font-size:15px}
+dialog.auth .switch{margin-top:10px;text-align:center;font-size:13px}
+/* страница админа */
+.adm-pack{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);margin-bottom:8px;flex-wrap:wrap}
+.adm-pack .st{padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:800}
+.st.pending{background:rgba(255,184,46,.16);color:var(--amber)}
+.st.approved{background:rgba(52,211,153,.16);color:var(--green)}
+.st.rejected{background:rgba(255,77,54,.16);color:#ff8a7a}
+.adm-tags{display:flex;gap:6px;flex-wrap:wrap}
+.adm-tags button{padding:4px 10px;border-radius:99px;border:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--muted)}
+.adm-tags button.on{background:rgba(255,184,46,.16);border-color:var(--amber);color:var(--amber)}
