@@ -974,6 +974,7 @@ $('#pkList').onclick = async e => {
 // конструктор модпаков
 const pkDlg = $('#dPack'), pkSel = new Map();      // id -> title
 function openPackBuilder() {
+  if (!TNT) { toast('Публикация сборок — для аккаунтов TnT. Играть и ставить моды можно без регистрации.', 'warn'); setTimeout(() => go('account'), 900); return; }
   if (!S.st.account || S.st.account.type !== 'microsoft') { toast(t('cat.mustLogin'), 'warn'); go('account'); return; }
   $('#pkName').value = ''; $('#pkDesc').value = ''; $('#pkModQ').value = ''; $('#pkSrvHost').value = ''; $('#pkSrvName').value = '';
   $('#pkModList').innerHTML = ''; pkSel.clear(); renderPkSelected();
@@ -1112,7 +1113,14 @@ const tntReq = async (path, method = 'GET', body = null) => {
 };
 async function renderTntPanel() {
   const box = $('#tntPanel'); if (!box) return;
-  if (!TNT) { try { const me = await tntReq('/api/me'); TNT = me.j && me.j.tnt || null; } catch {} }
+  if (!TNT && !renderTntPanel.triedToken) {
+    renderTntPanel.triedToken = true;
+    try {
+      const me = await tntReq('/api/me');
+      TNT = me.j && me.j.tnt || null;
+      if (TNT) toast(`С возвращением, ${TNT.nick}!`);
+    } catch {}
+  }
   wireAuthDialogs();
   const r0 = TNT && TNT.rights || {};
   const adminNavBtn = $('#adminNav');
@@ -1120,8 +1128,8 @@ async function renderTntPanel() {
   const chatNavBtn = $('#chatNav'); if (chatNavBtn) chatNavBtn.hidden = !TNT;
   if (!TNT) {
     box.innerHTML = `
-      <h3>Аккаунт TnT</h3>
-      <p class="hint">Друзья, обмен сборками и комментарии. Регистрация: ник + email + пароль.</p>
+      <h3>Аккаунт TnT <span class="mine-badge">гостевой режим</span></h3>
+      <p class="hint">Играть, ставить моды и редактор скинов можно <b>без регистрации</b>. Друзья, чат, звонки и публикация сборок — после входа.</p>
       <div class="row wrap">
         <button class="btn primary big" id="tntOpenLogin">Войти</button>
         <button class="btn big" id="tntOpenReg">Регистрация</button>
@@ -1163,17 +1171,23 @@ function wireAuthDialogs() {
   li.dataset.wired = '1';
   $('#liCancel').onclick = () => li.close();
   $('#rgCancel').onclick = () => rg.close();
+  $('#liGuest').onclick = () => { li.close(); toast('Гостевой режим: игра и моды доступны, соц-функции — после входа'); };
+  $('#rgGuest').onclick = () => { rg.close(); toast('Гостевой режим: игра и моды доступны, соц-функции — после входа'); };
   $('#liToReg').onclick = e => { e.preventDefault(); li.close(); rg.showModal(); };
   $('#rgToLi').onclick = e => { e.preventDefault(); rg.close(); li.showModal(); };
   $('#liGo').onclick = async () => {
-    const b = $('#liGo'); b.disabled = true;
-    try { TNT = await api.invoke('tnt-login', { nick: $('#liNick').value, pass: $('#liPass').value }); li.close(); toast(`Вы вошли как ${TNT.nick}`); renderTntPanel(); loadPacks(); }
-    catch (e) { toast(errMsg(e), 'err'); b.disabled = false; }
+    const b = $('#liGo'); b.disabled = true; b.textContent = 'Вхожу…';
+    try { TNT = await api.invoke('tnt-login', { nick: $('#liNick').value.trim(), pass: $('#liPass').value }); li.close(); toast(`Вы вошли как ${TNT.nick}`); renderTntPanel(); loadPacks(); }
+    catch (e) {
+      b.disabled = false; b.textContent = 'Войти';
+      const msg = errMsg(e);
+      toast(/пароль|ник/i.test(msg) ? msg + '. Проверьте раскладку и Caps Lock, или зарегистрируйтесь.' : msg, 'err');
+    }
   };
   $('#rgGo').onclick = async () => {
-    const b = $('#rgGo'); b.disabled = true;
-    try { TNT = await api.invoke('tnt-login', { nick: $('#rgNick').value, email: $('#rgEmail').value, pass: $('#rgPass').value, register: true }); rg.close(); toast(`Аккаунт ${TNT.nick} создан`); renderTntPanel(); loadPacks(); }
-    catch (e) { toast(errMsg(e), 'err'); b.disabled = false; }
+    const b = $('#rgGo'); b.disabled = true; b.textContent = 'Создаю…';
+    try { TNT = await api.invoke('tnt-login', { nick: $('#rgNick').value.trim(), email: $('#rgEmail').value.trim(), pass: $('#rgPass').value, register: true }); rg.close(); toast(`Аккаунт ${TNT.nick} создан`); renderTntPanel(); loadPacks(); }
+    catch (e) { b.disabled = false; b.textContent = 'Создать аккаунт'; toast(errMsg(e), 'err'); }
   };
 }
 
@@ -1182,7 +1196,19 @@ let chatPeer = null, chatPoll = null, sigPoll = null, lastMsgAt = 0;
 const signal = (to, type, data) => tntReq('/api/signal', 'POST', { to, type, data });
 async function renderChat() {
   const peersBox = $('#chatPeers');
-  if (!TNT) { peersBox.innerHTML = '<div class="empty">Войдите в аккаунт TnT (Аккаунт и настройки)</div>'; $('#chatHead').innerHTML = '<span class="muted">—</span>'; $('#chatMsgs').innerHTML = ''; $('#chatInput').hidden = true; return; }
+  if (!TNT) {
+    peersBox.innerHTML = '<div class="empty">🔒 Друзья, чат и звонки — для аккаунтов TnT</div>';
+    $('#chatHead').innerHTML = '<span class="muted">Гостевой режим</span>';
+    $('#chatMsgs').innerHTML = `<div class="empty" style="text-align:center;padding:40px 10px">
+      <div style="font-size:34px;margin-bottom:8px">🔒</div>
+      Играть и ставить моды можно <b>без регистрации</b>.<br>
+      Друзья, переписка, звонки и публикация сборок откроются после входа в аккаунт TnT.
+      <div class="row" style="justify-content:center;margin-top:16px"><button class="btn primary big" id="guestLoginBtn">Войти или зарегистрироваться</button></div>
+      <p class="muted small" style="margin-top:10px">Ник + email + пароль — меньше минуты</p></div>`;
+    $('#chatInput').hidden = true;
+    const gb = $('#guestLoginBtn'); if (gb) gb.onclick = () => { go('account'); setTimeout(() => $('#tntOpenLogin') && $('#tntOpenLogin').click(), 150); };
+    return;
+  }
   $('#chatInput').hidden = false;
   try {
     const r = await tntReq('/api/dm/list');
