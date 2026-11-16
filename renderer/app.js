@@ -1202,6 +1202,7 @@ async function renderAdmin() {
   const abox = $('#admAdmins'), aboxIn = $('#admAdminsBox');
   if (!(r.admins || r.owner)) { abox.hidden = true; return; }
   abox.hidden = false;
+  renderAdminAccounts();
   try {
     const d = await tntReq('/api/admin/list');
     const RIGHT_NAMES = { packs: '📦 Модпаки', tags: '🏷 Метки', reports: '🐞 Отчёты', support: '🛟 Поддержка', admins: '👑 Админы' };

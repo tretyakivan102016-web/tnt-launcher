@@ -105,9 +105,11 @@ function createWindow() {
     icon: path.join(__dirname, 'build', 'icon.png'), autoHideMenuBar: true,
     titleBarStyle: 'hidden',
     ...(isMac ? { trafficLightPosition: { x: 18, y: 18 } } : { titleBarOverlay: { color: '#0a0e13', symbolColor: '#e9eef2', height: 44 } }),
-    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true },
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, webSecurity: true, spellcheck: false },
   });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));          // никаких всплывающих окон
+  win.webContents.on('will-navigate', (e, u) => { if (!/^file:/.test(u)) e.preventDefault(); });   // навигация только по нашим файлам
 }
 if (!app.requestSingleInstanceLock()) app.quit();
 if (process.defaultApp) { if (process.argv.length >= 2) app.setAsDefaultProtocolClient('tntlauncher', process.execPath, [path.resolve(process.argv[1])]); }
@@ -779,45 +781,28 @@ ipcMain.handle('res-install', async (_, { project, type, instId }) => {   // 1 �
 });
 
 // ---------- аккаунт TnT: вход/регистрация, cookie-сессия с сайтом, онлайн-статус ----------
-let tntSid = null, tntLastPresence = 0;
-async function tntHttp(path, method = 'GET', body = null) {
+let tntLastPresence = 0;
+async function tntHttp(path, method = 'GET', body = null, token = null) {
   const headers = { ...UA, 'Content-Type': 'application/json' };
-  if (tntSid) headers.Cookie = 'sid=' + tntSid;
+  const tk = token || (cfg.tntToken || '');
+  if (tk) headers.Authorization = 'Bearer ' + tk;                // пароль на диске НЕ хранится — только токен (90 дней)
   const r = await fetch(siteBase() + path, { method, headers, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(10000) });
-  const sc = r.headers.get('set-cookie') || '';
-  const m = /sid=([a-f0-9]+)/.exec(sc);
-  if (m) tntSid = m[1];
   let j = {}; try { j = await r.json(); } catch {}
-  if (tntSid && Date.now() - tntLastPresence > 60000) {          // онлайн-статус для друзей
+  if (r.ok && cfg.tntToken && Date.now() - tntLastPresence > 60000) {          // онлайн-статус для друзей
     tntLastPresence = Date.now();
-    fetch(siteBase() + '/api/presence', { method: 'POST', headers: { ...UA, 'Content-Type': 'application/json', Cookie: 'sid=' + tntSid }, body: '{}' }).catch(() => {});
+    fetch(siteBase() + '/api/presence', { method: 'POST', headers: { ...UA, 'Content-Type': 'application/json', Authorization: 'Bearer ' + cfg.tntToken }, body: '{}' }).catch(() => {});
   }
   return { ok: r.ok, status: r.status, j };
 }
-async function tntEnsure(nick, pass) {                           // логин и захват sid
-  const r = await tntHttp('/api/auth/login', 'POST', { nick: nick || (cfg.tnt && cfg.tnt.nick), pass: pass || (cfg.tnt && cfg.tnt.pass) });
-  if (!r.ok) throw new Error(r.j.message || 'Не удалось войти в аккаунт TnT');
-  return r.j;
-}
-ipcMain.handle('tnt-req', async (_, { path, method = 'GET', body = null } = {}) => {
-  if (!tntSid && cfg.tnt) { try { await tntEnsure(); } catch {} }
-  let r = await tntHttp(path, method, body);
-  if (r.status === 401 && cfg.tnt) {                             // сессия истекла — перелогин
-    tntSid = null;
-    try { await tntEnsure(); r = await tntHttp(path, method, body); } catch {}
-  }
-  return r;
-});
-ipcMain.handle('tnt-login', async (_, { nick, pass, register, email, remember }) => {
-  if (register) {
-    const r = await tntHttp('/api/auth/register', 'POST', { nick, email, pass });
-    if (!r.ok) throw new Error(r.j.message || 'Не удалось зарегистрироваться');
-  } else await tntEnsure(nick, pass);
-  if (remember !== false) { cfg.tnt = { nick: register ? nick : nick, pass }; saveCfg(); }
+ipcMain.handle('tnt-req', async (_, { path, method = 'GET', body = null } = {}) => tntHttp(path, method, body));
+ipcMain.handle('tnt-login', async (_, { nick, pass, register, email }) => {
+  const r = await tntHttp(register ? '/api/auth/register' : '/api/auth/login', 'POST', register ? { nick, email, pass } : { nick, pass });
+  if (!r.ok) throw new Error(r.j.message || 'Не удалось войти');
+  cfg.tntToken = r.j.token || null; saveCfg();                  // на диске — только токен
   const me = await tntHttp('/api/me', 'GET');
   return me.j && me.j.tnt ? me.j.tnt : { nick };
 });
-ipcMain.handle('tnt-logout', async () => { try { await tntHttp('/api/auth/logout', 'POST', {}); } catch {} tntSid = null; cfg.tnt = null; saveCfg(); return { ok: true }; });
+ipcMain.handle('tnt-logout', async () => { try { await tntHttp('/api/auth/logout', 'POST', {}); } catch {} cfg.tntToken = null; saveCfg(); return { ok: true }; });
 
 // ---------- окно поддержки (чат прямо из лаунчера) ----------
 ipcMain.handle('open-support', () => openSiteWindow('/support', 'Поддержка TnT Launcher'));
