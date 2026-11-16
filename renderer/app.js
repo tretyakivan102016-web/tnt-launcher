@@ -1172,6 +1172,28 @@ function wireAuthDialogs() {
   $('#liCancel').onclick = () => li.close();
   $('#rgCancel').onclick = () => rg.close();
   $('#liGuest').onclick = () => { li.close(); toast('Гостевой режим: игра и моды доступны, соц-функции — после входа'); };
+  // восстановление пароля
+  const fp = $('#dTntReset');
+  $('#liForgot').onclick = e => { e.preventDefault(); li.close(); $('#fpStep2').hidden = true; $('#fpMsg').textContent = ''; fp.showModal(); };
+  $('#fpCancel').onclick = () => fp.close();
+  $('#fpSend').onclick = async () => {
+    const b = $('#fpSend'); b.disabled = true; b.textContent = 'Отправляю…';
+    try {
+      const r = await tntReq('/api/auth/reset', 'POST', { email: $('#fpEmail').value.trim() });
+      $('#fpStep2').hidden = false;
+      $('#fpMsg').textContent = r.j.sent ? 'Код отправлен на почту (проверьте спам)' : (r.j.message || 'Письмо не отправлено');
+    } catch (e) { $('#fpMsg').textContent = errMsg(e); }
+    b.disabled = false; b.textContent = 'Отправить код';
+  };
+  $('#fpGo').onclick = async () => {
+    const b = $('#fpGo'); b.disabled = true; b.textContent = 'Меняю…';
+    try {
+      await tntReq('/api/auth/reset/confirm', 'POST', { nick: $('#fpNick').value.trim(), code: $('#fpCode').value.trim(), pass: $('#fpPass').value });
+      fp.close();
+      toast('Пароль изменён — войдите с новым');
+      $('#dTntLogin').showModal();
+    } catch (e) { $('#fpMsg').textContent = errMsg(e); b.disabled = false; b.textContent = 'Сменить пароль'; }
+  };
   $('#rgGuest').onclick = () => { rg.close(); toast('Гостевой режим: игра и моды доступны, соц-функции — после входа'); };
   $('#liToReg').onclick = e => { e.preventDefault(); li.close(); rg.showModal(); };
   $('#rgToLi').onclick = e => { e.preventDefault(); rg.close(); li.showModal(); };
