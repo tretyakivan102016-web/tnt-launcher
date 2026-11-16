@@ -109,6 +109,7 @@ function createWindow() {
   });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));          // никаких всплывающих окон
+  session.defaultSession.setPermissionRequestHandler((wc, perm, cb) => cb(perm === 'media'));   // звонки: только микрофон
   win.webContents.on('will-navigate', (e, u) => { if (!/^file:/.test(u)) e.preventDefault(); });   // навигация только по нашим файлам
 }
 if (!app.requestSingleInstanceLock()) app.quit();
@@ -778,6 +779,79 @@ ipcMain.handle('res-install', async (_, { project, type, instId }) => {   // 1 �
   fs.mkdirSync(dir, { recursive: true });
   await download(f.url, path.join(dir, f.filename));
   return { filename: f.filename, folder };
+});
+
+// ---------- «играть с другом»: сервер модпака первым в servers.dat (мини-NBT) ----------
+const TAG = { END: 0, BYTE: 1, SHORT: 2, INT: 3, LONG: 4, FLOAT: 5, DOUBLE: 6, BYTE_ARRAY: 7, STRING: 8, LIST: 9, COMPOUND: 10, INT_ARRAY: 11 };
+function nbtRead(buf) {
+  let o = 0;
+  const i16 = () => { const v = buf.readInt16BE(o); o += 2; return v; };
+  const i32 = () => { const v = buf.readInt32BE(o); o += 4; return v; };
+  const str = () => { const len = i16(); const v = buf.slice(o, o + len).toString('utf8'); o += len; return v; };
+  const payload = t => {
+    if (t === TAG.BYTE) { const v = buf.readInt8(o); o += 1; return v; }
+    if (t === TAG.SHORT) return i16();
+    if (t === TAG.INT) return i32();
+    if (t === TAG.LONG) { const v = buf.readBigInt64BE(o); o += 8; return v; }
+    if (t === TAG.STRING) return str();
+    if (t === TAG.LIST) { const et = buf.readUInt8(o); o += 1; const n = i32(); const arr = []; for (let i = 0; i < n; i++) arr.push(payload(et)); return arr; }
+    if (t === TAG.COMPOUND) { const obj = {}; for (;;) { const t2 = buf.readUInt8(o); o += 1; if (t2 === TAG.END) break; const name = str(); obj[name] = payload(t2); } return obj; }
+    throw new Error('NBT: неподдерживаемый тег ' + t);
+  };
+  const rootType = buf.readUInt8(o); o += 1;
+  if (rootType !== TAG.COMPOUND) throw new Error('NBT: ждём Compound');
+  str();
+  return payload(TAG.COMPOUND);
+}
+function nbtWriteServers(list) {                               // list: [{name, ip}] (первые 3 поля — остальное MC допишет сам)
+  const parts = [];
+  const wStr = t => { const b = Buffer.from(t, 'utf8'); const h = Buffer.alloc(2); h.writeInt16BE(b.length); return Buffer.concat([h, b]); };
+  const item = s => Buffer.concat([Buffer.from([TAG.STRING]), wStr('name'), wStr(s.name), Buffer.from([TAG.STRING]), wStr('ip'), wStr(s.ip), Buffer.from([TAG.END])]);
+  const items = list.map(item);
+  const lh = Buffer.alloc(5); lh[0] = TAG.COMPOUND; lh.writeInt32BE(list.length, 1);
+  const rootName = wStr('');
+  const end = Buffer.from([TAG.END]);
+  const rootField = Buffer.concat([Buffer.from([TAG.LIST]), wStr('servers'), lh]);
+  return Buffer.concat([Buffer.from([TAG.COMPOUND]), rootName, rootField, ...items, end]);
+}
+function ensureServerFirst(host, name) {                       // сервер — первым в общем списке (servers.dat)
+  const file = sharedServers;
+  let list = [];
+  try {
+    const root = nbtRead(fs.readFileSync(file));
+    list = (root.servers || []).map(x => ({ name: String(x.name || ''), ip: String(x.ip || '') })).filter(x => x.ip && x.ip !== host);
+  } catch {}
+  list = [{ name: name || host, ip: host }, ...list].slice(0, 20);
+  fs.writeFileSync(file, nbtWriteServers(list));
+  for (const i of insts) {                                      // и в открытую сборку — при следующем запуске игра подхватит
+    try { fs.copyFileSync(file, path.join(instDir(i), 'servers.dat')); } catch {}
+  }
+  return list.length;
+}
+ipcMain.handle('join-friend', async (_, { id }) => {            // установить модпак друга и поставить его сервер первым
+  const r0 = await siteFetch(`/api/modpacks/install`, { id }, {});
+  if (!r0.ok) throw new Error(r0.j.message || `Сайт ответил ${r0.status}`);
+  const pack = r0.j.pack;
+  if (!pack) throw new Error('Модпак не найден');
+  prog(`Устанавливаю «${pack.name}»…`, 0);
+  const inst = createInst({ name: pack.name, version: pack.version, loader: pack.loader });
+  inst.avatarText = (pack.name || 'M').replace(/[^\p{L}\p{N} ]/gu, '').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'M';
+  saveInsts();
+  const total = (pack.mods || []).length;
+  let n = 0;
+  for (const m of pack.mods || []) {
+    n++;
+    prog(`«${pack.name}»: мод ${n}/${total}`, n / Math.max(1, total));
+    try { await installMod(inst, m.id); } catch (e) { log(`Мод «${m.title}» не установлен: ${e.message}`); }
+  }
+  let servers = null;
+  if (pack.server && pack.server.host) {
+    ensureServerFirst(pack.server.host, pack.server.name);
+    servers = pack.server;
+    log(`Сервер «${servers.name}» (${servers.host}) добавлен первым в список`);
+  }
+  prog('Модпак установлен', 1);
+  return { inst, servers };
 });
 
 // ---------- аккаунт TnT: вход/регистрация, cookie-сессия с сайтом, онлайн-статус ----------

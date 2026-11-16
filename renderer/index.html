@@ -22,6 +22,7 @@
       <button data-v="catalog"><i data-i="store"></i><span data-i18n="nav.catalog">Каталог сборок</span></button>
       <button data-v="skin"><i data-i="brush"></i><span data-i18n="nav.skin">Редактор скина</span></button>
       <button data-v="account"><i data-i="sliders"></i><span data-i18n="nav.account">Аккаунт и настройки</span></button>
+      <button data-v="chat" id="chatNav" hidden><i data-i="globe"></i><span data-i18n="nav.chat">Сообщения</span></button>
       <button data-v="admin" id="adminNav" hidden><i data-i="key"></i><span data-i18n="nav.admin">Админ-панель</span></button>
     </nav>
     <button class="acct" id="acct"><div class="av sm" id="acctAv"></div><div><b id="acctName">Гость</b><span id="acctSub" data-i18n="acct.none">аккаунт не выбран</span></div></button>
@@ -252,6 +253,21 @@
         </div>
       </section>
 
+      <section class="page" id="v-chat">
+        <h2 class="title">💬 Сообщения и звонки</h2>
+        <div class="chat-wrap">
+          <div class="chat-side" id="chatPeers"><div class="empty">Войдите в аккаунт TnT</div></div>
+          <div class="chat-main">
+            <div class="chat-head" id="chatHead"><span class="muted">Выберите друга слева</span></div>
+            <div class="chat-msgs" id="chatMsgs"></div>
+            <div class="chat-input" id="chatInput" hidden>
+              <input id="dmText" maxlength="1000" placeholder="Сообщение…">
+              <button class="btn primary" id="dmSend">➤</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="page" id="v-admin">
         <h2 class="title">👑 Админ-панель</h2>
         <div class="panel" id="admPacks"><h3>Модерация модпаков</h3><p class="hint">Загружаю…</p></div>
@@ -364,6 +380,8 @@
       <label style="flex:1;min-width:160px"><span data-i18n="new.version">Версия</span><select id="pkVer"></select></label>
       <div class="field"><span data-i18n="set.loader">Загрузчик</span><div class="seg" id="pkLoader"><button data-l="vanilla" class="on">Vanilla</button><button data-l="fabric">Fabric</button><button data-l="forge">Forge</button></div></div>
     </div>
+    <label><span>Сервер (необязательно — для «Играть с другом»)</span>
+      <div class="row wrap" style="gap:8px"><input id="pkSrvHost" placeholder="play.example.com или 1.2.3.4:25565" style="flex:1;min-width:180px"><input id="pkSrvName" maxlength="50" placeholder="Название" style="max-width:160px"></div></label>
     <div class="field" id="pkTagsRow"><span data-i18n="cat.tagsLabel">Метки</span>
       <div class="seg wrap" id="pkTags">
         <button data-t="fps">🚀 FPS</button><button data-t="vanilla">✨ Ванилла+</button><button data-t="hardcore">💀 Хардкор</button>
@@ -393,6 +411,11 @@
   <button class="btn primary" id="rgGo">Создать аккаунт</button>
   <p class="switch">Уже есть аккаунт? <a href="#" id="rgToLi" style="color:var(--amber)">Войти</a></p>
   <div class="row end" style="margin-top:8px"><button class="btn ghost" id="rgCancel">Отмена</button></div>
+</dialog>
+<dialog class="auth" id="dCall">
+  <h3 id="callTitle">Звонок</h3>
+  <p class="sub" id="callSub"></p>
+  <div class="row" style="justify-content:center;gap:10px" id="callActs"></div>
 </dialog>
 <dialog id="dPackCom">
   <h3 id="pcTitle">Комментарии</h3>

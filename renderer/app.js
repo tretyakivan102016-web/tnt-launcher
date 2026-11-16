@@ -15,7 +15,7 @@ const I18N = {
     'common.notFound': 'Ничего не найдено',
     // боковая панель
     'side.title': 'МОИ СБОРКИ', 'side.bedrock': 'BEDROCK', 'side.for': 'для Minecraft', 'side.new': 'Новая',
-    'nav.catalog': 'Модпаки', 'nav.skin': 'Редактор скина', 'nav.account': 'Аккаунт и настройки', 'nav.admin': 'Админ-панель',
+    'nav.catalog': 'Модпаки', 'nav.skin': 'Редактор скина', 'nav.account': 'Аккаунт и настройки', 'nav.admin': 'Админ-панель', 'nav.chat': 'Сообщения',
     'acct.guest': 'Гость', 'acct.none': 'аккаунт не выбран', 'acc.offlineShort': 'офлайн',
     // запуск
     'play': 'ИГРАТЬ', 'stop': 'СТОП', 'launching': 'ЗАПУСК…', 'prog.ready': 'Готов к запуску',
@@ -200,7 +200,7 @@ const I18N = {
     'common.notFound': 'Nothing found',
     // sidebar
     'side.title': 'MY INSTANCES', 'side.bedrock': 'BEDROCK', 'side.for': 'for Minecraft', 'side.new': 'New',
-    'nav.catalog': 'Modpacks', 'nav.skin': 'Skin editor', 'nav.account': 'Account & settings', 'nav.admin': 'Admin panel',
+    'nav.catalog': 'Modpacks', 'nav.skin': 'Skin editor', 'nav.account': 'Account & settings', 'nav.admin': 'Admin panel', 'nav.chat': 'Messages',
     'acct.guest': 'Guest', 'acct.none': 'no account selected', 'acc.offlineShort': 'offline',
     // play
     'play': 'PLAY', 'stop': 'STOP', 'launching': 'LAUNCHING…', 'prog.ready': 'Ready to launch',
@@ -487,6 +487,7 @@ function go(view) {
   if (view === 'bedrock') renderBedrock();
   if (view === 'catalog') loadPacks();
   if (view === 'admin') renderAdmin();
+  if (view === 'chat') renderChat();
   $('#pages').scrollTop = 0;
 }
 function select(id) {
@@ -925,6 +926,7 @@ async function loadPacks() {
           ${pk.desc ? `<p>${esc(pk.desc)}</p>` : ''}
         </div>
         <div class="pc-acts">
+          ${pk.server ? `<button class="btn primary sm" data-a="join">🎮 ${esc(pk.server.name)}</button>` : ''}
           <button class="btn primary sm" data-a="install">${esc(t('cat.install'))}</button>
           <button class="btn ghost sm" data-a="com" title="Комментарии">💬</button>
           ${pk.mine ? `<button class="btn ghost sm" data-a="share" title="Поделиться с другом">↗</button>` : ''}
@@ -941,6 +943,16 @@ $('#pkMine').onclick = () => { pkMine = !pkMine; $('#pkMine').classList.toggle('
 $('#pkList').onclick = async e => {
   const b = e.target.closest('button'); if (!b) return;
   const cardEl = b.closest('.pack-card'), id = +cardEl.dataset.id;
+  if (b.dataset.a === 'join') {
+    b.disabled = true; b.textContent = '…';
+    try {
+      const r = await api.invoke('join-friend', { id: +cardEl.dataset.id });
+      await refresh();
+      toast(r.servers ? `Сборка установлена, сервер «${r.servers.name}» — первый в списке` : 'Сборка установлена');
+      select(r.inst.id);
+    } catch (e) { b.disabled = false; toast(errMsg(e), 'err'); }
+    return;
+  }
   if (b.dataset.a === 'com') { openPackComments(+cardEl.dataset.id, cardEl.querySelector('b').textContent.trim()); return; }
   if (b.dataset.a === 'share') {
     const nick = (prompt('Ник друга (аккаунт TnT):') || '').trim();
@@ -963,7 +975,7 @@ $('#pkList').onclick = async e => {
 const pkDlg = $('#dPack'), pkSel = new Map();      // id -> title
 function openPackBuilder() {
   if (!S.st.account || S.st.account.type !== 'microsoft') { toast(t('cat.mustLogin'), 'warn'); go('account'); return; }
-  $('#pkName').value = ''; $('#pkDesc').value = ''; $('#pkModQ').value = '';
+  $('#pkName').value = ''; $('#pkDesc').value = ''; $('#pkModQ').value = ''; $('#pkSrvHost').value = ''; $('#pkSrvName').value = '';
   $('#pkModList').innerHTML = ''; pkSel.clear(); renderPkSelected();
   fillVersions($('#pkVer'), S.versions.find(v => v.type === 'release')?.id, false);
   seg($('#pkLoader'), 'vanilla'); $$('#pkTags button').forEach(b => b.classList.remove('on'));
@@ -1006,6 +1018,7 @@ $('#pkPublish').onclick = async () => {
       name: $('#pkName').value, desc: $('#pkDesc').value, version: $('#pkVer').value, loader: segVal($('#pkLoader')),
       mods: [...pkSel.entries()].map(([id, title]) => ({ id, title })),
       tags: $$('#pkTags button.on').map(x => x.dataset.t),
+      server: $('#pkSrvHost').value.trim() ? { host: $('#pkSrvHost').value.trim(), name: $('#pkSrvName').value.trim() } : null,
     });
     pkDlg.close(); toast(t('cat.published')); pkMine = true; loadPacks();
   } catch (e) { toast(errMsg(e), 'err'); }
@@ -1104,6 +1117,7 @@ async function renderTntPanel() {
   const r0 = TNT && TNT.rights || {};
   const adminNavBtn = $('#adminNav');
   if (adminNavBtn) adminNavBtn.hidden = !(r0.admins || r0.owner || r0.packs || r0.tags);
+  const chatNavBtn = $('#chatNav'); if (chatNavBtn) chatNavBtn.hidden = !TNT;
   if (!TNT) {
     box.innerHTML = `
       <h3>Аккаунт TnT</h3>
@@ -1163,6 +1177,144 @@ function wireAuthDialogs() {
   };
 }
 
+// ---------- сообщения и звонки между друзьями ----------
+let chatPeer = null, chatPoll = null, sigPoll = null, lastMsgAt = 0;
+const signal = (to, type, data) => tntReq('/api/signal', 'POST', { to, type, data });
+async function renderChat() {
+  const peersBox = $('#chatPeers');
+  if (!TNT) { peersBox.innerHTML = '<div class="empty">Войдите в аккаунт TnT (Аккаунт и настройки)</div>'; $('#chatHead').innerHTML = '<span class="muted">—</span>'; $('#chatMsgs').innerHTML = ''; $('#chatInput').hidden = true; return; }
+  $('#chatInput').hidden = false;
+  try {
+    const r = await tntReq('/api/dm/list');
+    const list = r.j.list || [];
+    peersBox.innerHTML = list.length ? '' : '<div class="empty">Добавьте друзей в настройках — и начните общение</div>';
+    for (const p of list) {
+      const b = document.createElement('button');
+      b.className = 'chat-peer' + (chatPeer === p.nick ? ' on' : '');
+      b.innerHTML = `<span class="dot ${p.online ? 'on' : ''}"></span><span style="min-width:0"><b>${esc(p.nick)}</b>${p.last ? `<small>${esc(p.last.from === p.nick ? '' : 'Вы: ')}${esc(p.last.text)}</small>` : ''}</span>${p.unread ? `<span class="unread">${p.unread}</span>` : ''}`;
+      b.onclick = () => { chatPeer = p.nick; lastMsgAt = 0; renderChat(); };
+      peersBox.append(b);
+    }
+  } catch (e) { peersBox.innerHTML = `<div class="empty">${esc(errMsg(e))}</div>`; }
+  if (!chatPeer) { $('#chatHead').innerHTML = '<span class="muted">Выберите друга слева</span>'; $('#chatMsgs').innerHTML = ''; return; }
+  $('#chatHead').innerHTML = `<span>${esc(chatPeer)}</span><button class="call-btn" id="callBtn" title="Позвонить">📞</button>`;
+  $('#callBtn').onclick = () => startCall(chatPeer);
+  await loadMsgs(true);
+  $('#dmSend').onclick = sendMsg;
+  $('#dmText').onkeydown = e => { if (e.key === 'Enter') sendMsg(); };
+  clearInterval(chatPoll);
+  chatPoll = setInterval(() => { if (S.view === 'chat' && chatPeer) loadMsgs(false); }, 3000);
+}
+async function loadMsgs(full) {
+  try {
+    const r = await tntReq(`/api/dm?with=${encodeURIComponent(chatPeer)}&after=${full ? 0 : lastMsgAt}`);
+    const box = $('#chatMsgs');
+    if (full) box.innerHTML = '';
+    for (const m of r.j.list || []) {
+      lastMsgAt = Math.max(lastMsgAt, m.at);
+      const d = document.createElement('div');
+      d.className = 'msg ' + (m.from === (TNT && TNT.nick) ? 'me' : 'them');
+      d.textContent = m.text;
+      box.append(d);
+    }
+    if ((r.j.list || []).length) box.scrollTop = box.scrollHeight;
+  } catch {}
+}
+async function sendMsg() {
+  const inp = $('#dmText'), text = inp.value.trim();
+  if (!text || !chatPeer) return;
+  try { await tntReq('/api/dm', 'POST', { to: chatPeer, text }); inp.value = ''; await loadMsgs(false); renderChatPeersOnly(); }
+  catch (e) { toast(errMsg(e), 'err'); }
+}
+async function renderChatPeersOnly() { const keep = chatPeer; chatPeer = keep; await renderChat(); }
+
+// ---------- WebRTC-звонки ----------
+let pc = null, callWith = null, callTimer = null, incoming = null;
+const ICE = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+function callUI(title, sub, buttons) {
+  $('#callTitle').textContent = title; $('#callSub').textContent = sub;
+  const acts = $('#callActs'); acts.innerHTML = '';
+  buttons.forEach(([text, cls, fn]) => { const b = document.createElement('button'); b.className = 'btn ' + cls; b.textContent = text; b.onclick = fn; acts.append(b); });
+  $('#dCall').showModal();
+}
+function stopCall(closed) {
+  clearInterval(callTimer); callTimer = null;
+  if (pc) { try { pc.close(); } catch {} pc = null; }
+  callWith = null; incoming = null;
+  if ($('#dCall').open) $('#dCall').close();
+  if (closed) toast('Звонок завершён');
+  clearInterval(sigPoll); sigPoll = null;
+}
+async function startCall(nick) {
+  if (callWith) return toast('Уже идёт звонок', 'err');
+  callWith = nick;
+  try { await signal(nick, 'ring');
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    pc = new RTCPeerConnection(ICE);
+    stream.getTracks().forEach(t => pc.addTrack(t, stream));
+    pc.onicecandidate = e => { if (e.candidate) signal(nick, 'ice', e.candidate.toJSON()); };
+    pc.ontrack = e => { const a = new Audio(); a.srcObject = e.streams[0]; a.play().catch(() => {}); };
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    await signal(nick, 'offer', { sdp: pc.localDescription });
+    callUI('📞 Звонок…', `Вызов ${nick}…`, [['Отмена', 'ghost', () => { signal(nick, 'hangup'); stopCall(false); }]]);
+    pollSignals();
+  } catch (e) { toast(errMsg(e) === 'Не удалось войти' ? 'Нет доступа к микрофону' : errMsg(e), 'err'); stopCall(false); }
+}
+async function acceptCall() {
+  if (!incoming) return;
+  const { from, data } = incoming; incoming = null; callWith = from;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    pc = new RTCPeerConnection(ICE);
+    stream.getTracks().forEach(t => pc.addTrack(t, stream));
+    pc.onicecandidate = e => { if (e.candidate) signal(from, 'ice', e.candidate.toJSON()); };
+    pc.ontrack = e => { const a = new Audio(); a.srcObject = e.streams[0]; a.play().catch(() => {}); };
+    await pc.setRemoteDescription(data.sdp);
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    await signal(from, 'answer', { sdp: pc.localDescription });
+    startTimer();
+    callUI('📞 Разговор', `С ${from}`, [['Завершить', 'danger', () => { signal(from, 'hangup'); stopCall(true); }]]);
+    pollSignals();
+  } catch (e) { toast('Нет доступа к микрофону', 'err'); signal(from, 'decline'); stopCall(false); }
+}
+function startTimer() {
+  const t0 = Date.now();
+  clearInterval(callTimer);
+  callTimer = setInterval(() => { const s = Math.floor((Date.now() - t0) / 1000); $('#callSub').textContent = `${callWith} · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }, 1000);
+}
+async function pollSignals() {
+  clearInterval(sigPoll);
+  const tick = async () => {
+    try {
+      const r = await tntReq('/api/signal');
+      for (const sg of r.j.list || []) {
+        if (sg.type === 'ring' && !callWith) {
+          incoming = null; callWith = sg.from;
+          callUI('📞 Входящий звонок', sg.from, [
+            ['Принять', 'primary', () => { /* offer придёт следом */ incoming = { from: sg.from, data: null }; waitOffer(); }],
+            ['Отклонить', 'danger', () => { signal(sg.from, 'decline'); stopCall(false); }],
+          ]);
+          pollSignals();
+        }
+        if (sg.type === 'offer') {
+          if (incoming && incoming.from === sg.from) { incoming.data = sg.data; acceptCall(); }
+          else if (callWith === sg.from && !pc) { incoming = { from: sg.from, data: sg.data }; acceptCall(); }
+        }
+        if (sg.type === 'answer' && pc && sg.from === callWith) await pc.setRemoteDescription(sg.data.sdp).then(startTimer).catch(() => {});
+        if (sg.type === 'ice' && pc && sg.from === callWith) pc.addIceCandidate(sg.data).catch(() => {});
+        if (sg.type === 'decline' && sg.from === callWith) { toast(`${sg.from} отклонил звонок`); stopCall(false); }
+        if (sg.type === 'hangup' && sg.from === callWith) stopCall(true);
+      }
+    } catch {}
+  };
+  tick();
+  sigPoll = setInterval(tick, 2000);
+}
+function waitOffer() { pollSignals(); }
+
+// ---------- страница «Админ» в лаунчере ----------
 // ---------- страница «Админ» в лаунчере ----------
 const ADM_TAGS = [['fps', '🚀 FPS'], ['vanilla', '✨ Ванилла+'], ['hardcore', '💀 Хардкор'], ['dev', '🛠️ Разрабы'], ['players', '⭐ Игроки'], ['trend', '🔥 Тренд']];
 async function renderAdmin() {
