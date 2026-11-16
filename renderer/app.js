@@ -1181,7 +1181,7 @@ function wireAuthDialogs() {
     try {
       const r = await tntReq('/api/auth/reset', 'POST', { email: $('#fpEmail').value.trim() });
       $('#fpStep2').hidden = false;
-      $('#fpMsg').textContent = r.j.sent ? 'Код отправлен на почту (проверьте спам)' : (r.j.message || 'Письмо не отправлено');
+      $('#fpMsg').textContent = r.j.sent ? 'Письмо отправлено: откройте ссылку из него (код вводить не нужно) или введите код ниже' : (r.j.message || 'Письмо не отправлено');
     } catch (e) { $('#fpMsg').textContent = errMsg(e); }
     b.disabled = false; b.textContent = 'Отправить код';
   };
