@@ -133,10 +133,6 @@ app.whenReady().then(() => { createWindow(); win.webContents.once('did-finish-lo
 app.on('window-all-closed', () => app.quit());
 
 // ---------- общее ----------
-const rawHandle = ipcMain.handle.bind(ipcMain);
-const handleOnce = (ch, fn) => { try { rawHandle(ch, fn); } catch (e) { console.warn('IPC ' + ch + ' уже зарегистрирован — пропускаю'); } };   // защита от двойной регистрации при патчах
-ipcMain.handle = handleOnce;
-
 ipcMain.handle('state', () => ({
   ram: cfg.ram, nick: cfg.nick, appearance: cfg.appearance || { theme: 'dark', font: 'Consolas', fontSize: 12, opacity: 100 }, account: cfg.account && { type: cfg.account.type, name: cfg.account.name, uuid: cfg.account.uuid || null },
   totalMemMB: Math.floor(os.totalmem() / 1048576), platform: process.platform, version: app.getVersion(),
