@@ -861,6 +861,8 @@ $('#sAvatarImg').onclick = async () => {
   catch (e) { toast(errMsg(e), 'err'); }
 };
 $('#sAvatarClear').onclick = async () => { await api.invoke('inst-avatar', { id: S.cur, text: '', img: null }); await refresh(); renderSide(); renderInst(); };
+$('#sPublish').onclick = () => { const i = cur(); if (!i) return; openPackBuilder({ instId: i.id, name: i.name, version: i.version, loader: i.loader }); };
+$('#sSendPriv').onclick = () => { const i = cur(); if (!i) return; openPackBuilder({ instId: i.id, name: i.name, version: i.version, loader: i.loader, private: true }); };
 $('#sDel').onclick = async () => {
   const i = cur(); if (!i || !confirm(t('confirm.deleteInst', { name: i.name }))) return;
   await api.invoke('inst-delete', i.id); await refresh(); go('inst');
@@ -920,7 +922,7 @@ async function loadPacks() {
       <div class="pack-card" data-id="${pk.id}">
         ${av(pk.name, PACK_COLOR(pk.id), '', { avatarText: (pk.name || 'M').replace(/[^\p{L}\p{N} ]/gu, '').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'M' })}
         <div class="pc-body">
-          <b>${esc(pk.name)} ${pk.mine ? `<span class="mine-badge">${pk.status === 'pending' ? '⏳ на проверке' : pk.status === 'rejected' ? '❌ отклонён' : 'ваша'}</span>` : ''}</b>
+          <b>${esc(pk.name)} ${pk.mine ? `<span class="mine-badge">${pk.visibility === 'private' ? '🔒 личная' : pk.status === 'pending' ? '⏳ на проверке' : pk.status === 'rejected' ? '❌ отклонён' : 'ваша'}</span>` : ''}</b>
           <div class="pc-meta">${esc(t('cat.by'))} ${esc(pk.author.name)}${pk.author.admin ? ' 👑' : ''} · ${esc(pk.version)} · ${LOADER[pk.loader] || pk.loader} · ${(pk.mods || []).length} ${esc(t('cat.modsN'))} · ${fmt(pk.installs)} ${esc(t('cat.installs'))}</div>
           <div class="pc-tags">${(pk.tagNames || []).map(x => `<span class="minitag">${esc(x)}</span>`).join(' ')}</div>
           ${pk.desc ? `<p>${esc(pk.desc)}</p>` : ''}
@@ -973,13 +975,22 @@ $('#pkList').onclick = async e => {
 
 // конструктор модпаков
 const pkDlg = $('#dPack'), pkSel = new Map();      // id -> title
-function openPackBuilder() {
+async function openPackBuilder(pre = {}) {
   if (!TNT) { toast('Публикация сборок — для аккаунтов TnT. Играть и ставить моды можно без регистрации.', 'warn'); setTimeout(() => go('account'), 900); return; }
-  if (!S.st.account || S.st.account.type !== 'microsoft') { toast(t('cat.mustLogin'), 'warn'); go('account'); return; }
-  $('#pkName').value = ''; $('#pkDesc').value = ''; $('#pkModQ').value = ''; $('#pkSrvHost').value = ''; $('#pkSrvName').value = '';
-  $('#pkModList').innerHTML = ''; pkSel.clear(); renderPkSelected();
-  fillVersions($('#pkVer'), S.versions.find(v => v.type === 'release')?.id, false);
-  seg($('#pkLoader'), 'vanilla'); $$('#pkTags button').forEach(b => b.classList.remove('on'));
+  if (pre.instId) {                                            // публикация локальной сборки: тянем её моды
+    toast('Читаю моды сборки…');
+    try { pre.mods = await api.invoke('mods-ident', { id: pre.instId }); } catch { pre.mods = []; }
+  }
+  $('#pkName').value = pre.name || ''; $('#pkDesc').value = ''; $('#pkModQ').value = ''; $('#pkSrvHost').value = ''; $('#pkSrvName').value = '';
+  $('#pkModList').innerHTML = ''; pkSel.clear();
+  (pre.mods || []).forEach(m => pkSel.set(m.id, m.title));
+  renderPkSelected();
+  fillVersions($('#pkVer'), pre.version || S.versions.find(v => v.type === 'release')?.id, false);
+  if (pre.version) { const o = document.createElement('option'); o.textContent = pre.version; if (![...$('#pkVer').options].some(x => x.value === pre.version)) $('#pkVer').prepend(o); $('#pkVer').value = pre.version; }
+  seg($('#pkLoader'), pre.loader || 'vanilla'); $$('#pkTags button').forEach(b => b.classList.remove('on'));
+  pkDlg.dataset.priv = pre.private ? '1' : '';
+  $('#dPackTitle').textContent = pre.private ? '🔒 Отправить другу (лично)' : (pre.instId ? '📢 Опубликовать сборку' : t('cat.create'));
+  $('#pkPublish').textContent = pre.private ? 'Отправить' : t('cat.publish');
   pkDlg.showModal();
 }
 function renderPkSelected() {
@@ -1014,14 +1025,24 @@ $('#pkModList').onclick = e => {
 };
 $('#pkPublish').onclick = async () => {
   const b = $('#pkPublish'); b.disabled = true;
+  const priv = pkDlg.dataset.priv === '1';
   try {
-    await api.invoke('packs-cloud-publish', {
+    const r = await api.invoke('packs-cloud-publish', {
       name: $('#pkName').value, desc: $('#pkDesc').value, version: $('#pkVer').value, loader: segVal($('#pkLoader')),
       mods: [...pkSel.entries()].map(([id, title]) => ({ id, title })),
       tags: $$('#pkTags button.on').map(x => x.dataset.t),
       server: $('#pkSrvHost').value.trim() ? { host: $('#pkSrvHost').value.trim(), name: $('#pkSrvName').value.trim() } : null,
+      visibility: priv ? 'private' : 'public',
     });
-    pkDlg.close(); toast('Опубликовано! Отправить другу: «Мои» → ↗ на карточке сборки'); pkMine = true; loadPacks();
+    pkDlg.close();
+    if (priv) {                                                 // личная — сразу спрашиваем кому
+      const nick = (prompt('Отправить другу — введите его ник TnT:') || '').trim();
+      if (nick) {
+        try { await tntReq('/api/pack/share', 'POST', { id: r.id, nick }); toast(`Личная сборка отправлена: ${nick}`); }
+        catch (e) { toast(errMsg(e), 'err'); }
+      } else toast('Опубликовано как личная — отправите позже из «Мои» (↗)');
+    } else toast('Опубликовано! Отправить другу: «Мои» → ↗ на карточке сборки');
+    pkMine = true; loadPacks();
   } catch (e) { toast(errMsg(e), 'err'); }
   b.disabled = false;
 };
