@@ -133,6 +133,10 @@ app.whenReady().then(() => { createWindow(); win.webContents.once('did-finish-lo
 app.on('window-all-closed', () => app.quit());
 
 // ---------- общее ----------
+const rawHandle = ipcMain.handle.bind(ipcMain);
+const handleOnce = (ch, fn) => { try { rawHandle(ch, fn); } catch (e) { console.warn('IPC ' + ch + ' уже зарегистрирован — пропускаю'); } };   // защита от двойной регистрации при патчах
+ipcMain.handle = handleOnce;
+
 ipcMain.handle('state', () => ({
   ram: cfg.ram, nick: cfg.nick, appearance: cfg.appearance || { theme: 'dark', font: 'Consolas', fontSize: 12, opacity: 100 }, account: cfg.account && { type: cfg.account.type, name: cfg.account.name, uuid: cfg.account.uuid || null },
   totalMemMB: Math.floor(os.totalmem() / 1048576), platform: process.platform, version: app.getVersion(),
@@ -601,19 +605,6 @@ async function modsCheck(inst) {
   return { incompatible, missing, unknown };
 }
 ipcMain.handle('mods-check', async (_, { id }) => modsCheck(byId(id)));
-ipcMain.handle('mods-ident', async (_, { id }) => {                  // какие моды стоят в сборке (для публикации)
-  const inst = byId(id), modsDir = sub(inst, 'mods');
-  const out = [];
-  if (!fs.existsSync(modsDir)) return out;
-  for (const f of fs.readdirSync(modsDir).filter(x => x.endsWith('.jar')).slice(0, 60)) {
-    try {
-      const h = sha1of(path.join(modsDir, f));
-      const v = await getJson(`https://api.modrinth.com/v2/version_file/${h}`);
-      if (v && v.project_id) out.push({ id: v.project_id, title: v.name || f });
-    } catch {}
-  }
-  return out;
-});
 ipcMain.handle('mods-ident', async (_, { id }) => {                  // какие моды стоят в сборке (для публикации)
   const inst = byId(id), modsDir = sub(inst, 'mods');
   const out = [];
