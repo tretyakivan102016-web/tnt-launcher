@@ -482,3 +482,21 @@ body.gta .seg button.on{background:#ff2d95;color:#fff}
 body.gta .bar i{background:linear-gradient(90deg,#ff2d95,#ffd166,#00e5ff)}
 body.gta ::-webkit-scrollbar-thumb{background:rgba(255,45,149,.35)}
 body.gta .skin-canvas,body.gta .panel{box-shadow:0 0 24px rgba(255,45,149,.10)}
+
+/* уведомление об обновлении: карточка-тост, смахивается мышью */
+#updCard{position:fixed;top:54px;right:18px;z-index:300;width:330px;padding:16px;border-radius:18px;
+  background:rgba(16,21,28,.92);backdrop-filter:blur(16px);border:1px solid rgba(255,184,46,.4);
+  box-shadow:0 24px 60px -18px #000,0 0 0 1px rgba(255,184,46,.08);cursor:grab;user-select:none;
+  animation:ucIn .4s cubic-bezier(.2,.8,.2,1) both;touch-action:pan-y}
+#updCard.dragging{cursor:grabbing;transition:none}
+#updCard.hide{animation:ucOut .3s ease both}
+@keyframes ucIn{from{opacity:0;transform:translateX(40px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes ucOut{to{opacity:0;transform:translateX(60px) scale(.94)}}
+#updCard .uc-head{display:flex;align-items:center;gap:8px}
+#updCard .uc-ico{font-size:20px}
+#updCard .uc-swipe{margin-left:auto;font-size:10.5px;color:var(--muted);border:1px dashed var(--line);border-radius:99px;padding:2px 8px}
+#updCard p{margin:8px 0 12px;color:var(--muted);font-size:13px}
+#updCard .uc-acts{display:flex;gap:8px;justify-content:flex-end}
+#updCard.forced{border-color:rgba(255,77,54,.55);cursor:default}
+#updCard.forced .uc-swipe{display:none}
+#updCard.forced .uc-head b{color:#ff8a7a}

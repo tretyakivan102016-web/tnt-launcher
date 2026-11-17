@@ -134,7 +134,7 @@ const I18N = {
     'upd.available': 'Доступна новая версия', 'upd.hint': 'Установите обновление, чтобы получить последние улучшения',
     'upd.later': 'Позже', 'upd.now': 'Обновить', 'upd.latest': 'У вас последняя версия',
     'upd.noReleases': 'На GitHub пока нет опубликованных релизов', 'upd.checkFailed': 'Не удалось проверить: {error}',
-    'upd.stateNew': 'Доступна версия {version}', 'upd.downloading': 'Скачиваю обновление… {pct}%',
+    'upd.stateNew': 'Доступна версия {version}', 'upd.swipe': 'смахните', 'upd.downloading': 'Скачиваю обновление… {pct}%',
     'upd.installing': 'Устанавливаю обновление… лаунчер сам закроется и откроется заново',
     'upd.manual': 'Откройте скачанный файл и установите вручную', 'upd.downloadFailed': 'Не удалось скачать обновление',
     // отчёты и уведомления
@@ -319,7 +319,7 @@ const I18N = {
     'upd.available': 'New version available:', 'upd.hint': 'Install the update to get the latest improvements',
     'upd.later': 'Later', 'upd.now': 'Update', 'upd.latest': 'You have the latest version',
     'upd.noReleases': 'No published releases on GitHub yet', 'upd.checkFailed': 'Check failed: {error}',
-    'upd.stateNew': 'Version {version} is available', 'upd.downloading': 'Downloading update… {pct}%',
+    'upd.stateNew': 'Version {version} is available', 'upd.swipe': 'swipe away', 'upd.downloading': 'Downloading update… {pct}%',
     'upd.installing': 'Installing the update… the launcher will close and reopen by itself',
     'upd.manual': 'Open the downloaded file and install it manually', 'upd.downloadFailed': 'Failed to download the update',
     // reports and notifications
@@ -1166,6 +1166,7 @@ async function renderTntPanel() {
     <p class="hint">${esc(TNT.email || '')}${r.packs || r.owner ? ' · ваши модпаки публикуются без проверки' : ''}</p>
     <div class="row wrap">
       ${(r.admins || r.owner) ? '<button class="btn primary" id="tAdmin">👑 Админ-панель</button>' : ''}
+      <button class="btn ghost" id="tPassChange">Сменить пароль</button>
       <button class="btn ghost" id="tOut">Выйти</button>
     </div>
     <div class="field" style="margin-top:12px"><span>Друзья</span>
@@ -1173,6 +1174,19 @@ async function renderTntPanel() {
       <div id="tFrList" class="hint" style="margin-top:6px">…</div></div>`;
   if ($('#tAdmin')) $('#tAdmin').onclick = () => go('admin');
   $('#tOut').onclick = async () => { await api.invoke('tnt-logout'); TNT = null; toast('Вы вышли'); renderTntPanel(); loadPacks(); };
+  const cpb = $('#tPassChange');
+  if (cpb) cpb.onclick = async () => {
+    const oldP = prompt('Старый пароль:'); if (oldP === null) return;
+    const np1 = prompt('Новый пароль (6+):'); if (np1 === null) return;
+    const np2 = prompt('Повторите новый пароль:'); if (np2 === null) return;
+    if (np1 !== np2) return toast('Пароли не совпадают', 'err');
+    try {
+      await tntReq('/api/auth/pass', 'POST', { old: oldP, new: np1 });
+      toast('Пароль изменён — войдите заново');
+      TNT = null; await api.invoke('tnt-logout'); renderTntPanel();
+      $('#dTntLogin').showModal();
+    } catch (e) { toast(errMsg(e), 'err'); }
+  };
   const fr = async () => {
     try {
       const f = await tntReq('/api/friends');
@@ -1397,7 +1411,71 @@ async function pollSignals() {
 }
 function waitOffer() { pollSignals(); }
 
-// ---------- страница «Админ» в лаунчере ----------
+// принудительное обновление: минимальная версия лаунчера (админка)
+async function renderAdminUpd() {
+  const r = TNT && TNT.rights || {};
+  if (!(r.admins || r.owner)) return;
+  let box = $('#admUpd');
+  if (!box) {
+    const page = $('#v-admin');
+    const div = document.createElement('div');
+    div.className = 'panel'; div.id = 'admUpd';
+    div.innerHTML = '<h3>🚀 Принудительное обновление</h3><div id="admUpdBox" class="hint">Загружаю…</div>';
+    page.prepend(div);
+    box = div;
+  }
+  const inBox = $('#admUpdBox');
+  try {
+    const cur = await tntReq('/api/admin/minver');
+    inBox.innerHTML = `
+      <p class="hint">Версии ниже указанной обязаны обновиться: карточка не смахивается, кнопка ИГРАТЬ запускает установку. Пусто — принуждения нет.</p>
+      <div class="row wrap">
+        <input id="mvInput" placeholder="например 1.17.0" value="${esc(cur.j.min || '')}" style="max-width:180px">
+        <button class="btn primary" id="mvSave">Сохранить</button>
+        <button class="btn ghost" id="mvClear">Снять</button>
+      </div>`;
+    $('#mvSave').onclick = async () => {
+      try { const r2 = await tntReq('/api/admin/minver', 'POST', { min: $('#mvInput').value.trim() }); toast(`Минимальная версия: ${r2.j.min}`); }
+      catch (e) { toast(errMsg(e), 'err'); }
+    };
+    $('#mvClear').onclick = async () => {
+      try { await tntReq('/api/admin/minver', 'POST', { min: null }); $('#mvInput').value = ''; toast('Принуждение снято'); }
+      catch (e) { toast(errMsg(e), 'err'); }
+    };
+  } catch (e) { inBox.innerHTML = `<p class="hint">${esc(errMsg(e))}</p>`; }
+}
+// модерация аккаунтов: бан навсегда/на срок, кик со всех устройств
+async function renderAdminAccounts() {
+  const r = TNT && TNT.rights || {};
+  if (!(r.admins || r.owner)) return;
+  let box = $('#admAccounts');
+  if (!box) {
+    const page = $('#v-admin');
+    const div = document.createElement('div');
+    div.className = 'panel'; div.id = 'admAccounts';
+    div.innerHTML = '<h3>Аккаунты: блокировки и кик</h3><div id="admAccBox" class="hint">Загружаю…</div>';
+    page.append(div);
+    box = div;
+  }
+  const inBox = $('#admAccBox');
+  inBox.innerHTML = `
+    <div class="row wrap" style="margin-bottom:10px">
+      <input id="baNick" maxlength="16" placeholder="Ник TnT" style="max-width:180px">
+      <button class="btn danger" id="baForever">Забанить навсегда</button>
+      <select id="baDays"><option value="1">1 день</option><option value="3">3 дня</option><option value="7">неделя</option><option value="30">месяц</option></select>
+      <button class="btn" id="baTemp">Забанить на срок</button>
+      <button class="btn" id="baUnban">Разбанить</button>
+      <button class="btn ghost" id="baKick">Кик со всех устройств</button>
+    </div>
+    <p class="hint">Бан выкидывает сразу; кик сбрасывает входы. Забаненные не могут войти.</p>`;
+  const nick = () => $('#baNick').value.trim();
+  const act = async body => { try { await tntReq('/api/admin/' + body.what, 'POST', body); toast('Готово'); } catch (e) { toast(errMsg(e), 'err'); } };
+  $('#baForever').onclick = () => { const n = nick(); if (n && confirm(`Заблокировать ${n} НАВСЕГДА?`)) act({ what: 'ban', nick: n, permanent: true }); };
+  $('#baTemp').onclick = () => { const n = nick(); if (n) act({ what: 'ban', nick: n, days: +$('#baDays').value }); };
+  $('#baUnban').onclick = () => { const n = nick(); if (n) act({ what: 'ban', nick: n, unban: true }); };
+  $('#baKick').onclick = () => { const n = nick(); if (n && confirm(`Кикнуть ${n}?`)) act({ what: 'kick', nick: n }); };
+}
+
 // ---------- страница «Админ» в лаунчере ----------
 const ADM_TAGS = [['fps', '🚀 FPS'], ['vanilla', '✨ Ванилла+'], ['hardcore', '💀 Хардкор'], ['dev', '🛠️ Разрабы'], ['players', '⭐ Игроки'], ['trend', '🔥 Тренд']];
 async function renderAdmin() {
@@ -1438,6 +1516,7 @@ async function renderAdmin() {
   if (!(r.admins || r.owner)) { abox.hidden = true; return; }
   abox.hidden = false;
   renderAdminAccounts();
+  renderAdminUpd();
   try {
     const d = await tntReq('/api/admin/list');
     const RIGHT_NAMES = { packs: '📦 Модпаки', tags: '🏷 Метки', reports: '🐞 Отчёты', support: '🛟 Поддержка', admins: '👑 Админы' };

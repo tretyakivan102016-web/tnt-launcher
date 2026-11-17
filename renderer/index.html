@@ -35,10 +35,7 @@
         <div class="bt"><b data-i18n="acc.siteFound">На сайте найден аккаунт</b> <span id="siteName"></span><span data-i18n="acc.siteFoundQ">Войти в лаунчер под этим аккаунтом?</span></div>
         <button class="btn ghost" id="siteNo" data-i18n="common.no">Нет</button><button class="btn primary" id="siteYes" data-i18n="acc.login">Войти</button>
       </div>
-      <div class="banner" id="updBanner" hidden>
-        <div class="bt"><b><span data-i18n="upd.available">Доступна новая версия</span> <span id="updVer"></span></b><span id="updMsg" data-i18n="upd.hint">Установите обновление, чтобы получить последние улучшения</span></div>
-        <button class="btn ghost" id="updLater" data-i18n="upd.later">Позже</button><button class="btn primary" id="updNow" data-i18n="upd.now">Обновить</button>
-      </div>
+
 
       <section class="page on" id="v-inst">
         <div class="hero" id="hero">
@@ -465,6 +462,11 @@
 </dialog>
 <dialog id="dUn"><div id="unBody"></div></dialog>
 <div id="toasts"></div>
+<div id="updCard" hidden>
+  <div class="uc-head"><span class="uc-ico">🚀</span><b><span data-i18n="upd.available">Доступна новая версия</span> <span id="updVer"></span></b><span class="uc-swipe" data-i18n="upd.swipe">смахните</span></div>
+  <p id="updMsg" data-i18n="upd.hint">Установите обновление, чтобы получить последние улучшения</p>
+  <div class="uc-acts"><button class="btn ghost" id="updLater" data-i18n="upd.later">Позже</button><button class="btn primary" id="updNow" data-i18n="upd.now">Обновить</button></div>
+</div>
 <div id="langSweep" aria-hidden="true"></div>
 <script src="app.js"></script>
 </body>
