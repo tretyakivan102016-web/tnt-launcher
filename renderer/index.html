@@ -323,7 +323,8 @@
           <h3 data-i18n="app.title">Внешний вид</h3>
           <div class="app-grid">
             <label><span data-i18n="app.theme">Тема</span>
-              <select id="appTheme"><option value="dark" data-i18n="app.dark">Тёмная</option><option value="light" data-i18n="app.light">Светлая</option><option value="gta">🌴 ГТА 6 (до декабря)</option></select></label>
+              <select id="appTheme"><option value="dark" data-i18n="app.dark">Тёмная</option><option value="light" data-i18n="app.light">Светлая</option><option value="gta">🌴 ГТА 6 — лимитированная</option></select>
+              <div class="lim-theme" id="limTheme" hidden><span class="lt-badge">⏳ <b id="limDate"></b></span><span data-i18n="app.limHint">Лимитированная тема — успейте включить, пока идёт розыгрыш; включённая остаётся навсегда</span></div></label>
             <label><span data-i18n="app.font">Шрифт консоли</span>
               <select id="appFont"><option>Consolas</option><option>Segoe UI Mono</option><option>Courier New</option><option>Arial</option><option>Impact</option></select></label>
             <label><span data-i18n="app.fontSize">Размер шрифта</span><input id="appFontSize" type="number" min="8" max="24" step="1" value="12"></label>
@@ -462,6 +463,11 @@
 </dialog>
 <dialog id="dUn"><div id="unBody"></div></dialog>
 <div id="toasts"></div>
+<div id="limCard" hidden>
+  <div class="uc-head"><span class="uc-ico">🌴</span><b data-i18n="lim.title">Не пропустите лимитированную тему!</b><span class="uc-swipe" data-i18n="upd.swipe">смахните</span></div>
+  <p id="limText"></p>
+  <div class="uc-acts"><button class="btn ghost" id="limLater" data-i18n="upd.later">Позже</button><button class="btn primary" id="limTry" data-i18n="lim.try">Включить</button></div>
+</div>
 <div id="updCard" hidden>
   <div class="uc-head"><span class="uc-ico">🚀</span><b><span data-i18n="upd.available">Доступна новая версия</span> <span id="updVer"></span></b><span class="uc-swipe" data-i18n="upd.swipe">смахните</span></div>
   <p id="updMsg" data-i18n="upd.hint">Установите обновление, чтобы получить последние улучшения</p>

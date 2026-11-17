@@ -500,3 +500,20 @@ body.gta .skin-canvas,body.gta .panel{box-shadow:0 0 24px rgba(255,45,149,.10)}
 #updCard.forced{border-color:rgba(255,77,54,.55);cursor:default}
 #updCard.forced .uc-swipe{display:none}
 #updCard.forced .uc-head b{color:#ff8a7a}
+
+/* лимитированная тема: плашка и бейдж */
+.lim-theme{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:12.5px;color:var(--muted)}
+.lt-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-weight:800;font-size:12px;
+  color:#ffd166;background:linear-gradient(120deg,rgba(255,45,149,.18),rgba(0,229,255,.15));
+  border:1px solid rgba(255,209,102,.45);box-shadow:0 0 14px rgba(255,45,149,.25);animation:ltPulse 2.2s ease-in-out infinite}
+@keyframes ltPulse{0%,100%{box-shadow:0 0 8px rgba(255,45,149,.2)}50%{box-shadow:0 0 20px rgba(255,45,149,.5)}}
+#limCard{position:fixed;top:54px;right:18px;z-index:299;width:330px;padding:16px;border-radius:18px;
+  background:linear-gradient(150deg,rgba(40,6,60,.95),rgba(16,21,28,.95));backdrop-filter:blur(16px);
+  border:1px solid rgba(255,209,102,.5);box-shadow:0 24px 60px -18px #000;cursor:grab;user-select:none;
+  animation:ucIn .4s cubic-bezier(.2,.8,.2,1) both}
+#limCard.hide{animation:ucOut .3s ease both}
+#limCard .uc-head{display:flex;align-items:center;gap:8px}
+#limCard .uc-ico{font-size:20px}
+#limCard .uc-swipe{margin-left:auto;font-size:10.5px;color:var(--muted);border:1px dashed var(--line);border-radius:99px;padding:2px 8px}
+#limCard p{margin:8px 0 12px;color:var(--muted);font-size:13px}
+#limCard .uc-acts{display:flex;gap:8px;justify-content:flex-end}

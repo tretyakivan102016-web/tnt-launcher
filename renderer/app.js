@@ -178,6 +178,8 @@ const I18N = {
     // внешний вид
     'app.title': 'Внешний вид', 'app.theme': 'Тема', 'app.dark': 'Тёмная', 'app.light': 'Светлая', 'app.font': 'Шрифт консоли',
     'app.fontSize': 'Размер шрифта', 'app.opacity': 'Непрозрачность окна', 'app.transparent': 'Прозрачный', 'app.opaque': 'Непрозрачный', 'app.reload': 'Перезагрузить все',
+    'app.limHint': 'Лимитированная тема — успейте включить; включённая остаётся навсегда',
+    "lim.title": "Don't miss the limited theme!", "lim.text": "{name} is available only until {date}. Enable it now and it stays yours forever.", "lim.try": "Enable", "lim.owned": "{name} is yours forever now 🌴",
     // редактор скина
     'skin.hideParts': 'Скрыть части (для рисования)', 'skin.armR': 'Пр. рука', 'skin.armL': 'Лев. рука', 'skin.legR': 'Пр. нога', 'skin.legL': 'Лев. нога',
     // моды: несовместимые
@@ -364,6 +366,8 @@ const I18N = {
     // appearance
     'app.title': 'Appearance', 'app.theme': 'Theme', 'app.dark': 'Dark', 'app.light': 'Light', 'app.font': 'Console font',
     'app.fontSize': 'Font size', 'app.opacity': 'Window opacity', 'app.transparent': 'Transparent', 'app.opaque': 'Opaque', 'app.reload': 'Reload all',
+    'app.limHint': 'Limited theme — enable it in time; once enabled it stays forever',
+    "lim.title": "Don't miss the limited theme!", "lim.text": "{name} is available only until {date}. Enable it now and it stays yours forever.", "lim.try": "Enable", "lim.owned": "{name} is yours forever now",
     // skin editor
     'skin.hideParts': 'Hide parts (for painting)', 'skin.armR': 'R arm', 'skin.armL': 'L arm', 'skin.legR': 'R leg', 'skin.legL': 'L leg',
     // mods: incompatible
@@ -1214,6 +1218,28 @@ async function renderTntPanel() {
   };
   fr();
 }
+function showLimitedNotice() {                                   // карточка про лимитированную тему (смахивается)
+  const id = Object.keys(LIMITED_THEMES).find(k => !ownedThemes.has(k) && Date.now() < LIMITED_THEMES[k].until);
+  if (!id || !$('#limCard')) return;
+  const def = LIMITED_THEMES[id];
+  $('#limText').textContent = t('lim.text', { name: def.name, date: `30 ${def.month}` });
+  const card = $('#limCard');
+  card.hidden = false; card.dataset.theme = id;
+  let sx = null, dx = 0;
+  card.onpointerdown = e => { if (e.target.closest('button')) return; sx = e.clientX; card.setPointerCapture(e.pointerId); };
+  card.onpointermove = e => { if (sx === null) return; dx = e.clientX - sx; card.style.transform = `translateX(${dx}px)`; card.style.opacity = String(Math.max(.3, 1 - Math.abs(dx) / 260)); };
+  const up = () => { if (sx === null) return; card.style.transform = ''; card.style.opacity = ''; sx = null; if (Math.abs(dx) > 70) limHide(); dx = 0; };
+  card.onpointerup = up; card.onpointercancel = up;
+}
+function limHide() { const c = $('#limCard'); c.classList.add('hide'); setTimeout(() => c.hidden = true, 320); }
+$('#limLater').onclick = limHide;
+$('#limTry').onclick = async () => {                              // включить тему прямо из уведомления
+  const id = $('#limCard').dataset.theme || 'gta';
+  $('#appTheme').value = id;
+  await apChange();
+  limHide();
+  toast(t('lim.owned', { name: LIMITED_THEMES[id].name }));
+};
 function wireAuthDialogs() {
   const li = $('#dTntLogin'), rg = $('#dTntReg');
   if (!li || li.dataset.wired) return;
@@ -1592,19 +1618,37 @@ async function openPackComments(id, name) {
 $('#pcClose').onclick = () => pcDlg.close();
 
 // внешний вид: применяется сразу и сохраняется
-const GTA_UNTIL = new Date('2026-12-01T00:00:00').getTime();    // тема «ГТА 6» — временная, до 1 декабря
+const LIMITED_THEMES = {                                          // ограниченные темы: успел включить — твоя навсегда
+  gta: { until: new Date('2026-12-01T00:00:00').getTime(), name: '🌴 ГТА 6', month: 'ноября' },
+};
+const ownedThemes = new Set(JSON.parse(localStorage.getItem('ownedThemes') || '[]'));   // темы, которые уже успели включить
+const themeAvailable = id => !LIMITED_THEMES[id] || ownedThemes.has(id) || Date.now() < LIMITED_THEMES[id].until;
 function applyAppearance(ap) {
-  const gta = ap.theme === 'gta' && Date.now() < GTA_UNTIL;
-  document.body.classList.toggle('light', ap.theme === 'light');
-  document.body.classList.toggle('gta', gta);
-  if (ap.theme === 'gta' && !gta) { ap.theme = 'dark'; }         // декабрь — тихо возвращаем тёмную
+  const lim = LIMITED_THEMES[ap.theme];
+  const allowed = !lim || themeAvailable(ap.theme);              // включённая до даты — остаётся навсегда
+  document.body.classList.toggle('light', ap.theme === 'light' && allowed);
+  document.body.classList.toggle('gta', ap.theme === 'gta' && allowed);
+  if (!allowed) ap.theme = 'dark';                               // срок вышел и не успел — тёмная
+  const opt = $(`#appTheme [value=${ap.theme === 'gta' ? 'gta' : ap.theme}]`);
   const gtaOpt = $('#appTheme [value=gta]');
-  if (gtaOpt) gtaOpt.hidden = Date.now() >= GTA_UNTIL;           // и прячем сам пункт
+  if (gtaOpt) gtaOpt.hidden = !themeAvailable('gta');            // из выбора пропадает, если срок вышел и не включена
+  const limRow = $('#limTheme');
+  if (limRow) {
+    const active = ap.theme === 'gta' && allowed;
+    const show = !!LIMITED_THEMES.gta && themeAvailable('gta');
+    limRow.hidden = !show;
+    if (show) $('#limDate').textContent = active ? 'осталась у вас навсегда' : `до 30 ${LIMITED_THEMES.gta.month}`;
+  }
   document.documentElement.style.setProperty('--console-font', `${ap.font}, Consolas, Menlo, monospace`);
   document.documentElement.style.setProperty('--console-fs', ap.fontSize + 'px');
 }
 const apChange = async () => {
   const ap = { theme: $('#appTheme').value, font: $('#appFont').value, fontSize: +$('#appFontSize').value || 12, opacity: 100 };
+  if (LIMITED_THEMES[ap.theme] && !ownedThemes.has(ap.theme) && Date.now() < LIMITED_THEMES[ap.theme].until) {
+    ownedThemes.add(ap.theme);                                   // успел включить — записали навсегда
+    localStorage.setItem('ownedThemes', JSON.stringify([...ownedThemes]));
+    toast(t('lim.owned', { name: LIMITED_THEMES[ap.theme].name }));
+  }
   S.st.appearance = await api.invoke('appearance-set', ap);
   applyAppearance(S.st.appearance);
 };
@@ -2253,6 +2297,8 @@ $('#unStart').onclick = () => { unStep1(); un.showModal(); };
     } else renderInst();
   } catch (e) { toast('Не удалось загрузить список версий: ' + errMsg(e), 'err'); }
   setTimeout(() => checkUpdate(false), 2500);
+  setTimeout(showLimitedNotice, 4000);                           // «не пропустите лимитированную тему»
+
   setTimeout(startupSitePeek, 1200);
   setTimeout(checkNotifs, 4000); setInterval(checkNotifs, 120000);
 })();
