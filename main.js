@@ -890,7 +890,7 @@ function openSiteWindow(path, title) {                          // окно са
 // ---------- внешний вид ----------
 ipcMain.handle('appearance-set', (_, a) => {
   cfg.appearance = {
-    theme: a.theme === 'light' ? 'light' : 'dark',
+    theme: ['light', 'gta'].includes(a.theme) ? a.theme : 'dark',
     font: String(a.font || 'Consolas').slice(0, 40),
     fontSize: Math.min(24, Math.max(8, +a.fontSize || 12)),
     opacity: Math.min(100, Math.max(20, +a.opacity || 100)),

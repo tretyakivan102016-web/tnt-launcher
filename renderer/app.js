@@ -929,7 +929,7 @@ async function loadPacks() {
           ${pk.server ? `<button class="btn primary sm" data-a="join">🎮 ${esc(pk.server.name)}</button>` : ''}
           <button class="btn primary sm" data-a="install">${esc(t('cat.install'))}</button>
           <button class="btn ghost sm" data-a="com" title="Комментарии">💬</button>
-          ${pk.mine ? `<button class="btn ghost sm" data-a="share" title="Поделиться с другом">↗</button>` : ''}
+          ${pk.mine ? `<button class="btn ghost sm" data-a="share" title="Отправить другу (введите его ник TnT)">↗ Отправить</button>` : ''}
           ${pk.mine ? `<button class="btn ghost sm" data-a="del">${esc(t('cat.delete'))}</button>` : ''}
         </div>
       </div>`).join('') : `<div class="empty">${esc(pkMine ? t('cat.myEmpty') : t('cat.empty'))}</div>`;
@@ -955,7 +955,7 @@ $('#pkList').onclick = async e => {
   }
   if (b.dataset.a === 'com') { openPackComments(+cardEl.dataset.id, cardEl.querySelector('b').textContent.trim()); return; }
   if (b.dataset.a === 'share') {
-    const nick = (prompt('Ник друга (аккаунт TnT):') || '').trim();
+    const nick = (prompt('Отправить сборку другу — введите его ник TnT:') || '').trim();
     if (!nick) return;
     try { await tntReq('/api/pack/share', 'POST', { id: +cardEl.dataset.id, nick }); toast('Поделились с ' + nick); }
     catch (e) { toast(errMsg(e), 'err'); }
@@ -1021,7 +1021,7 @@ $('#pkPublish').onclick = async () => {
       tags: $$('#pkTags button.on').map(x => x.dataset.t),
       server: $('#pkSrvHost').value.trim() ? { host: $('#pkSrvHost').value.trim(), name: $('#pkSrvName').value.trim() } : null,
     });
-    pkDlg.close(); toast(t('cat.published')); pkMine = true; loadPacks();
+    pkDlg.close(); toast('Опубликовано! Отправить другу: «Мои» → ↗ на карточке сборки'); pkMine = true; loadPacks();
   } catch (e) { toast(errMsg(e), 'err'); }
   b.disabled = false;
 };
@@ -1155,8 +1155,22 @@ async function renderTntPanel() {
   const fr = async () => {
     try {
       const f = await tntReq('/api/friends');
-      $('#tFrList').innerHTML = f.j.list.length ? f.j.list.map(x => `<span class="selchip">${x.online ? '🟢' : '⚪'} ${esc(x.nick)} <b data-rm="${esc(x.nick)}" style="cursor:pointer;color:#ff6a4d">×</b></span>`).join(' ') : 'Пока никого';
-      $('#tFrList').querySelectorAll('[data-rm]').forEach(b => b.onclick = async () => { await tntReq('/api/friends', 'POST', { nick: b.dataset.rm, remove: true }); fr(); loadPacks(); });
+      $('#tFrList').innerHTML = f.j.list.length ? f.j.list.map(x => `
+        <div class="friend-card">
+          <img class="av-face" src="https://mc-heads.net/avatar/${encodeURIComponent(x.nick)}/40" alt="" onerror="this.outerHTML='<div class=\'av-letter\'>'+'${esc(x.nick[0].toUpperCase())}'+'</div>'">
+          <div class="fc-info"><b>${esc(x.nick)}</b><small class="${x.online ? 'on' : ''}">${x.online ? '🟢 в сети' : '⚪ не в сети'}</small></div>
+          <div class="fc-acts">
+            <button class="btn sm" data-dm="${esc(x.nick)}" title="Написать">💬</button>
+            <button class="btn sm" data-call="${esc(x.nick)}" title="Позвонить">📞</button>
+            <button class="btn sm danger" data-rm="${esc(x.nick)}" title="Удалить из друзей">×</button>
+          </div>
+        </div>`).join('') : '<span class="muted small">Пока никого — добавьте первого друга выше</span>';
+      $('#tFrList').querySelectorAll('[data-rm]').forEach(b => b.onclick = async () => {
+        if (!confirm(`Удалить ${b.dataset.rm} из друзей?`)) return;
+        await tntReq('/api/friends', 'POST', { nick: b.dataset.rm, remove: true }); fr(); loadPacks();
+      });
+      $('#tFrList').querySelectorAll('[data-dm]').forEach(b => b.onclick = () => { chatPeer = b.dataset.dm; lastMsgAt = 0; go('chat'); });
+      $('#tFrList').querySelectorAll('[data-call]').forEach(b => b.onclick = () => { startCall(b.dataset.call); });
     } catch { $('#tFrList').textContent = ''; }
   };
   $('#tFrAdd').onclick = async () => {
@@ -1478,8 +1492,14 @@ async function openPackComments(id, name) {
 $('#pcClose').onclick = () => pcDlg.close();
 
 // внешний вид: применяется сразу и сохраняется
+const GTA_UNTIL = new Date('2026-12-01T00:00:00').getTime();    // тема «ГТА 6» — временная, до 1 декабря
 function applyAppearance(ap) {
+  const gta = ap.theme === 'gta' && Date.now() < GTA_UNTIL;
   document.body.classList.toggle('light', ap.theme === 'light');
+  document.body.classList.toggle('gta', gta);
+  if (ap.theme === 'gta' && !gta) { ap.theme = 'dark'; }         // декабрь — тихо возвращаем тёмную
+  const gtaOpt = $('#appTheme [value=gta]');
+  if (gtaOpt) gtaOpt.hidden = Date.now() >= GTA_UNTIL;           // и прячем сам пункт
   document.documentElement.style.setProperty('--console-font', `${ap.font}, Consolas, Menlo, monospace`);
   document.documentElement.style.setProperty('--console-fs', ap.fontSize + 'px');
 }
