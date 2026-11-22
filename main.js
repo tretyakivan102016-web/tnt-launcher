@@ -68,7 +68,7 @@ function createInst(d) {
   const bedrock = d.kind === 'bedrock';
   const i = {
     id: crypto.randomBytes(4).toString('hex'),
-    name: (d.name || (bedrock ? 'Новая сборка Bedrock' : `Minecraft ${d.version}`)).trim().slice(0, 40),
+    name: (d.name || (bedrock ? 'Bedrock — основная' : `Minecraft ${d.version}`)).trim().slice(0, 40),
     version: d.version, loader: d.loader || 'vanilla', loaderVersion: d.loaderVersion || null,
     ram: d.ram || null, jvm: d.jvm || '', color: COLORS[insts.length % COLORS.length], lastPlayed: 0,
   };
@@ -735,7 +735,7 @@ ipcMain.handle('packs-cloud-list', async (_, { q = '', tag = '', sort = 'trend',
   return r.j;
 });
 ipcMain.handle('packs-cloud-publish', async (_, pack) => {
-  const r = await siteFetch('/api/modpacks', pack, await launcherAuth());
+  const r = await siteFetch('/api/modpacks', pack, await authHeaders());
   if (!r.ok) throw new Error(r.j.message || `Сайт ответил ${r.status}`);
   return r.j;
 });
@@ -745,7 +745,7 @@ ipcMain.handle('packs-cloud-delete', async (_, { id }) => {
   return r.j;
 });
 ipcMain.handle('packs-cloud-install', async (_, { id }) => {
-  const r = await siteFetch('/api/modpacks/install', { id }, await launcherAuth());
+  const r = await siteFetch('/api/modpacks/install', { id }, await authHeaders());
   if (!r.ok) throw new Error(r.j.message || `Сайт ответил ${r.status}`);
   const pack = r.j.pack;
   if (!pack) throw new Error('Модпак не найден');
@@ -842,7 +842,7 @@ function ensureServerFirst(host, name) {                       // сервер �
   return list.length;
 }
 ipcMain.handle('join-friend', async (_, { id }) => {            // установить модпак друга и поставить его сервер первым
-  const r0 = await siteFetch(`/api/modpacks/install`, { id }, {});
+  const r0 = await siteFetch(`/api/modpacks/install`, { id }, await authHeaders());
   if (!r0.ok) throw new Error(r0.j.message || `Сайт ответил ${r0.status}`);
   const pack = r0.j.pack;
   if (!pack) throw new Error('Модпак не найден');
@@ -1458,6 +1458,10 @@ ipcMain.handle('be-install-mod', async (_, { id, url, profile }) => {
 // Сообщения уходят на сайт, а в Telegram их пересылает сервер. Токена бота в лаунчере нет и быть не должно.
 const FORUM_URL = 'https://forum.tntlauncher.app';
 let bearerCache = { t: null, exp: 0 };
+async function authHeaders() {                                 // публикация сборок: приоритет TnT-аккаунта (работает без Microsoft), фолбэк — MC-токен
+  if (cfg.tntToken) return { Authorization: 'Bearer ' + cfg.tntToken };
+  return launcherAuth();
+}
 async function launcherAuth() {                       // для лицензионного аккаунта подтверждаем, кто пишет (токен Minecraft), для остальных — по IP
   if (!cfg.account || cfg.account.type !== 'microsoft') return {};
   if (!bearerCache.t || bearerCache.exp < Date.now()) {

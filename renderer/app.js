@@ -179,7 +179,7 @@ const I18N = {
     'app.title': 'Внешний вид', 'app.theme': 'Тема', 'app.dark': 'Тёмная', 'app.light': 'Светлая', 'app.font': 'Шрифт консоли',
     'app.fontSize': 'Размер шрифта', 'app.opacity': 'Непрозрачность окна', 'app.transparent': 'Прозрачный', 'app.opaque': 'Непрозрачный', 'app.reload': 'Перезагрузить все',
     'app.limHint': 'Лимитированная тема — успейте включить; включённая остаётся навсегда',
-    "lim.title": "Don't miss the limited theme!", "lim.text": "{name} is available only until {date}. Enable it now and it stays yours forever.", "lim.try": "Enable", "lim.owned": "{name} is yours forever now 🌴",
+    'lim.title': 'Не пропустите лимитированную тему!', 'lim.text': '{name} доступна только до {date}. Включите — и она останется у вас навсегда, даже когда исчезнет у остальных.', 'lim.try': 'Включить', 'lim.owned': '{name} — теперь ваша навсегда 🌴',
     // редактор скина
     'skin.hideParts': 'Скрыть части (для рисования)', 'skin.armR': 'Пр. рука', 'skin.armL': 'Лев. рука', 'skin.legR': 'Пр. нога', 'skin.legL': 'Лев. нога',
     // моды: несовместимые
@@ -469,7 +469,8 @@ const segVal = el => ($('button.on', el) || {}).dataset?.l;
 
 // ---------- состояние ----------
 const LOADER = { vanilla: 'Vanilla', fabric: 'Fabric', forge: 'Forge' };
-const bedrockAllowed = api.platform === 'win32';        // Bedrock есть только на Windows — на других ОС пункт скрыт полностью
+let bedrockAllowed = false;                              // Bedrock: показываем переключатель только если игра установлена (проверяем на старте через be-info)
+api.invoke('be-info').then(r => { bedrockAllowed = !!(r && r.supported && r.installed); renderSide(); }).catch(() => {});
 const S = { edition: localStorage.getItem('edition') || 'java', st: null, insts: [], cur: null, bedrockId: null, view: 'inst', tab: 'files', folder: 'mods', versions: [], playing: false, busy: false, skinFace: null };
 if (!bedrockAllowed && S.edition === 'bedrock') { S.edition = 'java'; localStorage.setItem('edition', 'java'); }
 const cur = () => S.insts.find(i => i.id === S.cur);
@@ -1493,13 +1494,56 @@ async function renderAdminAccounts() {
       <button class="btn" id="baUnban">Разбанить</button>
       <button class="btn ghost" id="baKick">Кик со всех устройств</button>
     </div>
-    <p class="hint">Бан выкидывает сразу; кик сбрасывает входы. Забаненные не могут войти.</p>`;
+    <p class="hint">Бан выкидывает сразу; кик сбрасывает входы. Забаненные не могут войти.</p>
+    <div class="row wrap" style="margin-top:12px">
+      <b style="min-width:110px">🌐 Бан по IP:</b>
+      <input id="ipNick" maxlength="16" placeholder="Ник TnT" style="max-width:160px">
+      <button class="btn" id="ipShow">Показать устройства</button>
+    </div>
+    <div id="ipList" class="hint" style="margin-top:6px"></div>`;
   const nick = () => $('#baNick').value.trim();
-  const act = async body => { try { await tntReq('/api/admin/' + body.what, 'POST', body); toast('Готово'); } catch (e) { toast(errMsg(e), 'err'); } };
+  const act = async body => {
+    try { await tntReq('/api/admin/' + body.what, 'POST', body); toast('Готово'); }
+    catch (e) { toast(errMsg(e), 'err'); return; }
+    try { const me = await tntReq('/api/me'); TNT = me.j && me.j.tnt || TNT; } catch {}   // права могли измениться
+  };
   $('#baForever').onclick = () => { const n = nick(); if (n && confirm(`Заблокировать ${n} НАВСЕГДА?`)) act({ what: 'ban', nick: n, permanent: true }); };
   $('#baTemp').onclick = () => { const n = nick(); if (n) act({ what: 'ban', nick: n, days: +$('#baDays').value }); };
   $('#baUnban').onclick = () => { const n = nick(); if (n) act({ what: 'ban', nick: n, unban: true }); };
   $('#baKick').onclick = () => { const n = nick(); if (n && confirm(`Кикнуть ${n}?`)) act({ what: 'kick', nick: n }); };
+  // устройства (IP) игрока и бан по IP
+  $('#ipShow').onclick = async () => {
+    const n = $('#ipNick').value.trim();
+    const box = $('#ipList');
+    if (!n) return toast('Введите ник', 'err');
+    box.textContent = 'Загружаю…';
+    try {
+      const r = await tntReq('/api/admin/ips?nick=' + encodeURIComponent(n));
+      const ips = r.j.ips || [];
+      box.innerHTML = ips.length ? ips.map(x => `
+        <div class="row wrap" style="gap:8px;padding:6px 0">
+          <code>${esc(x.ip)}</code>
+          <small class="muted">${new Date(x.lastSeen).toLocaleString('ru-RU')}</small>
+          ${x.banned ? '<span class="mine-badge">забанен</span>' : ''}
+          ${x.banned
+            ? `<button class="btn ghost sm" data-unban="${esc(x.ip)}">Разбанить IP</button>`
+            : `<button class="btn danger sm" data-ban="${esc(x.ip)}" data-p="1">Навсегда</button>
+               <select data-days="${esc(x.ip)}"><option value="1">1 день</option><option value="7">7 дней</option><option value="30">30 дней</option></select>
+               <button class="btn sm" data-ban="${esc(x.ip)}">На срок</button>`}
+        </div>`).join('') : 'У этого аккаунта нет сохранённых IP (он ещё не входил)';
+      box.querySelectorAll('[data-ban]').forEach(b => b.onclick = async () => {
+        const ip = b.dataset.ban, permanent = b.dataset.p === '1';
+        const days = permanent ? null : +(box.querySelector(`[data-days="${ip}"]`) || {}).value || 7;
+        if (!confirm(`Забанить IP ${ip}${permanent ? ' НАВСЕГДА' : ' на ' + days + ' дн.'}?`)) return;
+        await act({ what: 'banip', ip, permanent, days });
+        $('#ipShow').click();
+      });
+      box.querySelectorAll('[data-unban]').forEach(b => b.onclick = async () => {
+        await act({ what: 'banip', ip: b.dataset.unban, unban: true });
+        $('#ipShow').click();
+      });
+    } catch (e) { box.innerHTML = `<span class="muted">${esc(errMsg(e))}</span>`; }
+  };
 }
 
 // ---------- страница «Админ» в лаунчере ----------
