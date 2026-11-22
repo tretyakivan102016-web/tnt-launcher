@@ -134,7 +134,7 @@ const I18N = {
     'upd.available': 'Доступна новая версия', 'upd.hint': 'Установите обновление, чтобы получить последние улучшения',
     'upd.later': 'Позже', 'upd.now': 'Обновить', 'upd.latest': 'У вас последняя версия',
     'upd.noReleases': 'На GitHub пока нет опубликованных релизов', 'upd.checkFailed': 'Не удалось проверить: {error}',
-    'upd.stateNew': 'Доступна версия {version}', 'upd.swipe': 'смахните', 'upd.downloading': 'Скачиваю обновление… {pct}%',
+    'upd.stateNew': 'Доступна версия {version}', 'upd.swipe': 'смахните', 'upd.forced': 'Эта версия больше не поддерживается — установите обновление (карточку смахнуть нельзя, ИГРАТЬ запустит установку).', 'upd.forcedNo': 'Обновление обязательно — карточку закрыть нельзя', 'upd.forcedPlay': 'Сначала обновите лаунчер — запускаю установку', 'upd.forcedState': 'Версия {version} обязательна к установке', 'upd.downloading': 'Скачиваю обновление… {pct}%',
     'upd.installing': 'Устанавливаю обновление… лаунчер сам закроется и откроется заново',
     'upd.manual': 'Откройте скачанный файл и установите вручную', 'upd.downloadFailed': 'Не удалось скачать обновление',
     // отчёты и уведомления
@@ -321,7 +321,7 @@ const I18N = {
     'upd.available': 'New version available:', 'upd.hint': 'Install the update to get the latest improvements',
     'upd.later': 'Later', 'upd.now': 'Update', 'upd.latest': 'You have the latest version',
     'upd.noReleases': 'No published releases on GitHub yet', 'upd.checkFailed': 'Check failed: {error}',
-    'upd.stateNew': 'Version {version} is available', 'upd.swipe': 'swipe away', 'upd.downloading': 'Downloading update… {pct}%',
+    'upd.stateNew': 'Version {version} is available', 'upd.swipe': 'swipe away', 'upd.forced': 'This version is no longer supported — install the update (the card cannot be dismissed; PLAY starts the install).', 'upd.forcedNo': 'The update is mandatory — the card cannot be closed', 'upd.forcedPlay': 'Update the launcher first — starting the install', 'upd.forcedState': 'Version {version} must be installed', 'upd.downloading': 'Downloading update… {pct}%',
     'upd.installing': 'Installing the update… the launcher will close and reopen by itself',
     'upd.manual': 'Open the downloaded file and install it manually', 'upd.downloadFailed': 'Failed to download the update',
     // reports and notifications
@@ -636,6 +636,7 @@ function setProg(text, frac) {
 $('#bPlay').innerHTML = `<i data-i="play"></i><span id="playTxt">${t('play')}</span>`;
 $('#bPlay').onclick = async () => {
   if (S.playing) { await api.invoke('stop'); return; }
+  if (updInfo && updInfo.forced) { toast(t('upd.forcedPlay'), 'warn'); $('#updNow').click(); return; }   // ниже минимальной версии — сначала обновление
   const i = cur(); if (!i) return;
   if (!S.st.account) { toast(t('err.loginFirst'), 'warn'); go('account'); return; }
   S.busy = true; setPlayUi(); setTab('log');
@@ -1976,19 +1977,69 @@ $('#skCsl').onclick = async () => {
 
 // ---------- обновления ----------
 let updInfo = null;
+function isNewerLocal(v) {                                          // версия v больше нашей?
+  const a = String(v).replace(/^v/, '').split('.').map(Number), b = (S.st && S.st.version || '0').split('.').map(Number);
+  for (let i = 0; i < 3; i++) { const d = (a[i] || 0) - (b[i] || 0); if (d) return d > 0; }
+  return false;
+}
+function showUpdCard(forced) {
+  const card = $('#updCard');
+  if (!card) return;
+  card.hidden = false; card.classList.remove('hide');
+  card.classList.toggle('forced', !!forced);
+  $('#updMsg').textContent = forced ? t('upd.forced') : t('upd.hint');
+}
+function hideUpdCard() {                                            // смахнуть/«Позже» (forced нельзя)
+  const card = $('#updCard');
+  if (!card) return;
+  if (card.classList.contains('forced')) { toast(t('upd.forcedNo'), 'warn'); return; }
+  card.classList.add('hide');
+  setTimeout(() => card.hidden = true, 320);
+}
 async function checkUpdate(manual) {
-  const r = await api.invoke('update-check');
+  let r;
+  try { r = await api.invoke('update-check'); }
+  catch (e) { if (manual) $('#updState').textContent = t('upd.checkFailed', { error: errMsg(e) }); return; }
   if (r.state === 'new') {
-    updInfo = r; $('#updVer').textContent = r.version; $('#updBanner').hidden = false; $('#updBanner').title = r.notes || '';
-    if (manual) $('#updState').textContent = t('upd.stateNew', { version: r.version });
+    updInfo = r; updInfo.forced = !!(r.minVersion && isNewerLocal(r.minVersion));
+    $('#updVer').textContent = r.version;
+    showUpdCard(updInfo.forced);
+    $('#updCard').title = r.notes || '';
+    if (manual) $('#updState').textContent = updInfo.forced ? t('upd.forcedState', { version: r.version }) : t('upd.stateNew', { version: r.version });
     if (r.hasAsset) {                                             // качаем сразу — «Обновить» поставит мгновенно
       api.invoke('update-download').then(() => { $('#updMsg').textContent = t('upd.ready'); }).catch(() => {});
     }
   } else if (manual) {
     $('#updState').textContent = r.state === 'latest' ? t('upd.latest') : (/404/.test(r.error) ? t('upd.noReleases') : t('upd.checkFailed', { error: r.error }));
+    if (r.state === 'latest') { const c = $('#updCard'); if (c) c.hidden = true; updInfo = null; }
   }
 }
-$('#updLater').onclick = () => $('#updBanner').hidden = true;
+$('#updLater').onclick = hideUpdCard;
+(() => {                                                           // свайп карточки мышью/пальцем
+  const card = $('#updCard');
+  if (!card) return;
+  let sx = null, dx = 0;
+  card.addEventListener('pointerdown', e => {
+    if (e.target.closest('button')) return;
+    if (card.classList.contains('forced')) return;
+    sx = e.clientX; dx = 0; card.setPointerCapture(e.pointerId);
+  });
+  card.addEventListener('pointermove', e => {
+    if (sx === null) return;
+    dx = e.clientX - sx;
+    card.style.transform = `translateX(${dx}px)`;
+    card.style.opacity = String(Math.max(.3, 1 - Math.abs(dx) / 260));
+  });
+  const up = () => {
+    if (sx === null) return;
+    card.style.transform = ''; card.style.opacity = '';
+    sx = null;
+    if (Math.abs(dx) > 70) hideUpdCard();
+    dx = 0;
+  };
+  card.addEventListener('pointerup', up);
+  card.addEventListener('pointercancel', up);
+})();
 $('#updNow').onclick = async () => {
   if (!updInfo || !updInfo.hasAsset) { api.invoke('open-release'); return; }
   $('#updNow').disabled = true; $('#updMsg').textContent = t('upd.downloading', { pct: 0 });
