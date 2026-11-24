@@ -243,6 +243,10 @@
                 <label class="check"><input type="checkbox" data-part="legR"><i></i><span data-i18n="skin.legR">Пр. нога</span></label>
                 <label class="check"><input type="checkbox" data-part="legL"><i></i><span data-i18n="skin.legL">Лев. нога</span></label>
               </div></div>
+            <div class="field" style="margin-top:4px"><span data-i18n="skin.catTitle">Каталог скинов</span>
+              <div class="skin-cat" id="skCat"></div>
+              <button class="btn ghost sm" id="skCatAll" style="margin-top:6px">Ещё больше скинов — skins.tntlauncher.app</button>
+            </div>
             <div class="nickrow"><input id="skNick" maxlength="16" placeholder="Ник лицензии" data-i18n="skin.nickPh"><button class="btn" id="skFetch" data-i18n="skin.fetch">Взять скин</button></div>
             <div class="row wrap"><button class="btn" id="skOpen" data-i18n="skin.openPng">Открыть PNG</button><button class="btn" id="skSave" data-i18n="common.save">Сохранить</button><button class="btn ghost" id="skClear" data-i18n="skin.clear">Очистить</button></div>
             <div class="sep"></div>
@@ -325,7 +329,7 @@
               <select id="appFont"><option>Consolas</option><option>Segoe UI Mono</option><option>Courier New</option><option>Arial</option><option>Impact</option></select></label>
             <label><span data-i18n="app.fontSize">Размер шрифта</span><input id="appFontSize" type="number" min="8" max="24" step="1" value="12"></label>
           </div>
-          <div class="row" style="margin-top:12px"><button class="btn" id="appReload" data-i18n="app.reload">Перезагрузить все</button></div>
+          <div class="row" style="margin-top:12px"><button class="btn" id="appReload" data-i18n="app.reload">Перезагрузить все</button><button class="btn ghost" id="tourAgain">🧭 Пройти обучение</button></div>
         </div>
         <div class="panel">
           <h3 data-i18n="acc.ramTitle">Память по умолчанию</h3>
@@ -432,6 +436,21 @@
   <h3 id="callTitle">Звонок</h3>
   <p class="sub" id="callSub"></p>
   <div class="row" style="justify-content:center;gap:10px" id="callActs"></div>
+</dialog>
+<dialog id="dTour" class="tour">
+  <div class="tour-box">
+    <div class="tour-art" id="tourArt">🧨</div>
+    <h3 id="tourTitle"></h3>
+    <p class="hint" id="tourText"></p>
+    <div class="tour-dots" id="tourDots"></div>
+    <div class="row" style="justify-content:space-between;margin-top:14px">
+      <button class="btn ghost" id="tourSkip">Пропустить</button>
+      <div class="row" style="gap:8px">
+        <button class="btn ghost" id="tourPrev" hidden>← Назад</button>
+        <button class="btn primary" id="tourNext">Далее</button>
+      </div>
+    </div>
+  </div>
 </dialog>
 <dialog id="dPackCom">
   <h3 id="pcTitle">Комментарии</h3>

@@ -504,6 +504,27 @@ function select(id) {
   S.bedrockId = null; S.cur = id; go('inst');
 }
 
+// ---------- каталог скинов (лаунчер + skins.tntlauncher.app) ----------
+const SKIN_CATALOG = [
+  ['Notch', 'Создатель MC'], ['jeb_', 'jeb_'], ['Dinnerbone', 'Dinnerbone'], ['Grumm', 'Grumm'],
+  ['Dream', 'Dream'], ['Technoblade', 'Techno'], ['MumboJumbo', 'Mumbo'], ['Grian', 'Grian'],
+  ['CaptainSparklez', 'Sparklez'], ['Keralis', 'Keralis'], ['GoodTimesWithScar', 'Scar'], ['Tango', 'Tango'],
+];
+(function renderSkinCat() {
+  const box = $('#skCat'); if (!box) return;
+  box.innerHTML = SKIN_CATALOG.map(([n, t]) => `
+    <button data-nick="${esc(n)}" title="${esc(t)} — взять этот скин">
+      <img src="https://mc-heads.net/body/${encodeURIComponent(n)}/60" alt="" loading="lazy">
+      <small>${esc(t)}</small>
+    </button>`).join('');
+  box.onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    $('#skNick').value = b.dataset.nick;
+    $('#skFetch').click();
+  };
+})();
+$('#skCatAll') && ($('#skCatAll').onclick = () => api.invoke('open-external', 'https://skins.tntlauncher.app'));
+
 function updateSkinFace() {                                 // лицо из скина редактора (голова + оверлей)
   try {
     const c = document.createElement('canvas'); c.width = c.height = 8;
@@ -2365,6 +2386,34 @@ function unStepFinal() {
 }
 $('#unStart').onclick = () => { unStep1(); un.showModal(); };
 
+// ---------- обучение при первом запуске ----------
+const TOUR = [
+  { art: '🧨', title: 'Добро пожаловать в TnT Launcher!', text: 'Minecraft Java и Bedrock в одном окне. Показать главное за минуту?' },
+  { art: '📦', title: 'Сборки', text: 'Кнопка «Новая» слева: своя версия игры, Fabric или Forge, свой цвет и память. У каждой сборки свои моды и миры.' },
+  { art: '🧩', title: 'Моды и ресурсы', text: 'Во вкладке «Установка модов» — поиск по Modrinth и CurseForge, зависимости ставятся сами. «Проверить сборку» находит несовместимые моды. Ресурспаки и шейдеры — вкладка «Ресурсы».' },
+  { art: '🎨', title: 'Скины', text: 'Редактор: рисуйте прямо на 3D-модели. Каталог скинов — готовые одним кликом, свой — по нику или из PNG. Свой скин можно загрузить в аккаунт Microsoft.' },
+  { art: '👥', title: 'Аккаунт TnT (необязательно)', text: 'Регистрация за минуту: друзья, переписка, звонки и обмен сборками — прямо в лаунчере. Играть можно и без него.' },
+  { art: '🚀', title: 'Готово!', text: 'Создайте первую сборку и запускайте. Приятной игры!' },
+];
+let tourStep = 0;
+function tourShow(i) {
+  tourStep = Math.max(0, Math.min(TOUR.length - 1, i));
+  const st = TOUR[tourStep];
+  $('#tourArt').textContent = st.art;
+  $('#tourTitle').textContent = st.title;
+  $('#tourText').textContent = st.text;
+  $('#tourDots').innerHTML = TOUR.map((_, k) => `<i class="${k === tourStep ? 'on' : ''}"></i>`).join('');
+  $('#tourPrev').hidden = tourStep === 0;
+  $('#tourNext').textContent = tourStep === TOUR.length - 1 ? 'Начать пользоваться' : 'Далее';
+  const d = $('#dTour');
+  if (!d.open) d.showModal();
+}
+function tourFinish() { localStorage.setItem('tnt_tour_done', '1'); $('#dTour').close(); }
+$('#tourSkip').onclick = tourFinish;
+$('#tourPrev').onclick = () => tourShow(tourStep - 1);
+$('#tourNext').onclick = () => (tourStep >= TOUR.length - 1) ? tourFinish() : tourShow(tourStep + 1);
+$('#tourAgain').onclick = () => tourShow(0);
+
 // ---------- старт ----------
 (async () => {
   hydrate();
@@ -2392,6 +2441,7 @@ $('#unStart').onclick = () => { unStep1(); un.showModal(); };
     } else renderInst();
   } catch (e) { toast('Не удалось загрузить список версий: ' + errMsg(e), 'err'); }
   setTimeout(() => checkUpdate(false), 2500);
+  if (!localStorage.getItem('tnt_tour_done')) setTimeout(() => tourShow(0), 1400);   // обучение при первом запуске
   setTimeout(showLimitedNotice, 4000);                           // «не пропустите лимитированную тему»
 
   setTimeout(startupSitePeek, 1200);
