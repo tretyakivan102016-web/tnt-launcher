@@ -181,7 +181,7 @@ const I18N = {
     'app.limHint': 'Лимитированная тема — успейте включить; включённая остаётся навсегда',
     'lim.title': 'Не пропустите лимитированную тему!', 'lim.text': '{name} доступна только до {date}. Включите — и она останется у вас навсегда, даже когда исчезнет у остальных.', 'lim.try': 'Включить', 'lim.owned': '{name} — теперь ваша навсегда 🌴',
     // редактор скина
-    'skin.hideParts': 'Скрыть части (для рисования)', 'skin.armR': 'Пр. рука', 'skin.armL': 'Лев. рука', 'skin.legR': 'Пр. нога', 'skin.legL': 'Лев. нога',
+    'skin.hideParts': 'Скрыть части (для рисования)', 'skin.catTitle': 'Каталог скинов', 'skin.armR': 'Пр. рука', 'skin.armL': 'Лев. рука', 'skin.legR': 'Пр. нога', 'skin.legL': 'Лев. нога',
     // моды: несовместимые
     'mods.incompatible': 'Нет версии для {v} — скачать нельзя', 'mods.installedTitle': 'Установленные моды', 'mods.remove': 'Удалить', 'mods.countOff': ' · выключено: {n}',
     // поддержка
@@ -369,7 +369,7 @@ const I18N = {
     'app.limHint': 'Limited theme — enable it in time; once enabled it stays forever',
     "lim.title": "Don't miss the limited theme!", "lim.text": "{name} is available only until {date}. Enable it now and it stays yours forever.", "lim.try": "Enable", "lim.owned": "{name} is yours forever now",
     // skin editor
-    'skin.hideParts': 'Hide parts (for painting)', 'skin.armR': 'R arm', 'skin.armL': 'L arm', 'skin.legR': 'R leg', 'skin.legL': 'L leg',
+    'skin.hideParts': 'Hide parts (for painting)', 'skin.catTitle': 'Skin catalog', 'skin.armR': 'R arm', 'skin.armL': 'L arm', 'skin.legR': 'R leg', 'skin.legL': 'L leg',
     // mods: incompatible
     'mods.incompatible': 'No version for {v} — cannot download', 'mods.installedTitle': 'Installed mods', 'mods.remove': 'Remove', 'mods.countOff': ' · disabled: {n}',
     // support
