@@ -122,6 +122,7 @@ function deepLink(url) {
     const code = u.hostname === 'login' && u.searchParams.get('code');
     if (code) send('site-code', code);
     if (u.hostname === 'pack') send('pack-code', u.pathname.replace(/[^0-9]/g, ''));   // tntlauncher://pack/<id> — из Telegram
+    if (u.hostname === 'skins') send('open-skins');                                  // tntlauncher://skins — каталог/дроп скина
   } catch {}
 }
 app.on('second-instance', (_, argv) => {

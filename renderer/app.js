@@ -2096,6 +2096,7 @@ $('#siteGo').onclick = () => { const c = $('#siteCode').value.trim(); if (c.repl
 $('#siteSave').onclick = async () => { try { S.st.site = await api.invoke('set-site', $('#siteUrl').value); $('#siteUrl').value = S.st.site; toast(t('acc.urlSaved')); } catch (e) { toast(errMsg(e), 'err'); } };
 $('#siteYes').onclick = () => siteClaim();
 $('#siteNo').onclick = () => $('#siteBanner').hidden = true;
+api.onOpenSkins(() => go('skin'));                               // tntlauncher://skins — открыть редактор скина
 api.onPackCode(async pid => {                        // tntlauncher://pack/<id> — установка модпака из Telegram
   if (!pid) return;
   go('catalog');
